@@ -1,0 +1,15 @@
+{
+  "references": [
+    {"path": "./tsconfig.lib.json"},
+    {"path": "./tsconfig.spec.json"}
+  ],
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "CommonJS",
+    "lib": ["ESNext"],
+    "moduleResolution": "Node",
+    "outDir": "./dist",
+    "strict": true
+  },
+  "include": ["**/*"]
+}
