@@ -1,6 +1,6 @@
-import type {Key, Cache as ICache, BaseCache} from '../types/cache.t'
+import type {Key, Cache as ICache, BaseCache} from '../../types/cache.t'
 
-import {CACHE_KEY} from './constants'
+import {CACHE_KEY} from '../constants'
 
 class Cache<K extends Key, T> implements ICache<K, T> {
   public [CACHE_KEY]: ICache<K, T> | BaseCache<K, T>

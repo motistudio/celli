@@ -4,11 +4,11 @@ import type {
   AsyncCache as IAsyncCache,
   AbstractCache as IAbstractCache,
   BaseCache
-} from '../types/cache.t'
+} from '../../types/cache.t'
 
-import getAsyncIterator from '../commons/iterators/getAsyncIterator'
-import Observable from '../commons/observables/Observable'
-import isThentable from '../commons/promise/isThentable'
+import getAsyncIterator from '../../commons/iterators/getAsyncIterator'
+import Observable from '../../commons/observables/Observable'
+import isThentable from '../../commons/promise/isThentable'
 
 import {
   CACHE_KEY,
@@ -17,7 +17,7 @@ import {
   SET_PROMISES_KEY,
   HAS_PROMISES_KEY,
   DELETE_PROMISES_KEY
-} from './constants'
+} from '../constants'
 
 // get, set overrides get
 // get should be a wrapper in case it's interrupted by set

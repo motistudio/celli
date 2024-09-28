@@ -1,4 +1,4 @@
-import isThentable from '../commons/promise/isThentable'
+import isThentable from '../../commons/promise/isThentable'
 
 import type {
   Key,
@@ -6,11 +6,11 @@ import type {
   AsyncCache as IAsyncCache,
   AbstractCache,
   AsyncInnerCache
-} from '../types/cache.t'
+} from '../../types/cache.t'
 
 import {
   CACHE_KEY
-} from './constants'
+} from '../constants'
 
 const KEYS_CACHE_KEY = Symbol.for('keys-cache')
 
