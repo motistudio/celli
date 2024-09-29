@@ -50,7 +50,6 @@ class LifeCycleItem<T> {
       this.isCleaned = true
       return this.cleanup()
     }
-    return undefined
   }
 }
 

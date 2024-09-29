@@ -95,6 +95,35 @@ import { CLEANUP_QUEUE } from '../../../src/cache/implementations/LifeCycleCache
         expect(cleanup).toHaveBeenCalled()
       })
 
+      test('Should add an async effect', async () => {
+        const cache = new LifeCycleCache(new AsyncCache<string, string>)
+
+        const key = 'key'
+        const value = 'value'
+        const value2 = 'value2'
+        const cleanup = jest.fn()
+        const effect = jest.fn(() => {
+          return cleanup
+        })
+        const readHandler = jest.fn()
+
+        await cache.set(key, value, [effect])
+        expect(effect).toHaveBeenCalled()
+
+        const [initialValue, api] = (effect.mock.calls[0] as unknown as Parameters<Effect<string>>)
+        expect(initialValue).toBe(value)
+
+        expect(api.getSelf()).toBe(value) // last value that was actually set
+        await expect(api.setSelf(value2)).resolves.toBe(undefined) // not returning a promise
+        expect(api.getSelf()).toBe(value2)
+        api.onRead(readHandler)
+        await expect(cache.get(key)).resolves.toBe(value2)
+        expect(readHandler).toHaveBeenCalled()
+        api.deleteSelf()
+        await expect(cache.has(key)).resolves.toBe(false)
+        expect(cleanup).toHaveBeenCalled()
+      })
+
       test('Should cleanup async effects and their cleanups', async () => {
         const cache = new LifeCycleCache(new AsyncCache<string, string>())
 

@@ -80,7 +80,7 @@ class LifeCycleCache<K extends Key, T> implements IAbstractCache<K, T> {
     const result = this[CACHE_KEY].set(key, value)
     if (isThentable(result)) {
       return result.then((result) => {
-        setLifeCycleItem(this, key, result, effects || DEFAULT_EFFECTS)
+        setLifeCycleItem(this, key, value, effects || DEFAULT_EFFECTS)
         this[DELETE_PROMISES_KEY].delete(key)
         return result
       })
@@ -137,22 +137,9 @@ class LifeCycleCache<K extends Key, T> implements IAbstractCache<K, T> {
     return this[CACHE_KEY].values()
   }
 
-  // async * values () {
-  //   for await (const item of this[cacheKey].values()) {
-  //     // trigger read
-  //     yield item.value
-  //   } 
-  // }
-
   entries () {
     return this[CACHE_KEY].entries()
   }
-  // async * entries () {
-  //   for await (const [key, item] of this[cacheKey].entries()) {
-  //     // trigger read
-  //     yield [key, item.value] as [K, T]
-  //   }
-  // }
 
   [Symbol.iterator] () {
     return this.entries()
