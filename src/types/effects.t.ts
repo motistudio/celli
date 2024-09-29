@@ -5,7 +5,10 @@ type EffectCallbackApi<T> = {
   get: () => T
 }
 
-type EffectApi<T> = {
+export type EffectApi<T> = {
+  getSelf: () => T
+  setSelf: (value: T) => Promise<void> | void
+  deleteSelf: () => Promise<void> | void
   onRead: (callback: ((utils: EffectCallbackApi<T>) => void)) => void
 }
 

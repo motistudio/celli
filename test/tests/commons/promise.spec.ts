@@ -64,6 +64,7 @@ describe('Promise utils', () => {
       const promise = Promise.resolve(value)
 
       const promiseState = getPromiseState(promise)
+      expect(promiseState.promise).toBe(promise)
       expect(promiseState.resolved).toBe(false)
       expect(promiseState.rejected).toBe(false)
       expect(promiseState.finished).toBe(false)

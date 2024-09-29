@@ -6,10 +6,9 @@ import {
   HAS_PROMISES_KEY,
   DELETE_PROMISES_KEY
 } from '../../../src/cache/constants'
-import Cache from '../../../src/cache/Cache'
-import AsyncCache from '../../../src/cache/AsyncCache'
+import Cache from '../../../src/cache/implementations/Cache'
+import AsyncCache from '../../../src/cache/implementations/AsyncCache'
 
-import createAbstractAsyncCache from '../../utils/createAbstractAsyncCache'
 import getPromiseState from '../../../src/commons/promise/getPromiseState'
 
 describe('Async Cache', () => {

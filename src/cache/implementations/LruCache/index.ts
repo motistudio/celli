@@ -1,4 +1,5 @@
-import isThentable from '../../commons/promise/isThentable'
+import getAsyncIterator from '../../../commons/iterators/getAsyncIterator'
+import isThentable from '../../../commons/promise/isThentable'
 
 import type {
   Key,
@@ -6,22 +7,15 @@ import type {
   AsyncCache as IAsyncCache,
   AbstractCache,
   AsyncInnerCache
-} from '../../types/cache.t'
+} from '../../../types/cache.t'
 
-import {
-  CACHE_KEY
-} from '../constants'
+import {CACHE_KEY} from '../../constants'
+
+import type {ItemSizeGetter, LruCacheOptions} from './types.t'
 
 const KEYS_CACHE_KEY = Symbol.for('keys-cache')
 
 const DEFAULT_MAX_CACHE_SIZE = 500
-
-type ItemSizeGetter<K extends Key, T> = (key: K, value: T) => number
-
-type LruCacheOptions<K extends Key, T> = {
-  maxSize: number,
-  getItemSize: ItemSizeGetter<K, T>
-}
 
 const defaultItemSizeGetter = () => 1 // representing an item's own size - when the size represents the amount of items
 
@@ -100,6 +94,14 @@ const removeKey = <C extends LruCache<any, any>>(cache: C, key: Key) => {
   cache.usedSize = cache.usedSize - existingSize
 }
 
+const introduce = <C extends LruCache<any, any>>(cache: C, key: Key, item?: any) => {
+  if (item !== undefined && !cache[KEYS_CACHE_KEY].has(key)) {
+    setKey(cache, key, cache.getItemSize(key, item))
+  } else {
+    refreshKey(cache, key)
+  }
+}
+
 /**
  * An LRU Cache implementation
  * @todo Customize the basic key setters/getters, since they might be async as well
@@ -125,12 +127,12 @@ class LruCache<K extends Key, T> implements AbstractCache<K, T> {
     const item = this[CACHE_KEY].get(key)
     if (isThentable(item)) {
       return item.then((item) => {
-        refreshKey(this, key)
+        introduce(this, key, item)
         return item
       })
     }
 
-    refreshKey(this, key)
+    introduce(this, key, item)
     return item
   }
 
@@ -166,6 +168,14 @@ class LruCache<K extends Key, T> implements AbstractCache<K, T> {
 
   entries () {
     return this[CACHE_KEY].entries()
+  }
+
+  [Symbol.iterator] () {
+    return this.entries()
+  }
+
+  [Symbol.asyncIterator] () {
+    return getAsyncIterator(this.entries())
   }
 
   clean () {

@@ -4,7 +4,7 @@ import {
   HAS_PROMISES_KEY,
   DELETE_PROMISES_KEY
 } from '../../../src/cache/constants'
-import InterruptiveAsyncCache from '../../../src/cache/InterruptiveAsyncCache'
+import InterruptiveAsyncCache from '../../../src/cache/implementations/InterruptiveAsyncCache'
 import delay from '../../../src/commons/promise/delay'
 
 import createAbstractAsyncCache from '../../utils/createAbstractAsyncCache'

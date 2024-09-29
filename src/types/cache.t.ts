@@ -52,8 +52,34 @@ export interface WrappedCache<C extends (Cache<Key, any> | AsyncCache<Key, any>)
   clean (): ReturnType<C['clean']>
 }
 
-export type CacheKey<C extends AsyncCache<Key, any> | Cache<Key, any>> = C extends AsyncCache<infer K, any> ? K : (C extends Cache<infer K, any> ? K : never)
-export type CacheValue<C extends AsyncCache<Key, any> | Cache<Key, any>> = C extends AsyncCache<any, infer T> ? T : (C extends Cache<any, infer T> ? T : never)
+export type AnyCache<K extends Key, T> = BaseCache<K, T> | Cache<K, T> | AsyncCache<K, T> | AbstractCache<K, T>
+export type AnyCacheType<K extends Key, T> = Cache<K, T> | AsyncCache<K, T> | AbstractCache<K, T>
+
+export type CacheKey<C extends AnyCache<Key, any>> = (
+  C extends AnyCache<infer K, any> ? K : never
+)
+// export type CacheKey<C extends AbstractCache<any, any> | AsyncCache<Key, any> | Cache<Key, any>> = (
+//   C extends AsyncCache<infer K, any> ? (
+//     K
+//   ) : (
+//     C extends Cache<infer K, any> ? K : (
+//       C extends AbstractCache<infer K, any> ? K : never
+//     )
+//   )
+// )
+
+export type CacheValue<C extends AnyCache<Key, any>> = (
+  C extends AnyCache<any, infer T> ? T : never
+)
+// export type CacheValue<C extends AbstractCache<any, any> | AsyncCache<Key, any> | Cache<Key, any>> = (
+//   C extends AsyncCache<any, infer T> ? T : (
+//     C extends Cache<any, infer T> ? T : (
+//       C extends AbstractCache<any, infer T> ? T : never
+//     )
+//   )
+// )
 
 export type InnerCache<K extends Key, T> = BaseCache<K, T> | Cache<K, T>
 export type AsyncInnerCache<K extends Key, T> = InnerCache<K, T> | AsyncCache<K, T> | AbstractCache<K, T>
+
+export type Transformer<K extends AnyCache<any, any>> = <Cache extends AnyCache<any, any>>(cache: Cache) => K

@@ -1,6 +1,6 @@
 import type {Key, Cache as ICache, AsyncCache as IAsyncCache, AbstractCache as IAbstractCache} from '../../types/cache.t'
 
-import Cache from '../Cache'
+import Cache from '../implementations/Cache'
 
 type BaseContext<K extends Key, T> = {
   cache: Cache<K, T>

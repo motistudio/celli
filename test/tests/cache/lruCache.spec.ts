@@ -1,8 +1,8 @@
 import type {Cache as ICache, AsyncCache as IAsyncCache} from '../../../src/types/cache.t'
 
-import Cache from '../../../src/cache/Cache'
-import LruCache from '../../../src/cache/LruCache'
-import AsyncCache from '../../../src/cache/AsyncCache'
+import Cache from '../../../src/cache/implementations/Cache'
+import LruCache from '../../../src/cache/implementations/LruCache'
+import AsyncCache from '../../../src/cache/implementations/AsyncCache'
 
 describe('LRU Cache', () => {
   test.each<undefined | ICache<string, string>>([undefined, new Cache()])('Should create a simple cache', (baseCache) => {
@@ -49,7 +49,7 @@ describe('LRU Cache', () => {
   })
 
   test('Should create an async LRU cache', async () => {
-    const cache = new LruCache(new AsyncCache(), {maxSize: 1}) as unknown as AsyncCache<string, string>
+    const cache = new LruCache(new AsyncCache(), {maxSize: 1}) as unknown as IAsyncCache<string, string>
     
     const key = 'k'
     const value = 'val'
@@ -164,5 +164,29 @@ describe('LRU Cache', () => {
     pairs.forEach((value, index) => {
       expect(() => cache.set(index, index)).toThrow()
     })
+  })
+
+  test('Should introduce keys via get in a composable cache', () => {
+    const key = 'test'
+    const value = 'test'
+    const baseCache = new Cache<string, string>()
+
+    baseCache.set(key, value)
+
+    // LruCache is not aware about baseCache's keys
+    // It happens because we're not trying to "fix" the cache we use
+    // But a true real-life scenario is an async cache that might be shared between services
+    const lruCache = new LruCache<string, string>(baseCache, {maxSize: 2})
+
+    const pairs: [string, string][] = [[key, value], ['k1', 'val'], ['k2', 'val2']]
+    lruCache.set(pairs[1][0], pairs[1][1])
+    lruCache.set(pairs[2][0], pairs[2][1])
+    expect(lruCache.usedSize).toBe(2)
+    
+    // When we perform get, which we didn't know but is now suddenly exists
+    // it's being introduced to the cache and will clean older keys
+    expect(lruCache.get(key)).toBe(value)
+    expect(lruCache.usedSize).toBe(2)
+    expect(lruCache.has(pairs[1][0])).toBe(false)
   })
 })

@@ -1,4 +1,4 @@
-import Cache from '../../../src/cache/Cache'
+import Cache from '../../../src/cache/implementations/Cache'
 
 describe('Synchronous cache', () => {
   test('Should create a simple cache', () => {

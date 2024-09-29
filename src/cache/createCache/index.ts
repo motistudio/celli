@@ -1,5 +1,5 @@
 import type {Key} from '../../types/cache.t'
-import Cache from '../Cache'
+import Cache from '../implementations/Cache'
 
 /**
  * Allows customizations for cache, returns a new class instance

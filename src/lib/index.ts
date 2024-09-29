@@ -1,11 +1,12 @@
 import createCache from '../cache/createCache'
-import createAsyncCache from '../cache/createAsyncCache'
-import createLruCache from '../cache/createLruCache'
+
+import lru from '../cache/transformers/lru'
+import async from '../cache/transformers/async'
 
 export * from '../types/cache.t'
 
 export {
   createCache,
-  createAsyncCache,
-  createLruCache
+  lru,
+  async
 }
