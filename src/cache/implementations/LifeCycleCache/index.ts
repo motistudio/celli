@@ -1,17 +1,16 @@
 import type {
   Key,
-  AbstractCache as IAbstractCache,
-  CacheValue,
+  CacheKey,
   AsyncInnerCache,
-  AsyncCache,
-  Cache
+  AsyncCache
 } from '../../../types/cache.t'
 import type {Effect} from '../../../types/effects.t'
 import isThentable from '../../../commons/promise/isThentable'
 
 import {CACHE_KEY, DELETE_PROMISES_KEY} from '../../constants'
-import {CLEANUP_QUEUE, DELETE_QUEUE, LIFECYCLE_ITEMS_KEY} from './constants'
+import {CLEANUP_QUEUE, DELETE_QUEUE, LIFECYCLE_ITEMS_KEY, type LifeCycleCache as ILifeCycleCache} from './constants'
 import LifeCycleItem from './LifeCycleItem'
+import RemoteApi from './RemoteApi'
 
 const DEFAULT_EFFECTS: Effect<any>[] = []
 
@@ -38,11 +37,11 @@ const setLifeCycleItem = <C extends LifeCycleCache<any, any>>(cache: C, key: Key
   if (cleanPromise) {
     clean(cache, cleanPromise)
   }
-  const lifeCycleItem = new LifeCycleItem(effects, initialValue, (value) => cache[CACHE_KEY].set(key, value), () => cache.delete(key))
+  const lifeCycleItem = new LifeCycleItem(effects, new RemoteApi(cache, key as CacheKey<C>, initialValue))
   cache[LIFECYCLE_ITEMS_KEY].set(key, lifeCycleItem)
 }
 
-class LifeCycleCache<K extends Key, T> implements IAbstractCache<K, T> {
+class LifeCycleCache<K extends Key, T> implements ILifeCycleCache<K, T> {
   public [CACHE_KEY]: AsyncInnerCache<K, T>
   public [CLEANUP_QUEUE]: Set<Promise<void>>
   public [DELETE_QUEUE]: Set<Promise<void>>

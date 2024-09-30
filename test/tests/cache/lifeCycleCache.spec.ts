@@ -1,5 +1,5 @@
 import type {Cache, AsyncCache as IAsyncCache} from '../../../src/types/cache.t'
-import type {Effect} from '../../../src/types/effects.t'
+import type {Effect, EffectCallbackApi} from '../../../src/types/effects.t'
 
 import defer from '../../../src/commons/promise/defer'
 import isThentable from '../../../src/commons/promise/isThentable'
@@ -81,8 +81,8 @@ import { CLEANUP_QUEUE } from '../../../src/cache/implementations/LifeCycleCache
         cache.set(key, value, [effect])
         expect(effect).toHaveBeenCalled()
 
-        const [initialValue, api] = (effect.mock.calls[0] as unknown as Parameters<Effect<string>>)
-        expect(initialValue).toBe(value)
+        const [api] = (effect.mock.calls[0] as unknown as Parameters<Effect<string>>)
+        expect(api.getSelf()).toBe(value)
 
         expect(api.getSelf()).toBe(value) // last value that was actually set
         expect(api.setSelf(value2)).toBe(undefined) // not returning a promise
@@ -110,15 +110,19 @@ import { CLEANUP_QUEUE } from '../../../src/cache/implementations/LifeCycleCache
         await cache.set(key, value, [effect])
         expect(effect).toHaveBeenCalled()
 
-        const [initialValue, api] = (effect.mock.calls[0] as unknown as Parameters<Effect<string>>)
-        expect(initialValue).toBe(value)
+        const [api] = (effect.mock.calls[0] as unknown as Parameters<Effect<string>>)
+        expect(api.getSelf()).toBe(value)
 
         expect(api.getSelf()).toBe(value) // last value that was actually set
         await expect(api.setSelf(value2)).resolves.toBe(undefined) // not returning a promise
         expect(api.getSelf()).toBe(value2)
         api.onRead(readHandler)
-        await expect(cache.get(key)).resolves.toBe(value2)
+        await expect(cache.get(key)).resolves.toBe(value2) // reads a value, should trigger the handler
         expect(readHandler).toHaveBeenCalled()
+
+        const [{get}] = readHandler.mock.calls[0] as unknown as [EffectCallbackApi<string>]
+        expect(get()).toBe(value2)
+
         api.deleteSelf()
         await expect(cache.has(key)).resolves.toBe(false)
         expect(cleanup).toHaveBeenCalled()
