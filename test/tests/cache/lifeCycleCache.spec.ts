@@ -223,7 +223,7 @@ import { CLEANUP_QUEUE } from '../../../src/cache/implementations/LifeCycleCache
         expect(spy).toHaveBeenCalledWith(key)
         expect(isThentable(spy.mock.results[0]?.value)).toBe(true)
         await spy.mock.results[0].value
-        expect(cache[CLEANUP_QUEUE].size).toBe(1);
+        expect(cache[CLEANUP_QUEUE].size).toBe(1)
 
         expect(cleanPromiseState.finished).toBe(false) // the clean has yet to be finished
         expect(futureCleanupDeferredPromiseState.resolved).toBe(false)

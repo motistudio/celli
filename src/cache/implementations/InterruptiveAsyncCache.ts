@@ -182,7 +182,7 @@ class InterruptiveAsyncCache<K extends Key, T> implements IAsyncCache<K, T> {
 
     const hasPromise = (new Promise<boolean>((resolve, reject) => {
       // TODO: Add an interruption method
-      let isResolved = false;
+      let isResolved = false
 
       const finish = (callback: () => any) => {
         if (!isResolved) {

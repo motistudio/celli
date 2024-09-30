@@ -3,8 +3,6 @@ import type {Observable as IObservable} from '../../../types/observables.t'
 
 import isThentable from '../../../commons/promise/isThentable'
 
-type EffectCallbackApi<T> = Parameters<Parameters<Parameters<Effect<T>>[1]['onRead']>[0]>[0]
-
 const createCleanup = <T>(api: Omit<EffectApi<T>, 'onRead'>, stream: IObservable<T>, initialValue: T, effects: Effect<T>[]): Cleanup => {
   const unsubscribeCalls: Cleanup[] = []
 
