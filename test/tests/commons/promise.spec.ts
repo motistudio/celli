@@ -2,6 +2,7 @@ import isThentable from '../../../src/commons/promise/isThentable'
 import delay from '../../../src/commons/promise/delay'
 import defer from '../../../src/commons/promise/defer'
 import getPromiseState from '../../../src/commons/promise/getPromiseState'
+import promisify from '../../../src/commons/promise/promisify'
 
 describe('Promise utils', () => {
   describe('isThenable', () => {
@@ -98,6 +99,24 @@ describe('Promise utils', () => {
       expect(promiseState.finished).toBe(true)
       expect(promiseState.rejectedError).toBe(error)
       expect(promiseState.resolvedValue).toBe(undefined)
+    })
+  })
+
+  describe('promisify', () => {
+    test('Should make a sync value a promise', async () => {
+      const value = 1
+      const promise = promisify(value)
+      expect(isThentable(promise)).toBe(true)
+      await expect(promise).resolves.toBe(value)
+    })
+
+    test('Should return a promise if given', async () => {
+      const value = 1
+      const initialPromise = Promise.resolve(value)
+      const promise = promisify(initialPromise)
+      expect(isThentable(promise)).toBe(true)
+      expect(promise).toBe(initialPromise)
+      await expect(promise).resolves.toBe(value)
     })
   })
 })

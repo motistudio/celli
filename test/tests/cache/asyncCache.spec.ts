@@ -1,4 +1,3 @@
-import delay from '../../../src/commons/promise/delay'
 import isThentable from '../../../src/commons/promise/isThentable'
 import {
   GET_PROMISES_KEY,

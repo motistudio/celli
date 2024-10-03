@@ -3,6 +3,7 @@ import isThentable from '../../../src/commons/promise/isThentable'
 import reduce from '../../../src/commons/iterators/reduce'
 import map from '../../../src/commons/iterators/map'
 import asyncReduce from '../../../src/commons/iterators/asyncReduce'
+import forEach from '../../../src/commons/iterators/forEach'
 
 describe('Iteratables utils', () => {
   describe('getAsyncIteratable', () => {
@@ -75,6 +76,39 @@ describe('Iteratables utils', () => {
 
       const reduceFn = (acc: number, num: number) => acc + num
       await expect(asyncReduce(iterable, (acc, item) => Promise.resolve(reduceFn(acc, item)), 0)).resolves.toBe(list.reduce(reduceFn, 0))
+    })
+  })
+
+  describe('forEach()', () => {
+    test('Should iterate over an iterator', () => {
+      const origin: number[] = [1, 2, 3]
+      const set = new Set(origin)
+      const iterable = set.values()
+
+      const dest: number[] = []
+      const result = forEach(iterable, (value) => {
+        dest.push(value)
+      })
+
+      expect(isThentable(result)).toBe(false)
+      expect(dest).toMatchObject(origin)
+    })
+
+    test('Should iterate over an async iterator', async () => {
+      const origin: number[] = [1, 2, 3]
+      const set = new Set(origin)
+      const iterable = getAsyncIterator(set.values())
+
+      const dest: number[] = []
+      const result = forEach(iterable, (value) => {
+        dest.push(value)
+      })
+
+      expect(isThentable(result)).toBe(true)
+      expect(dest).toMatchObject([])
+
+      await result
+      expect(dest).toMatchObject(origin)
     })
   })
 })

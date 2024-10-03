@@ -43,6 +43,7 @@ describe('LRU Cache', () => {
     expect(Array.from(cache.keys())).toMatchObject([key])
     expect(Array.from(cache.values())).toMatchObject([value])
     expect(Array.from(cache.entries())).toMatchObject([[key, value]])
+    expect(Array.from(cache)).toMatchObject([[key, value]])
 
     cache.clean()
     expect(Array.from(cache.keys())).toMatchObject([])
@@ -75,6 +76,7 @@ describe('LRU Cache', () => {
     await expect(Array.fromAsync(cache.keys())).resolves.toMatchObject([key])
     await expect(Array.fromAsync(cache.values())).resolves.toMatchObject([value])
     await expect(Array.fromAsync(cache.entries())).resolves.toMatchObject([[key, value]])
+    await expect(Array.fromAsync(cache)).resolves.toMatchObject([[key, value]])
     
     await cache.clean()
     await expect(Array.fromAsync(cache.keys())).resolves.toMatchObject([])

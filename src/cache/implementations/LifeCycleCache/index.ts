@@ -14,6 +14,13 @@ import RemoteApi from './RemoteApi'
 
 const DEFAULT_EFFECTS: Effect<any>[] = []
 
+/**
+ * Adds a promise to the clean queue
+ * @template C extends LifeCycleCache<any, any>
+ * @param {C} cache - LifeCycleCache reference 
+ * @param {Promise<void>} cleanupPromise - any promsise
+ * @returns {Promise<void>} A promise that will be resolved after the cleanup has been deleted
+ */
 const clean = <C extends LifeCycleCache<any, any>>(cache: C, cleanupPromise: Promise<void>) => {
   const cleanup = Promise.resolve(cleanupPromise).then(() => {
     cache[CLEANUP_QUEUE].delete(cleanup)
@@ -22,6 +29,13 @@ const clean = <C extends LifeCycleCache<any, any>>(cache: C, cleanupPromise: Pro
   return cleanup
 }
 
+/**
+ * Cleans a key (effects) if exists
+ * @template C extends LifeCycleCache<any, any>
+ * @param {C} cache - LifeCycleCache reference 
+ * @param {CacheKey<C>} key - A key to clean
+ * @returns {Promise<void> | undefined} A promise if the cleanup returns one
+ */
 const cleanByKey = <C extends LifeCycleCache<any, any>>(cache: C, key: Key): Promise<void> | void => {
   const lifeCycleItem = cache[LIFECYCLE_ITEMS_KEY].get(key)
   if (lifeCycleItem) {
@@ -32,6 +46,14 @@ const cleanByKey = <C extends LifeCycleCache<any, any>>(cache: C, key: Key): Pro
   return undefined
 }
 
+/**
+ * Sets a lifecycle item into the cache
+ * @template C extends LifeCycleCache<any, any>
+ * @param {C} cache - LifeCycleCache reference
+ * @param {CacheKey<C>} key - A key to clean
+ * @param {CacheValue<C>} initialValue - The item's initial value 
+ * @param {Effect<CacheValue<C>>[]} effects - An array of effects 
+ */
 const setLifeCycleItem = <C extends LifeCycleCache<any, any>>(cache: C, key: Key, initialValue: any, effects: Effect<any>[]) => {
   const cleanPromise = cleanByKey(cache, key)
   if (cleanPromise) {
@@ -41,6 +63,10 @@ const setLifeCycleItem = <C extends LifeCycleCache<any, any>>(cache: C, key: Key
   cache[LIFECYCLE_ITEMS_KEY].set(key, lifeCycleItem)
 }
 
+/**
+ * LifeCycle Cache
+ * This cache accepts an array of effects, which will be called upon setting an item (if successful)
+ */
 class LifeCycleCache<K extends Key, T> implements ILifeCycleCache<K, T> {
   public [CACHE_KEY]: AsyncInnerCache<K, T>
   public [CLEANUP_QUEUE]: Set<Promise<void>>

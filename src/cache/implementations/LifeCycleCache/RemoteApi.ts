@@ -15,7 +15,7 @@ const LAST_VALUE = Symbol('last-value')
 const LISTENERS = Symbol('listeners')
 
 class ListenerApi<T> implements EffectCallbackApi<T> {
-  public [REMOTE_REF]: RemoteApi<LifeCycleCache<any, T>>
+  public [REMOTE_REF]?: RemoteApi<LifeCycleCache<any, T>>
 
   constructor (remoteRef: RemoteApi<LifeCycleCache<any, T>>) {
     this[REMOTE_REF] = remoteRef
@@ -23,7 +23,12 @@ class ListenerApi<T> implements EffectCallbackApi<T> {
   }
 
   get () {
-    return this[REMOTE_REF].getSelf()
+    return (this[REMOTE_REF] as RemoteApi<LifeCycleCache<any, T>>).getSelf();
+  }
+
+  // Cleans the reference for the garbage collector
+  [INTERNAL_REMOTE_CLEAN] () {
+    this[REMOTE_REF] = undefined
   }
 }
 
@@ -76,6 +81,7 @@ class RemoteApi<C extends LifeCycleCache<any, any>> implements AbstractEffectApi
 
   [INTERNAL_REMOTE_CLEAN] () {
     this[LISTENERS] = []
+    this.listenerApi[INTERNAL_REMOTE_CLEAN]()
   }
 }
 
