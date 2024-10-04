@@ -10,7 +10,7 @@ import LifeCycleCache from '../../../src/cache/implementations/LifeCycleCache'
 import ttl from '../../../src/cache/implementations/LifeCycleCache/effects/ttl'
 
 import {CLEANUP_QUEUE} from '../../../src/cache/implementations/LifeCycleCache/constants'
-import { CACHE_KEY } from '../../../src/cache/constants'
+import {CACHE_KEY} from '../../../src/cache/constants'
   
   describe('LifeCycle Cache', () => {
     test('Should create a simple sync lifecycle cache', () => {
