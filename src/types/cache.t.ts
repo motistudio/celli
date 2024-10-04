@@ -44,7 +44,7 @@ export type AbstractCache<K extends Key, T> = {
 
 export type ACache<K extends Key, T> = Cache<K, T> & AsyncCache<K, T>
 
-export interface WrappedCache<C extends (Cache<Key, any> | AsyncCache<Key, any>)> {
+export interface WrappedCache<C extends AnyCacheType<any, any>> {
   get (key: CacheKey<C>): ReturnType<C['get']>
   set (key: CacheKey<C>, value: CacheValue<C>): ReturnType<C['set']>
   has (key: CacheKey<C>): ReturnType<C['has']>
@@ -53,6 +53,8 @@ export interface WrappedCache<C extends (Cache<Key, any> | AsyncCache<Key, any>)
   values (): ReturnType<C['values']>
   entries (): ReturnType<C['entries']>
   clean (): ReturnType<C['clean']>
+  [Symbol.iterator] (): IterableIterator<[CacheKey<C>, CacheValue<C>]>
+  [Symbol.asyncIterator] (): AsyncIterableIterator<[CacheKey<C>, CacheValue<C>]>
 }
 
 export interface LifeCycleCache<C extends AbstractCache<any, any>> {

@@ -3,7 +3,6 @@ import type {Merge, AnyFunction} from './commons.t'
 export type Cleanup = () => void | Promise<void>
 
 export type EffectCallbackApi<T> = {
-  // remove: () => void,
   get: () => T
 }
 

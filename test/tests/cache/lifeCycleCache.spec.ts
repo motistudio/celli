@@ -3,12 +3,14 @@ import type {Effect, EffectCallbackApi} from '../../../src/types/effects.t'
 
 import defer from '../../../src/commons/promise/defer'
 import isThentable from '../../../src/commons/promise/isThentable'
-
-import LifeCycleCache from '../../../src/cache/implementations/LifeCycleCache'
-import AsyncCache from '../../../src/cache/implementations/AsyncCache'
 import getPromiseState from '../../../src/commons/promise/getPromiseState'
 
+import AsyncCache from '../../../src/cache/implementations/AsyncCache'
+import LifeCycleCache from '../../../src/cache/implementations/LifeCycleCache'
+import ttl from '../../../src/cache/implementations/LifeCycleCache/effects/ttl'
+
 import {CLEANUP_QUEUE} from '../../../src/cache/implementations/LifeCycleCache/constants'
+import { CACHE_KEY } from '../../../src/cache/constants'
   
   describe('LifeCycle Cache', () => {
     test('Should create a simple sync lifecycle cache', () => {
@@ -55,7 +57,10 @@ import {CLEANUP_QUEUE} from '../../../src/cache/implementations/LifeCycleCache/c
       await expect(Array.fromAsync(cache.entries())).resolves.toMatchObject([[key, value]])
       await expect(Array.fromAsync(cache)).resolves.toMatchObject([[key, value]])
 
-      await cache.delete(key)
+      const deletePromise = cache.delete(key)
+      const deletePromise2 = cache.delete(key)
+      expect(deletePromise).toBe(deletePromise2) // delete promises should be cached
+      await deletePromise
       await expect(cache.has(key)).resolves.toBe(false)
 
       
@@ -207,7 +212,8 @@ import {CLEANUP_QUEUE} from '../../../src/cache/implementations/LifeCycleCache/c
       test('Should wait for long cleanups when cleaning a cache', async () => {
         const cache = new LifeCycleCache(new AsyncCache<string, string>())
 
-        const spy = jest.spyOn(cache, 'delete')
+        // const spy = jest.spyOn(cache, 'delete')
+        const spy = jest.spyOn(cache[CACHE_KEY], 'clean')
 
         const key = 'key'
         const value = 'value'
@@ -225,16 +231,63 @@ import {CLEANUP_QUEUE} from '../../../src/cache/implementations/LifeCycleCache/c
         const cleanPromiseState = getPromiseState(cleanPromise)
 
         expect(cleanPromiseState.finished).toBe(false)
-        expect(spy).toHaveBeenCalledWith(key)
-        expect(isThentable(spy.mock.results[0]?.value)).toBe(true)
-        await spy.mock.results[0].value
+        // expect(spy).toHaveBeenCalledWith(key)
+        // expect(isThentable(spy.mock.results[0]?.value)).toBe(true)
+        // await spy.mock.results[0].value
         expect(cache[CLEANUP_QUEUE].size).toBe(1)
 
         expect(cleanPromiseState.finished).toBe(false) // the clean has yet to be finished
         expect(futureCleanupDeferredPromiseState.resolved).toBe(false)
+        // inner clean:
+        expect(spy).toHaveBeenCalled()
+        expect(isThentable(spy.mock.results[0]?.value)).toBe(true)
+        await spy.mock.results[0].value
+
+        // resolves the cleanups
         futureCleanupDeferredPromise.resolve()
         await expect(cleanPromise).resolves.toBe(undefined) // cleanup is now finished
         expect(futureCleanupDeferredPromiseState.resolved).toBe(true)
+      })
+    })
+
+    describe('Effect Implementations', () => {
+      jest.useFakeTimers()
+
+      afterEach(() => {
+        jest.clearAllTimers()
+      })
+
+      test('Should create items with ttl', () => {
+        const cache = new LifeCycleCache()
+
+        const key = 'key'
+        const value = 'value'
+
+        cache.set(key, value, [ttl({timeout: 1000})])
+        expect(cache.has(key)).toBe(true)
+
+        jest.advanceTimersByTime(1001)
+
+        expect(cache.has(key)).toBe(false)
+
+        cache.set(key, value, [ttl({timeout: 1000})])
+        expect(cache.has(key)).toBe(true)
+        
+        jest.advanceTimersByTime(600) // half way to deletion
+        expect(cache.has(key)).toBe(true)
+        
+        expect(cache.get(key)).toBe(value) // but a read action should reset the item
+        jest.advanceTimersByTime(500) // (600 + 500) more than the timeout
+        expect(cache.has(key)).toBe(true) // and it still exists
+        
+        jest.advanceTimersByTime(1001)
+        expect(cache.has(key)).toBe(false) // resets after waiting again
+
+        cache.set(key, value, [ttl({timeout: 1000})])
+        expect(cache.has(key)).toBe(true)
+
+        cache.clean()
+        expect(cache.has(key)).toBe(false)
       })
     })
   })

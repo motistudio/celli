@@ -7,12 +7,10 @@ import type {
 } from '../../../types/cache.t'
 
 import getAsyncIterator from '../../../commons/iterators/getAsyncIterator'
-import Observable from '../../../commons/observables/Observable'
 import isThentable from '../../../commons/promise/isThentable'
 
 import {
   CACHE_KEY,
-  SET_STREAM_KEY,
   GET_PROMISES_KEY,
   SET_PROMISES_KEY,
   HAS_PROMISES_KEY,
@@ -43,7 +41,6 @@ class AsyncCache<K extends Key, T> implements IAsyncCache<K, T> {
   public [SET_PROMISES_KEY]: Map<K, Promise<void>>
   public [HAS_PROMISES_KEY]: Map<K, Promise<boolean>>
   public [DELETE_PROMISES_KEY]: Map<K, Promise<void>>
-  public [SET_STREAM_KEY]: Observable<[K, T, Promise<void> | undefined]>
 
   constructor (cache?: SupportedInnerCache<K, T>) {
     this[CACHE_KEY] = cache || new Map()
@@ -51,7 +48,6 @@ class AsyncCache<K extends Key, T> implements IAsyncCache<K, T> {
     this[SET_PROMISES_KEY] = new Map()
     this[HAS_PROMISES_KEY] = new Map()
     this[DELETE_PROMISES_KEY] = new Map()
-    this[SET_STREAM_KEY] = new Observable()
   }
 
   get (key: K): Promise<T | undefined> {

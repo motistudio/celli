@@ -2,6 +2,7 @@ import type {
   Key,
   CacheKey,
   CacheValue,
+  Cache as ICache,
   AsyncInnerCache,
   AsyncCache,
   AnyCacheType
@@ -13,6 +14,8 @@ import {CACHE_KEY, DELETE_PROMISES_KEY} from '../../constants'
 import {CLEANUP_QUEUE, DELETE_QUEUE, LIFECYCLE_ITEMS_KEY, type LifeCycleCache as ILifeCycleCache} from './constants'
 import LifeCycleItem from './LifeCycleItem'
 import RemoteApi from './RemoteApi'
+import Cache from '../Cache'
+import evaluate from '../../../commons/evaluate'
 
 const DEFAULT_EFFECTS: Effect<any>[] = []
 
@@ -48,6 +51,13 @@ const cleanByKey = <C extends LifeCycleCache<AnyCacheType<any, any>>>(cache: C, 
   return undefined
 }
 
+const deleteKey = <C extends LifeCycleCache<AnyCacheType<any, any>>>(cache: C, key: Key) => {
+  const cleanupPromise = cleanByKey(cache, key)
+  if (cleanupPromise) {
+    clean(cache, cleanupPromise)
+  }
+}
+
 /**
  * Sets a lifecycle item into the cache
  * @template C extends LifeCycleCache<AnyCacheType<any, any>>
@@ -69,15 +79,15 @@ const setLifeCycleItem = <C extends LifeCycleCache<AnyCacheType<any, any>>>(cach
  * LifeCycle Cache
  * This cache accepts an array of effects, which will be called upon setting an item (if successful)
  */
-class LifeCycleCache<C extends AnyCacheType<any, any>> implements ILifeCycleCache<C> {
-  public [CACHE_KEY]: AsyncInnerCache<CacheKey<C>, CacheValue<C>>
+class LifeCycleCache<C extends AnyCacheType<any, any> = ICache<any, any>> implements ILifeCycleCache<C> {
+  public [CACHE_KEY]: C
   public [CLEANUP_QUEUE]: Set<Promise<void>>
   public [DELETE_QUEUE]: Set<Promise<void>>
   public [LIFECYCLE_ITEMS_KEY]: Map<CacheKey<C>, LifeCycleItem<CacheValue<C>>>
   public [DELETE_PROMISES_KEY]: Map<CacheKey<C>, Promise<void>>
 
   constructor (cache?: C) {
-    this[CACHE_KEY] = cache || new Map()
+    this[CACHE_KEY] = cache || (new Cache<CacheKey<C>, CacheValue<C>>() as unknown as C)
     this[LIFECYCLE_ITEMS_KEY] = new Map()
     this[CLEANUP_QUEUE] = new Set()
     this[DELETE_QUEUE] = new Set()
@@ -87,7 +97,7 @@ class LifeCycleCache<C extends AnyCacheType<any, any>> implements ILifeCycleCach
 
   get (...args: Parameters<C['get']>) {
     const lifeCycleItem = this[LIFECYCLE_ITEMS_KEY].get.apply(this[LIFECYCLE_ITEMS_KEY], args)
-    const result = this[CACHE_KEY].get.apply(this[CACHE_KEY], args)
+    const result = this[CACHE_KEY].get.apply(this[CACHE_KEY], args) as CacheValue<C> | Promise<CacheValue<C>>
     if (isThentable(result)) {
       return result.then((value) => {
         if (lifeCycleItem && value) {
@@ -131,10 +141,7 @@ class LifeCycleCache<C extends AnyCacheType<any, any>> implements ILifeCycleCach
     const result = this[CACHE_KEY].delete(key)
     if (isThentable(result)) {
       const deletePromise = result.then((val) => {
-        const cleanupPromise = cleanByKey(this, key)
-        if (cleanupPromise) {
-          clean(this, cleanupPromise)
-        }
+        deleteKey(this, key)
 
         this[DELETE_QUEUE].delete(deletePromise)
         if (this[DELETE_PROMISES_KEY].get(key) === deletePromise) {
@@ -149,10 +156,7 @@ class LifeCycleCache<C extends AnyCacheType<any, any>> implements ILifeCycleCach
       return deletePromise  as ReturnType<C['delete']>
     }
 
-    const cleanupPromise = cleanByKey(this, key)
-    if (cleanupPromise) {
-      clean(this, cleanupPromise)
-    }
+    deleteKey(this, key)
     return result as ReturnType<C['delete']>
   }
 
@@ -177,19 +181,18 @@ class LifeCycleCache<C extends AnyCacheType<any, any>> implements ILifeCycleCach
   }
 
   clean () {
-    const hasClean = typeof (this[CACHE_KEY] as AsyncCache<CacheKey<C>, CacheValue<C>>).clean === 'function'
-    const cleanPromise = hasClean ? (this[CACHE_KEY] as AsyncCache<CacheKey<C>, CacheValue<C>>).clean() : undefined
+    // Deleting all local refs (and accumulate their cleanups)
+    Array.from(this[LIFECYCLE_ITEMS_KEY].keys()).forEach((key) => deleteKey(this, key))
 
-    Array.from(this[LIFECYCLE_ITEMS_KEY].keys()).forEach((key) => this.delete(key))
+    // Cleans the values through the inner-cache
+    return evaluate(this[CACHE_KEY].clean(), () => {
+      // If there are any async cleanups, we wait for them to finish
+      if (this[CLEANUP_QUEUE].size > 0) {
+        return Promise.all(this[CLEANUP_QUEUE]).then(() => undefined)
+      }
 
-    // Otherwise it's necessarily sync-based cache
-    if (cleanPromise || this[DELETE_QUEUE].size > 0) {
-      return Promise.all([cleanPromise, ...this[DELETE_QUEUE]].filter(Boolean)).then(() => {
-        return Promise.all(this[CLEANUP_QUEUE])
-      }).then(() => undefined) as ReturnType<C['clean']>
-    }
-
-    return undefined as ReturnType<C['clean']>
+      return undefined
+    }) as ReturnType<C['clean']>
   }
 }
 
