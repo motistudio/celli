@@ -133,7 +133,7 @@ describe('Backup cache', () => {
 
   test('Should clean backup cache only from known keys', async () => {
     const backupCache = new AsyncCache<string, string>()
-    const frontCache = new LruCache<string, string>(new AsyncCache(), {maxSize: 10})
+    const frontCache = new LruCache(new AsyncCache<string, string>(), {maxSize: 10})
 
     const cache = new BackupCache(frontCache, backupCache, {cleanupPolicy: CleanupPolicies.KEYS})
 

@@ -1,19 +1,15 @@
 import LruCache from '../implementations/LruCache'
 import type {
-  Key,
-  Cache,
+  AnyCacheType,
   CacheKey,
-  CacheValue,
-  Transformer,
-  AnyCache,
-  BaseCache
+  CacheValue
 } from '../../types/cache.t'
+import type {LruCacheOptions} from '../implementations/LruCache/types.t'
 
-// type LruTransformer<C extends AnyCache<any, any>> = Transformer<C, C extends BaseCache<infer K, infer T> ? Cache<K, T> : C>
-
-const lru = <K extends Key, T>(options: NonNullable<ConstructorParameters<typeof LruCache<K, T>>[1]>) => {
-  return <C extends AnyCache<K, T> = AnyCache<K, T>>(cache: C): (C extends BaseCache<infer K, infer T> ? Cache<K, T> : C) => {
-    return new LruCache(cache, options) as unknown as (C extends BaseCache<infer K, infer T> ? Cache<K, T> : C)
+// TODO: Make maxSize mandatory
+const lru = <C extends AnyCacheType<any, any>>(options: Partial<LruCacheOptions<CacheKey<C>, CacheValue<C>>>) => {
+  return (cache: C) => {
+    return new LruCache(cache, options)
   }
 }
 

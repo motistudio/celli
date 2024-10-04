@@ -194,7 +194,7 @@ class AsyncCache<K extends Key, T> implements IAsyncCache<K, T> {
     return this.entries()
   }
 
-  clean () {
+  clean (): Promise<void> {
     if (typeof (this[CACHE_KEY] as (ICache<K, T> | IAsyncCache<K, T>)).clean === 'function') {
       const result = (this[CACHE_KEY] as (ICache<K, T> | IAsyncCache<K, T>)).clean()
       return isThentable(result) ? result : Promise.resolve(result)

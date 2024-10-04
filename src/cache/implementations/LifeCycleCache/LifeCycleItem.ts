@@ -1,4 +1,5 @@
 import type {Effect, Cleanup} from '../../../types/effects.t'
+import type {AnyCacheType} from '../../../types/cache.t'
 import isThentable from '../../../commons/promise/isThentable'
 
 import {
@@ -10,10 +11,10 @@ import RemoteApi from './RemoteApi'
 
 class LifeCycleItem<T> {
   public isCleaned: boolean
-  public remoteApi: RemoteApi<LifeCycleCache<any, T>>
+  public remoteApi: RemoteApi<LifeCycleCache<AnyCacheType<any, any>>>
   public cleanupCalls: Cleanup[]
 
-  constructor (effects: Effect<T>[], remoteApi: RemoteApi<LifeCycleCache<any, T>>) {
+  constructor (effects: Effect<T>[], remoteApi: RemoteApi<LifeCycleCache<AnyCacheType<any, T>>>) {
     this.isCleaned = false
     this.remoteApi = remoteApi
     this.cleanupCalls = []

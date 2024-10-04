@@ -84,8 +84,9 @@ describe('LRU Cache', () => {
 
   test('Should limit the number of saved items', () => {
     const maxSize = 2
-    const lruCache = new LruCache<string, number>(undefined, {maxSize})
-    const cache = lruCache as unknown as ICache<string, number>
+    const lruCache = new LruCache<ICache<string, number>>(undefined, {maxSize})
+    const cache = lruCache
+    // const cache = lruCache as unknown as ICache<string, number>
 
     const pairs: [string, number][] = [['1', 1], ['2', 2], ['3', 3]]
 
@@ -133,11 +134,11 @@ describe('LRU Cache', () => {
       ['4', 4, 2]
     ]
 
-    const lruCache = new LruCache<string, number>(undefined, {
+    const lruCache = new LruCache<ICache<string, number>>(undefined, {
       maxSize,
       getItemSize: (key) => pairs[Number.parseInt(key, 10) - 1]?.[2]
     })
-    const cache = lruCache as unknown as ICache<string, number>
+    const cache = lruCache
 
     cache.set(pairs[0][0], pairs[0][1]) // size: 1
     cache.set(pairs[1][0], pairs[1][1]) // size: 2
@@ -161,7 +162,7 @@ describe('LRU Cache', () => {
   test('Should protect the input of sizes', () => {
     const maxSize = 5
     const pairs: number[] = [0, -1, 6, Infinity]
-    const cache = new LruCache<number, number>(undefined, {maxSize, getItemSize: (key) => pairs[key]})
+    const cache = new LruCache<ICache<number, number>>(undefined, {maxSize, getItemSize: (key) => pairs[key]})
 
     pairs.forEach((value, index) => {
       expect(() => cache.set(index, index)).toThrow()
@@ -178,7 +179,7 @@ describe('LRU Cache', () => {
     // LruCache is not aware about baseCache's keys
     // It happens because we're not trying to "fix" the cache we use
     // But a true real-life scenario is an async cache that might be shared between services
-    const lruCache = new LruCache<string, string>(baseCache, {maxSize: 2})
+    const lruCache = new LruCache(baseCache, {maxSize: 2})
 
     const pairs: [string, string][] = [[key, value], ['k1', 'val'], ['k2', 'val2']]
     lruCache.set(pairs[1][0], pairs[1][1])

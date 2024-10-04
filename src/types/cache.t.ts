@@ -1,3 +1,5 @@
+import type {Effect} from './effects.t'
+
 export type Key = string | number | symbol
 
 export type BaseCache<K extends Key, T> = {
@@ -8,6 +10,7 @@ export type BaseCache<K extends Key, T> = {
   keys (): IterableIterator<K>
   values (): IterableIterator<T>
   entries (): IterableIterator<[K, T]>
+  clean? (): void,
   [Symbol.iterator] (): IterableIterator<[K, T]>
 }
 
@@ -52,32 +55,38 @@ export interface WrappedCache<C extends (Cache<Key, any> | AsyncCache<Key, any>)
   clean (): ReturnType<C['clean']>
 }
 
+export interface LifeCycleCache<C extends AbstractCache<any, any>> {
+  get (...args: Parameters<C['get']>): ReturnType<C['get']>
+  set (key: CacheKey<C>, value: CacheValue<C>, effects: Effect<CacheValue<C>>[]): ReturnType<C['set']>
+  has (...args: Parameters<C['has']>): ReturnType<C['has']>
+  delete (...args: Parameters<C['delete']>): ReturnType<C['delete']>
+  keys (): ReturnType<C['keys']>
+  values (): ReturnType<C['values']>
+  entries (): ReturnType<C['entries']>
+  clean (): ReturnType<C['clean']>
+}
+
+export interface LruCache<C extends AbstractCache<any, any>> {
+  get (...args: Parameters<C['get']>): ReturnType<C['get']>
+  set (...args: Parameters<C['set']>): ReturnType<C['set']>
+  has (...args: Parameters<C['has']>): ReturnType<C['has']>
+  delete (...args: Parameters<C['delete']>): ReturnType<C['delete']>
+  keys (): ReturnType<C['keys']>
+  values (): ReturnType<C['values']>
+  entries (): ReturnType<C['entries']>
+  clean (): ReturnType<C['clean']>
+}
+
 export type AnyCache<K extends Key, T> = BaseCache<K, T> | Cache<K, T> | AsyncCache<K, T> | AbstractCache<K, T>
-export type AnyCacheType<K extends Key, T> = Cache<K, T> | AsyncCache<K, T> | AbstractCache<K, T>
+export type AnyCacheType<K extends Key, T> = Cache<K, T> | AsyncCache<K, T> | AbstractCache<K, T> | LruCache<AbstractCache<K, T>>
 
 export type CacheKey<C extends AnyCache<Key, any>> = (
   C extends AnyCache<infer K, any> ? K : never
 )
-// export type CacheKey<C extends AbstractCache<any, any> | AsyncCache<Key, any> | Cache<Key, any>> = (
-//   C extends AsyncCache<infer K, any> ? (
-//     K
-//   ) : (
-//     C extends Cache<infer K, any> ? K : (
-//       C extends AbstractCache<infer K, any> ? K : never
-//     )
-//   )
-// )
 
 export type CacheValue<C extends AnyCache<Key, any>> = (
   C extends AnyCache<any, infer T> ? T : never
 )
-// export type CacheValue<C extends AbstractCache<any, any> | AsyncCache<Key, any> | Cache<Key, any>> = (
-//   C extends AsyncCache<any, infer T> ? T : (
-//     C extends Cache<any, infer T> ? T : (
-//       C extends AbstractCache<any, infer T> ? T : never
-//     )
-//   )
-// )
 
 export type InnerCache<K extends Key, T> = BaseCache<K, T> | Cache<K, T>
 export type AsyncInnerCache<K extends Key, T> = InnerCache<K, T> | AsyncCache<K, T> | AbstractCache<K, T>

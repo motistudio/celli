@@ -1,4 +1,4 @@
-import type {Cache, AsyncCache as IAsyncCache} from '../../../src/types/cache.t'
+import type {AnyCacheType, Cache, AsyncCache as IAsyncCache} from '../../../src/types/cache.t'
 import type {Effect, EffectCallbackApi} from '../../../src/types/effects.t'
 
 import defer from '../../../src/commons/promise/defer'
@@ -7,11 +7,12 @@ import isThentable from '../../../src/commons/promise/isThentable'
 import LifeCycleCache from '../../../src/cache/implementations/LifeCycleCache'
 import AsyncCache from '../../../src/cache/implementations/AsyncCache'
 import getPromiseState from '../../../src/commons/promise/getPromiseState'
-import { CLEANUP_QUEUE } from '../../../src/cache/implementations/LifeCycleCache/constants'
+
+import {CLEANUP_QUEUE} from '../../../src/cache/implementations/LifeCycleCache/constants'
   
   describe('LifeCycle Cache', () => {
     test('Should create a simple sync lifecycle cache', () => {
-      const cache = new LifeCycleCache<string, string>() as Cache<string, string>
+      const cache = new LifeCycleCache<Cache<string, string>>()
 
       const key = 'test'
       const value = 'also test'
@@ -38,7 +39,7 @@ import { CLEANUP_QUEUE } from '../../../src/cache/implementations/LifeCycleCache
     })
 
     test('Should create a simple async lifecycle cache', async () => {
-      const cache = new LifeCycleCache<string, string>(new AsyncCache()) as IAsyncCache<string, string>
+      const cache = new LifeCycleCache(new AsyncCache<string, string>())
 
       const key = 'test'
       const value = 'also test'
@@ -67,7 +68,7 @@ import { CLEANUP_QUEUE } from '../../../src/cache/implementations/LifeCycleCache
 
     describe('Effects', () => {
       test('Should add an effect', () => {
-        const cache = new LifeCycleCache<string, string>()
+        const cache = new LifeCycleCache<Cache<string, string>>()
 
         const key = 'key'
         const value = 'value'
@@ -183,7 +184,7 @@ import { CLEANUP_QUEUE } from '../../../src/cache/implementations/LifeCycleCache
       })
 
       test('Should clean async cache with async cleanups', async () => {
-        const cache = new LifeCycleCache<string, string>()
+        const cache = new LifeCycleCache<Cache<string, string>>()
 
         const key = 'key'
         const value = 'value'
@@ -220,7 +221,7 @@ import { CLEANUP_QUEUE } from '../../../src/cache/implementations/LifeCycleCache
 
         await cache.set(key, value, [effect])
 
-        const cleanPromise = cache.clean() as Promise<void>
+        const cleanPromise = cache.clean()
         const cleanPromiseState = getPromiseState(cleanPromise)
 
         expect(cleanPromiseState.finished).toBe(false)

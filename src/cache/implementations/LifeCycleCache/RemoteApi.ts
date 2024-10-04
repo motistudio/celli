@@ -1,4 +1,4 @@
-import type {CacheKey, CacheValue} from '../../../types/cache.t'
+import type {AnyCacheType, CacheKey, CacheValue} from '../../../types/cache.t'
 import {type EffectApi, type AbstractEffectApi, type EffectCallbackApi} from '../../../types/effects.t'
 
 import isThentable from '../../../commons/promise/isThentable'
@@ -15,15 +15,15 @@ const LAST_VALUE = Symbol('last-value')
 const LISTENERS = Symbol('listeners')
 
 class ListenerApi<T> implements EffectCallbackApi<T> {
-  public [REMOTE_REF]?: RemoteApi<LifeCycleCache<any, T>>
+  public [REMOTE_REF]?: RemoteApi<LifeCycleCache<AnyCacheType<any, T>>>
 
-  constructor (remoteRef: RemoteApi<LifeCycleCache<any, T>>) {
+  constructor (remoteRef: RemoteApi<LifeCycleCache<AnyCacheType<any, T>>>) {
     this[REMOTE_REF] = remoteRef
     this.get = this.get.bind(this)
   }
 
   get () {
-    return (this[REMOTE_REF] as RemoteApi<LifeCycleCache<any, T>>).getSelf();
+    return (this[REMOTE_REF] as RemoteApi<LifeCycleCache<AnyCacheType<any, T>>>).getSelf();
   }
 
   // Cleans the reference for the garbage collector
@@ -36,7 +36,7 @@ class ListenerApi<T> implements EffectCallbackApi<T> {
  * A remote for a single key item
  * The purpose of this class is to avoid callbacks to save up memory
  */
-class RemoteApi<C extends LifeCycleCache<any, any>> implements AbstractEffectApi<CacheValue<C>> {
+class RemoteApi<C extends LifeCycleCache<AnyCacheType<any, any>>> implements AbstractEffectApi<CacheValue<C>> {
   public [REMOTE_REF]: C
   public [KEY_REF]: CacheKey<C>
   public [LAST_VALUE]: CacheValue<C>
