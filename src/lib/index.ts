@@ -1,6 +1,7 @@
-import {CleanupPolicies as SourceCleanupPolicies} from "../cache/implementations/BackupCache/constants";
+import {CleanupPolicies as SourceCleanupPolicies} from '../cache/implementations/BackupCache/constants'
 
 import createCache from '../cache/createCache'
+import createSource from '../cache/createSource'
 
 import lru from '../cache/transformers/lru'
 import async from '../cache/transformers/async'
@@ -12,6 +13,7 @@ export * from '../types/cache.t'
 
 export {
   createCache,
+  createSource as source,
   lru,
   async,
   lifeCycle,

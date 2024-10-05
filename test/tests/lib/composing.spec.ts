@@ -1,11 +1,11 @@
-import { CACHE_KEY } from '../../../src/cache/constants'
+import {CACHE_KEY} from '../../../src/cache/constants'
 import BackupCache from '../../../src/cache/implementations/BackupCache'
-import {CleanupPolicies} from '../../../src/cache/implementations/BackupCache/constants'
 import ttl from '../../../src/cache/implementations/LifeCycleCache/effects/ttl'
 import compose from '../../../src/commons/compose'
 
 import {
   createCache,
+  source,
   lru,
   async,
   lifeCycle,
@@ -136,15 +136,13 @@ describe('Creating and composing cache', () => {
   test('Should compose a backup cache', async () => {
     jest.useFakeTimers()
 
-    const sourceCache = async()(createCache())
-
     const cache = compose(
       effects([
         ttl({timeout: 1000})
       ]),
       lru({maxSize: 2}),
       async(),
-      backup(sourceCache, {cleanupPolicy: SourceCleanupPolicies.ALL}) // potentially redis and stuff
+      backup(source(createCache()), {cleanupPolicy: SourceCleanupPolicies.ALL}) // potentially redis and stuff
     )(createCache()) as AsyncCache<string, string>
 
     const frontCache = (cache as BackupCache<string, string>)[CACHE_KEY]

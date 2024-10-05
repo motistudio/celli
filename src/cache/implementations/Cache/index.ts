@@ -5,45 +5,45 @@ import {CACHE_KEY} from '../../constants'
 class Cache<K extends Key, T> implements ICache<K, T> {
   public [CACHE_KEY]: ICache<K, T> | BaseCache<K, T>
 
-  constructor(cache?: ICache<K, T> | BaseCache<K, T>) {
+  constructor (cache?: ICache<K, T> | BaseCache<K, T>) {
     this[CACHE_KEY] = cache || new Map()
   }
 
-  set(key: K, value: T) {
+  set (key: K, value: T) {
     this[CACHE_KEY].set(key, value)
     return this
   }
 
-  get(key: K) {
+  get (key: K) {
     return this[CACHE_KEY].get(key)
   }
 
-  has(key: K) {
+  has (key: K) {
     return this[CACHE_KEY].has(key)
   }
 
-  delete(key: K) {
+  delete (key: K) {
     return this[CACHE_KEY].delete(key)
   }
 
   // enumeration
-  keys() {
+  keys () {
     return this[CACHE_KEY].keys()
   }
 
-  values() {
+  values () {
     return this[CACHE_KEY].values()
   }
 
-  entries() {
+  entries () {
     return this[CACHE_KEY].entries()
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator] () {
     return this[CACHE_KEY][Symbol.iterator]()
   }
 
-  clean() {
+  clean () {
     if (typeof (this[CACHE_KEY] as ICache<K, T>).clean === 'function') {
       return (this[CACHE_KEY] as ICache<K, T>).clean()
     } else {
