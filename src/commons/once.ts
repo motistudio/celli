@@ -1,7 +1,7 @@
-import type {AnyFunction} from '../types/commons.t'
+import type {Fn} from '../types/commons.t'
 import isThentable from './promise/isThentable'
 
-type OnceFn<C extends AnyFunction> = {
+type OnceFn<C extends Fn> = {
   (...args: Parameters<C>): ReturnType<C>
   clean: () => void
 }
@@ -12,7 +12,7 @@ type OnceFn<C extends AnyFunction> = {
  * @param {C} fn - Any function 
  * @returns {OnceFn<C>} The wrapped function, along with a clean callback to reset the cache
  */
-const once = <C extends AnyFunction>(fn: C): OnceFn<C> => {
+const once = <C extends Fn>(fn: C): OnceFn<C> => {
   let result: Awaited<ReturnType<C>> | undefined = undefined
   let isAsync: boolean = false
   let resolved: boolean = false

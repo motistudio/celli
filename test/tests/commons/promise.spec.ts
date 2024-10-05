@@ -3,6 +3,7 @@ import delay from '../../../src/commons/promise/delay'
 import defer from '../../../src/commons/promise/defer'
 import getPromiseState from '../../../src/commons/promise/getPromiseState'
 import promisify from '../../../src/commons/promise/promisify'
+import singlify from '../../../src/commons/promise/singlify'
 
 describe('Promise utils', () => {
   describe('isThenable', () => {
@@ -117,6 +118,41 @@ describe('Promise utils', () => {
       expect(isThentable(promise)).toBe(true)
       expect(promise).toBe(initialPromise)
       await expect(promise).resolves.toBe(value)
+    })
+  })
+
+  describe('Singlify', () => {
+    test('Should have a single promise out of function', async () => {
+      const value = 'value'
+      const fn = jest.fn(() => Promise.resolve(value))
+
+      const getValue = singlify(fn)
+
+      const promise = getValue()
+      const promise2 = getValue()
+      expect(promise2).toBe(promise)
+
+      await expect(promise).resolves.toBe(value)
+      
+      const promise3 = getValue()
+      expect(promise3).not.toBe(promise) // after the promise is resolved, it is no longer cached
+      await expect(promise3).resolves.toBe(value)
+    })
+
+    test('Should have a single promise in cases of failures too', async () => {
+      const fn = jest.fn(() => Promise.reject(new Error('Simulated test error')))
+
+      const getValue = singlify(fn)
+
+      const promise = getValue()
+      const promise2 = getValue()
+      expect(promise2).toBe(promise)
+
+      await expect(promise).rejects.toThrow()
+      
+      const promise3 = getValue()
+      expect(promise3).not.toBe(promise) // after the promise is resolved, it is no longer cached
+      await expect(promise3).rejects.toThrow()
     })
   })
 })
