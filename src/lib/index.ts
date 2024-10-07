@@ -9,9 +9,12 @@ import lifeCycle from '../cache/transformers/lifeCycle'
 import effects from '../cache/transformers/effects'
 import backup from '../cache/transformers/backup'
 
+import memo from '../memoization/memo'
+
 export * from '../types/cache.t'
 
 export {
+  // Cache:
   createCache,
   createSource as source,
   lru,
@@ -19,5 +22,7 @@ export {
   lifeCycle,
   effects,
   backup,
-  SourceCleanupPolicies
+  SourceCleanupPolicies,
+  // Memoization:
+  memo
 }
