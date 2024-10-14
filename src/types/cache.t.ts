@@ -1,6 +1,16 @@
 import type {Effect} from './effects.t'
+import type {EventEmitter, EventEmitterKey, EventEmitterListener, EventListener} from './eventEmitter.t'
 
 export type Key = string | number | symbol
+
+export type CacheEventMap<K extends Key, T> = {
+  'get': [key: K],
+  'set': [key: K, value: T],
+  'delete': [key: K],
+  'clean': []
+}
+
+export type CacheEventMapKey = 'get' | 'set' | 'delete' | 'clean'
 
 export type BaseCache<K extends Key, T> = {
   get (key: K): T | undefined
@@ -23,6 +33,11 @@ export interface Cache<K extends Key, T> {
   values (): IterableIterator<T>
   entries (): IterableIterator<[K, T]>
   clean (): void,
+  on <
+    M extends CacheEventMap<K, T>,
+    EK extends CacheEventMapKey = CacheEventMapKey
+  >(eventName: EK, fn: EventListener<M[EK]>): () => void
+  // on (...args: Parameters<EventEmitter<CacheEventMap<K, T>>['on']>): void
   [Symbol.iterator] (): IterableIterator<[K, T]>
 }
 
@@ -35,14 +50,23 @@ export interface AsyncCache<K extends Key, T> {
   values (): AsyncIterableIterator<T>
   entries (): AsyncIterableIterator<[K, T]>
   clean (): Promise<void>
+  on <
+    M extends CacheEventMap<K, T>,
+    EK extends CacheEventMapKey = CacheEventMapKey
+  >(eventName: EK, fn: EventListener<M[EK]>): () => void
   [Symbol.asyncIterator] (): AsyncIterableIterator<[K, T]>
 }
 
 export type AbstractCache<K extends Key, T> = {
   [P in Exclude<keyof Cache<K, T>, typeof Symbol.asyncIterator | SymbolConstructor['asyncIterator'] | SymbolConstructor['iterator']>]: (...args: Parameters<Cache<K, T>[P]>) => ReturnType<Cache<K, T>[P]> | (P extends keyof AsyncCache<K, T> ? ReturnType<AsyncCache<K, T>[P]> : never)
+} & {
+  on <
+    M extends CacheEventMap<K, T>,
+    EK extends CacheEventMapKey = CacheEventMapKey
+  >(eventName: EK, fn: EventListener<M[EK]>): () => void
 }
 
-export type ACache<K extends Key, T> = Cache<K, T> & AsyncCache<K, T>
+export type ACache<K extends Key, T> = Cache<K, T> | AsyncCache<K, T>
 
 export interface WrappedCache<C extends AnyCacheType<any, any>> {
   get (key: CacheKey<C>): ReturnType<C['get']>
@@ -66,6 +90,10 @@ export interface LifeCycleCache<C extends AbstractCache<any, any>> {
   values (): ReturnType<C['values']>
   entries (): ReturnType<C['entries']>
   clean (): ReturnType<C['clean']>
+  on <
+    M extends CacheEventMap<CacheKey<C>, CacheValue<C>>,
+    EK extends CacheEventMapKey = CacheEventMapKey
+  >(eventName: EK, fn: EventListener<M[EK]>): () => void
 }
 
 export interface LruCache<C extends AbstractCache<any, any>> {
@@ -77,6 +105,10 @@ export interface LruCache<C extends AbstractCache<any, any>> {
   values (): ReturnType<C['values']>
   entries (): ReturnType<C['entries']>
   clean (): ReturnType<C['clean']>
+  on <
+    M extends CacheEventMap<CacheKey<C>, CacheValue<C>>,
+    EK extends CacheEventMapKey = CacheEventMapKey
+  >(eventName: EK, fn: EventListener<M[EK]>): () => void
 }
 
 export type AnyCache<K extends Key, T> = BaseCache<K, T> | Cache<K, T> | AsyncCache<K, T> | AbstractCache<K, T>

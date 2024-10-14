@@ -2,13 +2,16 @@ import type {
   CacheKey,
   CacheValue,
   AnyCacheType,
-  WrappedCache
+  WrappedCache,
+  CacheEventMap,
+  CacheEventMapKey
 } from '../../../types/cache.t'
 import type {Effect} from '../../../types/effects.t'
 
 import LifeCycleCache from '../LifeCycleCache'
 
 import {CACHE_KEY} from '../../constants'
+import { EventListener } from '../../../types/eventEmitter.t'
 
 const EFFECTS_KEY = Symbol('effects-cache-effects')
 
@@ -60,6 +63,10 @@ class EffectsCache<C extends AnyCacheType<any, any>> implements WrappedCache<C> 
 
   clean () {
     return this[CACHE_KEY].clean()
+  }
+
+  on <M extends CacheEventMap<CacheKey<C>, CacheValue<C>> = CacheEventMap<CacheKey<C>, CacheValue<C>>, EK extends CacheEventMapKey = CacheEventMapKey>(eventName: EK, listener: EventListener<M[EK]>) {
+    return this[CACHE_KEY].on(eventName, listener)
   }
 }
 

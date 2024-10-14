@@ -13,9 +13,12 @@ const compile = <K extends Key, T>(options: SourceOptions<K, T>) => {
   const getCache = once<typeof createCache<K, T>>(createCache)
 
   const get = (key: K) => {
+    if (getCache().has(key)) {
+      return promisify(getCache().get(key))
+    }
     return promisify(options.get(key)).then((value) => {
       if (value && !getCache().has(key)) {
-        getCache().set(key, value);
+        getCache().set(key, value)
       }
       return value
     })
@@ -58,7 +61,7 @@ const compile = <K extends Key, T>(options: SourceOptions<K, T>) => {
   const values = options.values ? (() => getAsyncIterator((options.values as AsyncCache<K, T>['values'])())) : () => {
     return getAsyncIterator(getCache().values())
   }
-  
+
   const entries = options.entries ? (() => getAsyncIterator((options.entries as AsyncCache<K, T>['entries'])())) : () => {
     return getAsyncIterator(getCache().entries())
   }

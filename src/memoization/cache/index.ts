@@ -3,11 +3,11 @@ import type {
   Key,
   AsyncCache as IAsyncCache,
   Cache as ICache,
-  LifeCycleCache as ILifeCycleCache,
+  // LifeCycleCache as ILifeCycleCache,
   AnyCacheType
 } from '../../types/cache.t'
 import type {LruCacheOptions} from '../../cache/implementations/LruCache/types.t'
-import type {Effect} from '../../types/effects.t'
+// import type {Effect} from '../../types/effects.t'
 
 import createBaseCache from '../../cache/createCache'
 import async from '../../cache/transformers/async'

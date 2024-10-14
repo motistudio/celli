@@ -1,20 +1,24 @@
-import getAsyncIterator from '../../../commons/iterators/getAsyncIterator'
-import isThentable from '../../../commons/promise/isThentable'
-
 import type {
   Key,
   Cache as ICache,
   AnyCacheType,
   CacheKey,
   CacheValue,
-  LruCache as ILruCache
+  LruCache as ILruCache,
+  CacheEventMap,
+  CacheEventMapKey
 } from '../../../types/cache.t'
+import {EventListener} from '../../../types/eventEmitter.t'
+
+import getAsyncIterator from '../../../commons/iterators/getAsyncIterator'
+import isThentable from '../../../commons/promise/isThentable'
 
 import Cache from '../Cache'
 
-import {CACHE_KEY} from '../../constants'
+import {CACHE_KEY, EVENT_EMITTER_KEY} from '../../constants'
 
 import type {ItemSizeGetter, LruCacheOptions} from './types.t'
+import evaluate from '../../../commons/evaluate'
 
 const KEYS_CACHE_KEY = Symbol.for('keys-cache')
 
@@ -124,34 +128,37 @@ class LruCache<C extends AnyCacheType<any, any> = ICache<any, any>> implements I
     const computedOptions = {...(DEFAULT_OPTIONS as LruCacheOptions<CacheKey<C>, CacheValue<C>>), ...options} as LruCacheOptions<CacheKey<C>, CacheValue<C>>
     this.maxCacheSize = computedOptions.maxSize
     this.getItemSize = computedOptions.getItemSize
+
+    // This is done anyways when delete() is called,
+    // but sometimes events would come up from the cache we wrap with no call through this API
+    // this.on('delete', (key) => {
+    //   if (this[KEYS_CACHE_KEY].has(key)) {
+    //     removeKey(this, key)
+    //   }
+    // })
+
+    this.on('clean', () => {
+      // Resets again if needed - in case the event came from the wrapped cache
+      if (this[KEYS_CACHE_KEY].size > 0) {
+        this[KEYS_CACHE_KEY] = new Map()
+      }
+    })
   }
 
   get (...args: Parameters<C['get']>) {
     const key = args[0]
-    const item = this[CACHE_KEY].get.apply(this[CACHE_KEY], args)
-    if (isThentable(item)) {
-      return item.then((item) => {
-        introduce(this, key, item)
-        return item
-      })
-    }
-
-    introduce(this, key, item)
-    return item
+    return evaluate(this[CACHE_KEY].get.apply(this[CACHE_KEY], args), (item) => {
+      introduce(this, key, item)
+      return item
+    })
   }
 
   set (...args: Parameters<C['set']>): ReturnType<C['set']> {
     const [key, value] = args as [key: CacheKey<C>, value: CacheValue<C>]
-    const result = this[CACHE_KEY].set.apply(this[CACHE_KEY], args)
-    if (isThentable(result)) {
-      return result.then((result) => {
-        setKey(this, key, this.getItemSize(key, value))
-        return result
-      }) as ReturnType<C['set']>
-    }
-
-    setKey(this, key, this.getItemSize(key, value))
-    return result as ReturnType<C['set']>
+    return evaluate(this[CACHE_KEY].set.apply(this[CACHE_KEY], args), (result) => {
+      setKey(this, key, this.getItemSize(key, value))
+      return result
+    }) as ReturnType<C['set']>
   }
 
   has (...args: Parameters<C['has']>) {
@@ -159,8 +166,11 @@ class LruCache<C extends AnyCacheType<any, any> = ICache<any, any>> implements I
   }
 
   delete (...args: Parameters<C['delete']>) {
+    // TODO: Key removal should be after a successful delete, fix this so it will be in the evaluation
     removeKey(this, args[0])
-    return this[CACHE_KEY].delete.apply(this[CACHE_KEY], args) as ReturnType<C['delete']>
+    return evaluate(this[CACHE_KEY].delete.apply(this[CACHE_KEY], args), (result) => {
+      return result
+    }) as ReturnType<C['delete']>
   }
 
   keys () {
@@ -184,16 +194,15 @@ class LruCache<C extends AnyCacheType<any, any> = ICache<any, any>> implements I
   }
 
   clean () {
-    const result = this[CACHE_KEY].clean()
-    if (isThentable(result)) {
-      return result.then(() => {
-        this[KEYS_CACHE_KEY] = new Map()
-        this.usedSize = 0
-      }) as ReturnType<C['clean']>
-    }
-    this[KEYS_CACHE_KEY] = new Map()
-    this.usedSize = 0
-    return undefined as ReturnType<C['clean']>
+    return evaluate(this[CACHE_KEY].clean(), () => {
+      this[KEYS_CACHE_KEY] = new Map()
+      this.usedSize = 0
+      return undefined
+    }) as ReturnType<C['clean']>
+  }
+
+  on <M extends CacheEventMap<CacheKey<C>, CacheValue<C>> = CacheEventMap<CacheKey<C>, CacheValue<C>>, EK extends CacheEventMapKey = CacheEventMapKey>(eventName: EK, listener: EventListener<M[EK]>) {
+    return this[CACHE_KEY].on(eventName, listener)
   }
 }
 

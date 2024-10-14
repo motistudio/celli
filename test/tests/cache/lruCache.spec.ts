@@ -192,4 +192,88 @@ describe('LRU Cache', () => {
     expect(lruCache.usedSize).toBe(2)
     expect(lruCache.has(pairs[1][0])).toBe(false)
   })
+
+  describe('Events', () => {
+    test('Should listen to cache events', () => {
+      const getHandler = jest.fn()
+      const setHandler = jest.fn()
+      const deleteHandler = jest.fn()
+      const cleanHandler = jest.fn()
+
+      const baseCache = new Cache<string, string>()
+      const cache = new LruCache(baseCache, {maxSize: 1})
+
+      const unsubscribeGet = cache.on('get', getHandler)
+      const unsubscribeSet = cache.on('set', setHandler)
+      const unsubscribeDelete = cache.on('delete', deleteHandler)
+      const unsubscribeClean = cache.on('clean', cleanHandler)
+
+      const key = 'key'
+      const value = 'value'
+  
+      expect(cache.get(key)).toBe(undefined)
+      expect(getHandler).toHaveBeenCalledTimes(1)
+      expect(getHandler).toHaveBeenCalledWith(key)
+      
+      cache.set(key, value)
+      expect(cache.get(key)).toBe(value)
+      expect(getHandler).toHaveBeenCalledTimes(2)
+      expect(setHandler).toHaveBeenCalledTimes(1)
+      expect(setHandler.mock.calls.at(-1)).toMatchObject([key, value])
+      
+      cache.delete(key)
+      expect(deleteHandler).toHaveBeenCalledTimes(1)
+      expect(deleteHandler).toHaveBeenCalledWith(key)
+  
+      cache.clean()
+      expect(cleanHandler).toHaveBeenCalledTimes(1)
+  
+      unsubscribeGet()
+      unsubscribeSet()
+      unsubscribeDelete()
+      unsubscribeClean()
+  
+      cache.set(key, value)
+      expect(setHandler).toHaveBeenCalledTimes(1)
+      cache.get(key)
+      expect(getHandler).toHaveBeenCalledTimes(2)
+      cache.delete(key)
+      expect(deleteHandler).toHaveBeenCalledTimes(1)
+      cache.clean()
+      expect(cleanHandler).toHaveBeenCalledTimes(1)
+    })
+  
+    test('Should notify when a key is cleaned', () => {
+      const deleteHandler = jest.fn()
+      const cleanHandler = jest.fn()
+
+      const baseCache = new Cache<string, string>()
+      const cache = new LruCache(baseCache, {maxSize: 1})
+
+      const unsubscribeDelete = cache.on('delete', deleteHandler)
+      const unsubscribeClean = cache.on('clean', cleanHandler)
+
+      const key = 'key'
+      const value = 'value'
+
+      const key2 = 'key2'
+      const value2 = 'value2'
+
+      cache.set(key, value)
+      expect(cache.has(key)).toBe(true)
+
+      cache.set(key2, value2)
+      expect(cache.has(key2)).toBe(true)
+      expect(cache.has(key)).toBe(false)
+      expect(deleteHandler).toHaveBeenCalledWith(key)
+      expect(deleteHandler).toHaveBeenCalledTimes(1)
+
+      cache.clean()
+      expect(deleteHandler).toHaveBeenCalledTimes(1)
+      expect(cleanHandler).toHaveBeenCalledTimes(1)
+
+      unsubscribeDelete()
+      unsubscribeClean()
+    })
+  })
 })

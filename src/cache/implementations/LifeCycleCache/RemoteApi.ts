@@ -23,7 +23,7 @@ class ListenerApi<T> implements EffectCallbackApi<T> {
   }
 
   get () {
-    return (this[REMOTE_REF] as RemoteApi<LifeCycleCache<AnyCacheType<any, T>>>).getSelf();
+    return (this[REMOTE_REF] as RemoteApi<LifeCycleCache<AnyCacheType<any, T>>>).getSelf() as T
   }
 
   // Cleans the reference for the garbage collector

@@ -11,7 +11,7 @@ import AsyncCache from '../../../src/cache/implementations/AsyncCache'
 import getPromiseState from '../../../src/commons/promise/getPromiseState'
 
 describe('Async Cache', () => {
-  test.each([new AsyncCache<string, any>(), new AsyncCache<string, any>(new AsyncCache)])('Should create a simple async cache', async (cache) => {
+  test.each([new AsyncCache<string, any>(), new AsyncCache<string, any>(new Map()), new AsyncCache<string, any>(new AsyncCache)])('Should create a simple async cache', async (cache) => {
     const key = 'k'
     const value = 'val'
     const value2 = 'val2'
@@ -20,23 +20,29 @@ describe('Async Cache', () => {
     expect(cache[HAS_PROMISES_KEY].get(key)).toBe(undefined)
     await expect(cache.get(key)).resolves.toBe(undefined)
     expect(cache[GET_PROMISES_KEY].get(key)).toBe(undefined)
-    
+
     await cache.set(key, value)
     expect(cache[SET_PROMISES_KEY].get(key)).toBe(undefined)
-    
+
     await expect(cache.has(key)).resolves.toBe(true)
     await expect(cache.get(key)).resolves.toBe(value)
-    
+
     await cache.set(key, value2)
     await expect(cache.has(key)).resolves.toBe(true)
     await expect(cache.get(key)).resolves.toBe(value2)
-    
+
     await cache.delete(key)
     expect(cache[DELETE_PROMISES_KEY].get(key)).toBe(undefined)
     await expect(cache.has(key)).resolves.toBe(false)
     await expect(cache.get(key)).resolves.toBe(undefined)
+
+    await cache.set(key, value)
+    await expect(cache.get(key)).resolves.toBe(value)
+    await expect(cache.has(key)).resolves.toBe(true)
+    await cache.clean()
+    await expect(cache.has(key)).resolves.toBe(false)
   })
-  
+
   test('Should cache delete calls', async () => {
     const cache = new AsyncCache()
 
@@ -85,6 +91,54 @@ describe('Async Cache', () => {
     await cache.clean()
     // all are missing
     await expect(Promise.all(pairs.map(([key]) => cache.has(key))).then((indications) => indications.every((indication) => !indication))).resolves.toBe(true)
+  })
+
+  test('Should subscribe to events', async () => {
+    const getHandler = jest.fn()
+    const setHandler = jest.fn()
+    const deleteHandler = jest.fn()
+    const cleanHandler = jest.fn()
+
+    const cache = new AsyncCache<string, string>()
+
+    const unsubscribeGet = cache.on('get', getHandler)
+    const unsubscribeSet = cache.on('set', setHandler)
+    const unsubscribeDelete = cache.on('delete', deleteHandler)
+    const unsubscribeClean = cache.on('clean', cleanHandler)
+
+    const key = 'key'
+    const value = 'value'
+
+    await expect(cache.get(key)).resolves.toBe(undefined)
+    expect(getHandler).toHaveBeenCalledTimes(1)
+    expect(getHandler).toHaveBeenCalledWith(key)
+    
+    await cache.set(key, value)
+    await expect(cache.get(key)).resolves.toBe(value)
+    expect(getHandler).toHaveBeenCalledTimes(2)
+    expect(setHandler).toHaveBeenCalledTimes(1)
+    expect(setHandler.mock.calls.at(-1)).toMatchObject([key, value])
+    
+    await cache.delete(key)
+    expect(deleteHandler).toHaveBeenCalledTimes(1)
+    expect(deleteHandler).toHaveBeenCalledWith(key)
+
+    await cache.clean()
+    expect(cleanHandler).toHaveBeenCalledTimes(1)
+
+    unsubscribeGet()
+    unsubscribeSet()
+    unsubscribeDelete()
+    unsubscribeClean()
+
+    await cache.set(key, value)
+    expect(setHandler).toHaveBeenCalledTimes(1)
+    await cache.get(key)
+    expect(getHandler).toHaveBeenCalledTimes(2)
+    await cache.delete(key)
+    expect(deleteHandler).toHaveBeenCalledTimes(1)
+    await cache.clean()
+    expect(cleanHandler).toHaveBeenCalledTimes(1)
   })
 
   describe('Get() behaviour', () => {

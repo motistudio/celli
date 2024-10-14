@@ -3,19 +3,21 @@ import type {
   CacheKey,
   CacheValue,
   Cache as ICache,
-  AsyncInnerCache,
-  AsyncCache,
-  AnyCacheType
+  AnyCacheType,
+  CacheEventMap,
+  CacheEventMapKey
 } from '../../../types/cache.t'
 import type {Effect} from '../../../types/effects.t'
-import isThentable from '../../../commons/promise/isThentable'
+import type {EventListener} from '../../../types/eventEmitter.t'
 
+import isThentable from '../../../commons/promise/isThentable'
+import evaluate from '../../../commons/evaluate'
+
+import Cache from '../Cache'
 import {CACHE_KEY, DELETE_PROMISES_KEY} from '../../constants'
 import {CLEANUP_QUEUE, DELETE_QUEUE, LIFECYCLE_ITEMS_KEY, type LifeCycleCache as ILifeCycleCache} from './constants'
 import LifeCycleItem from './LifeCycleItem'
 import RemoteApi from './RemoteApi'
-import Cache from '../Cache'
-import evaluate from '../../../commons/evaluate'
 
 const DEFAULT_EFFECTS: Effect<any>[] = []
 
@@ -93,6 +95,20 @@ class LifeCycleCache<C extends AnyCacheType<any, any> = ICache<any, any>> implem
     this[DELETE_QUEUE] = new Set()
 
     this[DELETE_PROMISES_KEY] = new Map()
+
+    // This is done anyways when delete() is called,
+    // but sometimes events would come up from the cache we wrap with no call through this API
+    this.on('delete', (key) => {
+      const existingDeletePromise = this[DELETE_PROMISES_KEY].get(key)
+      if (!existingDeletePromise) {
+        deleteKey(this, key)
+      }
+    })
+
+    this.on('clean', () => {
+      // Timing more delete calls, if some left
+      Array.from(this[LIFECYCLE_ITEMS_KEY].keys()).forEach((key) => deleteKey(this, key))
+    })
   }
 
   get (...args: Parameters<C['get']>) {
@@ -193,6 +209,10 @@ class LifeCycleCache<C extends AnyCacheType<any, any> = ICache<any, any>> implem
 
       return undefined
     }) as ReturnType<C['clean']>
+  }
+
+  on <M extends CacheEventMap<CacheKey<C>, CacheValue<C>> = CacheEventMap<CacheKey<C>, CacheValue<C>>, EK extends CacheEventMapKey = CacheEventMapKey>(eventName: EK, listener: EventListener<M[EK]>) {
+    return this[CACHE_KEY].on(eventName, listener)
   }
 }
 

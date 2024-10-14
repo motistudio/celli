@@ -61,4 +61,55 @@ describe('Source Cache', () => {
     await source.clean()
     await expect(source.has(key)).resolves.toBe(false)
   })
+
+  test('Should subscribe to events', async () => {
+    const getHandler = jest.fn()
+    const setHandler = jest.fn()
+    const deleteHandler = jest.fn()
+    const cleanHandler = jest.fn()
+
+    const cache = new Cache()
+    const source = createSource({
+      get: (key) => cache.get(key)
+    })
+
+    const unsubscribeGet = source.on('get', getHandler)
+    const unsubscribeSet = source.on('set', setHandler)
+    const unsubscribeDelete = source.on('delete', deleteHandler)
+    const unsubscribeClean = source.on('clean', cleanHandler)
+
+    const key = 'key'
+    const value = 'value'
+
+    await expect(source.get(key)).resolves.toBe(undefined)
+    expect(getHandler).toHaveBeenCalledTimes(1)
+    expect(getHandler).toHaveBeenCalledWith(key)
+    
+    await source.set(key, value)
+    await expect(source.get(key)).resolves.toBe(value)
+    expect(getHandler).toHaveBeenCalledTimes(2)
+    expect(setHandler).toHaveBeenCalledTimes(1)
+    expect(setHandler.mock.calls.at(-1)).toMatchObject([key, value])
+    
+    await source.delete(key)
+    expect(deleteHandler).toHaveBeenCalledTimes(1)
+    expect(deleteHandler).toHaveBeenCalledWith(key)
+
+    await source.clean()
+    expect(cleanHandler).toHaveBeenCalledTimes(1)
+
+    unsubscribeGet()
+    unsubscribeSet()
+    unsubscribeDelete()
+    unsubscribeClean()
+
+    await source.set(key, value)
+    expect(setHandler).toHaveBeenCalledTimes(1)
+    await source.get(key)
+    expect(getHandler).toHaveBeenCalledTimes(2)
+    await source.delete(key)
+    expect(deleteHandler).toHaveBeenCalledTimes(1)
+    await source.clean()
+    expect(cleanHandler).toHaveBeenCalledTimes(1)
+  })
 })

@@ -100,4 +100,52 @@ describe('EffectsCache', () => {
     await effectsCache.clean()
     expect(cleanup).toHaveBeenCalledTimes(3)
   })
+
+  test('Should listen to effects cache events', () => {
+    const getHandler = jest.fn()
+    const setHandler = jest.fn()
+    const deleteHandler = jest.fn()
+    const cleanHandler = jest.fn()
+
+    const cache = new EffectsCache(new Cache<string, string>(), [])
+
+    const unsubscribeGet = cache.on('get', getHandler)
+    const unsubscribeSet = cache.on('set', setHandler)
+    const unsubscribeDelete = cache.on('delete', deleteHandler)
+    const unsubscribeClean = cache.on('clean', cleanHandler)
+
+    const key = 'key'
+    const value = 'value'
+
+    expect(cache.get(key)).toBe(undefined)
+    expect(getHandler).toHaveBeenCalledTimes(1)
+    expect(getHandler).toHaveBeenCalledWith(key)
+    
+    cache.set(key, value)
+    expect(cache.get(key)).toBe(value)
+    expect(getHandler).toHaveBeenCalledTimes(2)
+    expect(setHandler).toHaveBeenCalledTimes(1)
+    expect(setHandler.mock.calls.at(-1)).toMatchObject([key, value])
+    
+    cache.delete(key)
+    expect(deleteHandler).toHaveBeenCalledTimes(1)
+    expect(deleteHandler).toHaveBeenCalledWith(key)
+
+    cache.clean()
+    expect(cleanHandler).toHaveBeenCalledTimes(1)
+
+    unsubscribeGet()
+    unsubscribeSet()
+    unsubscribeDelete()
+    unsubscribeClean()
+
+    cache.set(key, value)
+    expect(setHandler).toHaveBeenCalledTimes(1)
+    cache.get(key)
+    expect(getHandler).toHaveBeenCalledTimes(2)
+    cache.delete(key)
+    expect(deleteHandler).toHaveBeenCalledTimes(1)
+    cache.clean()
+    expect(cleanHandler).toHaveBeenCalledTimes(1)
+  })
 })
