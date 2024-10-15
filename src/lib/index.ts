@@ -10,6 +10,7 @@ import effects from '../cache/transformers/effects'
 import backup from '../cache/transformers/backup'
 
 import memo from '../memoization/memo'
+import cacheWith from '../memoization/cacheWith'
 
 export * from '../types/cache.t'
 
@@ -24,5 +25,6 @@ export {
   backup,
   SourceCleanupPolicies,
   // Memoization:
-  memo
+  memo,
+  cacheWith
 }
