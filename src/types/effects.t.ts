@@ -2,15 +2,10 @@ import type {Merge, Fn} from './commons.t'
 
 export type Cleanup = () => void | Promise<void>
 
-export type EffectCallbackApi<T> = {
-  get: () => T
-}
-
 export type EffectApi<T> = {
   getSelf: () => T
-  setSelf: (value: T) => void
   deleteSelf: () => Promise<void> | void
-  onRead: (callback: ((utils: EffectCallbackApi<T>) => void)) => void
+  onRead: (callback: (() => void)) => void
 }
 
 export type AsyncEffectApi<T> = Merge<EffectApi<T>, {

@@ -17,7 +17,7 @@ import Cache from '../Cache'
 
 import {CACHE_KEY, EVENT_EMITTER_KEY} from '../../constants'
 
-import type {ItemSizeGetter, LruCacheOptions} from './types.t'
+import type {LruItemSizeGetter, LruCacheOptions} from '../../../types/functional.t'
 import evaluate from '../../../commons/evaluate'
 
 const KEYS_CACHE_KEY = Symbol.for('keys-cache')
@@ -118,7 +118,7 @@ class LruCache<C extends AnyCacheType<any, any> = ICache<any, any>> implements I
   public [KEYS_CACHE_KEY]: Map<CacheKey<C>, number | undefined> // we treat 1's as undefined to save space
   public maxCacheSize: number
   public usedSize: number
-  public getItemSize: ItemSizeGetter<CacheKey<C>, CacheValue<C>>
+  public getItemSize: LruItemSizeGetter<CacheKey<C>, CacheValue<C>>
 
   constructor (cache?: C, options?: Partial<LruCacheOptions<CacheKey<C>, CacheValue<C>>>) {
     this[CACHE_KEY] = cache || (new Cache<CacheKey<C>, CacheValue<C>>() as unknown as C)
@@ -131,11 +131,11 @@ class LruCache<C extends AnyCacheType<any, any> = ICache<any, any>> implements I
 
     // This is done anyways when delete() is called,
     // but sometimes events would come up from the cache we wrap with no call through this API
-    // this.on('delete', (key) => {
-    //   if (this[KEYS_CACHE_KEY].has(key)) {
-    //     removeKey(this, key)
-    //   }
-    // })
+    this.on('delete', (key) => {
+      if (this[KEYS_CACHE_KEY].has(key)) {
+        removeKey(this, key)
+      }
+    })
 
     this.on('clean', () => {
       // Resets again if needed - in case the event came from the wrapped cache
@@ -166,7 +166,9 @@ class LruCache<C extends AnyCacheType<any, any> = ICache<any, any>> implements I
   }
 
   delete (...args: Parameters<C['delete']>) {
-    // TODO: Key removal should be after a successful delete, fix this so it will be in the evaluation
+    // Removing the metadata first is basically assuming this operation will always work.
+    // This comes from hypothesis that we shouldn't ever fail a set() operation if a delete() had failed.
+    // Since set() requires the removal of keys (cause of lru), we should "always succeeed" to delete. At least the metadata.
     removeKey(this, args[0])
     return evaluate(this[CACHE_KEY].delete.apply(this[CACHE_KEY], args), (result) => {
       return result

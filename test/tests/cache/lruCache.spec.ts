@@ -194,6 +194,22 @@ describe('LRU Cache', () => {
   })
 
   describe('Events', () => {
+    test('Should automatically remove items when the source-cache is deleting them', () => {
+      const baseCache = new Cache<string, string>()
+      const lruCache = new LruCache(baseCache, {maxSize: 2})
+
+      const key = 'key'
+      const value = 'value'
+
+      lruCache.set(key, value)
+      expect(lruCache.has(key)).toBe(true)
+      expect(baseCache.has(key)).toBe(true)
+
+      baseCache.delete(key)
+      expect(baseCache.has(key)).toBe(false)
+      expect(lruCache.has(key)).toBe(false)
+    })
+
     test('Should listen to cache events', () => {
       const getHandler = jest.fn()
       const setHandler = jest.fn()

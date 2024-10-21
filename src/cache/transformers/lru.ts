@@ -4,7 +4,7 @@ import type {
   CacheKey,
   CacheValue
 } from '../../types/cache.t'
-import type {LruCacheOptions} from '../implementations/LruCache/types.t'
+import type {LruCacheOptions} from '../../types/functional.t'
 
 // TODO: Make maxSize mandatory
 const lru = <C extends AnyCacheType<any, any>>(options: Partial<LruCacheOptions<CacheKey<C>, CacheValue<C>>>) => {

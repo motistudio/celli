@@ -41,7 +41,7 @@ class LifeCycleItem<T> {
         }
         return promises
       }, [])
-      
+
       if (cleanupPromises.length) {
         return Promise.all(cleanupPromises).then(() => undefined).then(() => {
           this.remoteApi[INTERNAL_REMOTE_CLEAN]()

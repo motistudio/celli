@@ -1,6 +1,7 @@
 import isThentable from '../../../src/commons/promise/isThentable'
 import delay from '../../../src/commons/promise/delay'
 import defer from '../../../src/commons/promise/defer'
+import tick from '../../../src/commons/promise/tick'
 import getPromiseState from '../../../src/commons/promise/getPromiseState'
 import promisify from '../../../src/commons/promise/promisify'
 import singlify from '../../../src/commons/promise/singlify'
@@ -21,11 +22,43 @@ describe('Promise utils', () => {
   })
 
   describe('delay', () => {
-    jest.useFakeTimers()
+    beforeAll(() => {
+      jest.useFakeTimers()
+    })
+
+    afterAll(() => {
+      jest.useRealTimers()
+    })
 
     test('Should delay a call', async () => {
       const next = jest.fn()
       const promise = delay(1000).then(next)
+      expect(isThentable(promise)).toBe(true)
+      expect(next).not.toHaveBeenCalled()
+      
+      jest.advanceTimersByTime(500)
+      expect(next).not.toHaveBeenCalled()
+
+      jest.runAllTimers()
+
+      await promise
+
+      expect(next).toHaveBeenCalled()
+    })
+  })
+
+  describe('tick', () => {
+    beforeAll(() => {
+      jest.useFakeTimers()
+    })
+
+    afterAll(() => {
+      jest.useRealTimers()
+    })
+
+    test('Should wait a tick', async () => {
+      const next = jest.fn()
+      const promise = tick().then(next)
       expect(isThentable(promise)).toBe(true)
       expect(next).not.toHaveBeenCalled()
       

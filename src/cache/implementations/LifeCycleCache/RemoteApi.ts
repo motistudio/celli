@@ -1,8 +1,7 @@
+import isComplexType from '../../../commons/isComplexType'
 import type {AnyCacheType, CacheKey, CacheValue} from '../../../types/cache.t'
-import {type EffectApi, type AbstractEffectApi, type EffectCallbackApi} from '../../../types/effects.t'
+import {type AbstractEffectApi} from '../../../types/effects.t'
 
-import isThentable from '../../../commons/promise/isThentable'
-import {CACHE_KEY} from '../../constants'
 import {
   REMOTE_REF,
   INTERNAL_REMOTE_CLEAN,
@@ -12,76 +11,56 @@ import {
 
 const KEY_REF = Symbol('key-ref')
 const LAST_VALUE = Symbol('last-value')
+const LAST_VALUE_REF = Symbol('last-value-ref')
 const LISTENERS = Symbol('listeners')
 
-class ListenerApi<T> implements EffectCallbackApi<T> {
-  public [REMOTE_REF]?: RemoteApi<LifeCycleCache<AnyCacheType<any, T>>>
-
-  constructor (remoteRef: RemoteApi<LifeCycleCache<AnyCacheType<any, T>>>) {
-    this[REMOTE_REF] = remoteRef
-    this.get = this.get.bind(this)
-  }
-
-  get () {
-    return (this[REMOTE_REF] as RemoteApi<LifeCycleCache<AnyCacheType<any, T>>>).getSelf() as T
-  }
-
-  // Cleans the reference for the garbage collector
-  [INTERNAL_REMOTE_CLEAN] () {
-    this[REMOTE_REF] = undefined
-  }
+const setValue = <R extends RemoteApi<LifeCycleCache<AnyCacheType<any, any>>>>(remote: R, value: any) => {
+  const isComplex = isComplexType(value)
+  remote[LAST_VALUE] = isComplex ? undefined : value
+  remote[LAST_VALUE_REF] = isComplex ? new WeakRef(value) : undefined
 }
 
 /**
  * A remote for a single key item
  * The purpose of this class is to avoid callbacks to save up memory
+ * @todo Remove the double binding, let the garbage collector collect
  */
 class RemoteApi<C extends LifeCycleCache<AnyCacheType<any, any>>> implements AbstractEffectApi<CacheValue<C>> {
   public [REMOTE_REF]: C
   public [KEY_REF]: CacheKey<C>
-  public [LAST_VALUE]: CacheValue<C>
+  public [LAST_VALUE]: CacheValue<C> | undefined
+  public [LAST_VALUE_REF]: WeakRef<CacheValue<C>> | undefined
   public [LISTENERS]: Parameters<AbstractEffectApi<CacheValue<C>>['onRead']>[0][]
-  public listenerApi: ListenerApi<CacheValue<C>>
 
   constructor (cache: C, key: CacheKey<C>, initialValue: CacheValue<C>) {
     this[REMOTE_REF] = cache
-    this[KEY_REF] = key;
-    this[LAST_VALUE] = initialValue;
+    this[KEY_REF] = key
     this[LISTENERS] = []
-    this.listenerApi = new ListenerApi(this) // double binding, a place to be careful with
+    setValue(this, initialValue)
   }
 
   getSelf (): CacheValue<C> {
-    return this[LAST_VALUE]
+    if (this[LAST_VALUE]) {
+      return this[LAST_VALUE]
+    }
+    return this[LAST_VALUE_REF]?.deref() as CacheValue<C> // Will necessarily work since new onRead()s will not create new values
   }
 
-  setSelf (value: CacheValue<C>) {
-    const result = this[REMOTE_REF][CACHE_KEY].set(this[KEY_REF], value)
-    if (isThentable(result)) {
-      return result.then((val) => {
-        this[LAST_VALUE] = value
-        return val
-      }) as Promise<void>
-    }
-    this[LAST_VALUE] = value
-  }
-  
   deleteSelf () {
     return this[REMOTE_REF].delete(this[KEY_REF])
   }
 
-  onRead (callback: ((utils: EffectCallbackApi<CacheValue<C>>) => void)) {
+  onRead (callback: (() => void)) {
     this[LISTENERS].push(callback)
   }
 
   [INTERNAL_REMOTE_READ] (value: CacheValue<C>) {
-    this[LAST_VALUE] = value
-    this[LISTENERS].forEach((listener) => listener(this.listenerApi))
+    setValue(this, value)
+    this[LISTENERS].forEach((listener) => listener())
   }
 
   [INTERNAL_REMOTE_CLEAN] () {
     this[LISTENERS] = []
-    this.listenerApi[INTERNAL_REMOTE_CLEAN]()
   }
 }
 

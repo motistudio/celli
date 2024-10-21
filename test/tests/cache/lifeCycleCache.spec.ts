@@ -1,5 +1,5 @@
 import type {AnyCacheType, Cache as ICache, AsyncCache as IAsyncCache} from '../../../src/types/cache.t'
-import type {Effect, EffectCallbackApi} from '../../../src/types/effects.t'
+import type {Effect} from '../../../src/types/effects.t'
 
 import defer from '../../../src/commons/promise/defer'
 import isThentable from '../../../src/commons/promise/isThentable'
@@ -12,6 +12,8 @@ import ttl from '../../../src/cache/implementations/LifeCycleCache/effects/ttl'
 
 import {CLEANUP_QUEUE} from '../../../src/cache/implementations/LifeCycleCache/constants'
 import {CACHE_KEY} from '../../../src/cache/constants'
+import delay from '../../../src/commons/promise/delay'
+import tick from '../../../src/commons/promise/tick'
   
 describe('LifeCycle Cache', () => {
   test('Should create a simple sync lifecycle cache', () => {
@@ -85,7 +87,6 @@ describe('LifeCycle Cache', () => {
 
       const key = 'key'
       const value = 'value'
-      const value2 = 'value2'
       const cleanup = jest.fn()
       const effect = jest.fn(() => {
         return cleanup
@@ -99,10 +100,34 @@ describe('LifeCycle Cache', () => {
       expect(api.getSelf()).toBe(value)
 
       expect(api.getSelf()).toBe(value) // last value that was actually set
-      expect(api.setSelf(value2)).toBe(undefined) // not returning a promise
-      expect(api.getSelf()).toBe(value2)
       api.onRead(readHandler)
-      expect(cache.get(key)).toBe(value2)
+      expect(cache.get(key)).toBe(value)
+      expect(readHandler).toHaveBeenCalled()
+      api.deleteSelf()
+      expect(cache.has(key)).toBe(false)
+      expect(cleanup).toHaveBeenCalled()
+    })
+
+    test('Should add an effect for a complex value', () => {
+      const cache = new LifeCycleCache<ICache<string, object>>()
+
+      const key = 'key'
+      const value = {}
+      const cleanup = jest.fn()
+      const effect = jest.fn(() => {
+        return cleanup
+      })
+      const readHandler = jest.fn()
+
+      cache.set(key, value, [effect])
+      expect(effect).toHaveBeenCalled()
+
+      const [api] = (effect.mock.calls[0] as unknown as Parameters<Effect<string>>)
+      expect(api.getSelf()).toBe(value)
+
+      expect(api.getSelf()).toBe(value) // last value that was actually set
+      api.onRead(readHandler)
+      expect(cache.get(key)).toBe(value)
       expect(readHandler).toHaveBeenCalled()
       api.deleteSelf()
       expect(cache.has(key)).toBe(false)
@@ -114,7 +139,6 @@ describe('LifeCycle Cache', () => {
 
       const key = 'key'
       const value = 'value'
-      const value2 = 'value2'
       const cleanup = jest.fn()
       const effect = jest.fn(() => {
         return cleanup
@@ -127,15 +151,9 @@ describe('LifeCycle Cache', () => {
       const [api] = (effect.mock.calls[0] as unknown as Parameters<Effect<string>>)
       expect(api.getSelf()).toBe(value)
 
-      expect(api.getSelf()).toBe(value) // last value that was actually set
-      await expect(api.setSelf(value2)).resolves.toBe(undefined) // not returning a promise
-      expect(api.getSelf()).toBe(value2)
       api.onRead(readHandler)
-      await expect(cache.get(key)).resolves.toBe(value2) // reads a value, should trigger the handler
+      await expect(cache.get(key)).resolves.toBe(value) // reads a value, should trigger the handler
       expect(readHandler).toHaveBeenCalled()
-
-      const [{get}] = readHandler.mock.calls[0] as unknown as [EffectCallbackApi<string>]
-      expect(get()).toBe(value2)
 
       api.deleteSelf()
       await expect(cache.has(key)).resolves.toBe(false)
@@ -259,10 +277,16 @@ describe('LifeCycle Cache', () => {
   })
 
   describe('Effect Implementations', () => {
-    jest.useFakeTimers()
+    beforeAll(() => {
+      jest.useFakeTimers()
+    })
 
     afterEach(() => {
       jest.clearAllTimers()
+    })
+
+    afterAll(() => {
+      jest.useRealTimers()
     })
 
     test('Should create items with ttl', () => {
@@ -300,6 +324,16 @@ describe('LifeCycle Cache', () => {
   })
 
   describe('Events', () => {
+    beforeAll(() => {
+      jest.useFakeTimers()
+    })
+    afterEach(() => {
+      jest.clearAllTimers()
+    })
+    afterAll(() => {
+      jest.useRealTimers()
+    })
+
     test('Should subscribe to events', () => {
       const getHandler = jest.fn()
       const setHandler = jest.fn()
@@ -349,8 +383,6 @@ describe('LifeCycle Cache', () => {
     })
 
     test('Should notify about deletion', () => {
-      jest.useFakeTimers()
-
       const cleanupTime = 1000
 
       const cleanup = jest.fn()

@@ -2,10 +2,14 @@ import isThentable from '../../../src/commons/promise/isThentable'
 import createCache from '../../../src/memoization/cache'
 
 describe('Cache creation', () => {
-  jest.useFakeTimers()
-
+  beforeAll(() => {
+    jest.useFakeTimers()
+  })
   afterEach(() => {
     jest.runAllTimers()
+  })
+  afterAll(() => {
+    jest.useRealTimers()
   })
 
   test('Should create a simple synchronous cache', () => {

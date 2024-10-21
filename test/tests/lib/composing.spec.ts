@@ -17,6 +17,16 @@ import {
 } from '../../../src/lib'
 
 describe('Creating and composing cache', () => {
+  beforeAll(() => {
+    jest.useFakeTimers()
+  })
+  afterEach(() => {
+    jest.clearAllTimers()
+  })
+  afterAll(() => {
+    jest.useRealTimers()
+  })
+
   test('Should create a basic cache', () => {
     const cache = createCache()
     const key = 'k'
@@ -106,8 +116,6 @@ describe('Creating and composing cache', () => {
   })
 
   test('Should compose effects cache', () => {
-    jest.useFakeTimers()
-
     const lruCache = lru({maxSize: 1})(createCache<string, string>())
     const effectsCache = effects([ttl({timeout: 1000})])(lruCache)
 
@@ -134,8 +142,6 @@ describe('Creating and composing cache', () => {
   })
 
   test('Should compose a backup cache', async () => {
-    jest.useFakeTimers()
-
     const cache = compose(
       effects([
         ttl({timeout: 1000})
