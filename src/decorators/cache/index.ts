@@ -62,7 +62,7 @@ function Cache<F extends Fn>(options: CommonOptions<F> & MemoOptions<F>): Method
 function Cache<F extends Fn>(options: CommonOptions<F> & (MemoOptions<F> | CacheWithOptions<F>)) {
   return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
     if (descriptor.value) {
-      descriptor.value = cacheFn(descriptor.value, options) as F
+      descriptor.value = cacheFn(descriptor.value, options)
     } else {
       throw new Error('Cache decorator can only be applied to methods')
     }

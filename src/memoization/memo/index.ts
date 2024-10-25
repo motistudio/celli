@@ -1,5 +1,5 @@
 import type {Fn} from '../../types/commons.t'
-import type {CacheBy, FnCache} from '../../types/memoization.t'
+import type {CacheBy, FnCache, MemoizedFn as IMemoizedFn} from '../../types/memoization.t'
 
 import Cache from '../../cache/implementations/Cache'
 import evaluate from '../../commons/evaluate'
@@ -8,8 +8,7 @@ import promisify from '../../commons/promise/promisify'
 
 import getSignatureKey from '../getSignatureKey'
 
-type MemoizedFn<F extends Fn> = {
-  (...args: Parameters<F>): ReturnType<F>
+type MemoizedFn<F extends Fn> = IMemoizedFn<F> & {
   cache: FnCache<F>
 }
 
@@ -39,8 +38,8 @@ function memo <F extends Fn>(fn: F, cacheBy?: CacheBy<F>, cache?: FnCache<F>): M
   const cachedPromises = new Cache<string, Promise<Awaited<ReturnType<F>>>>()
   let isAsync: boolean = false
 
-  const memoized = (...args: Parameters<F>): ReturnType<F> => {
-    const key = getKey(...args)
+  const memoized = function (this: ThisType<F> | void, ...args: Parameters<F>): ReturnType<F> {
+    const key = getKey.apply(this, args)
 
     if (cachedPromises.has(key)) {
       return cachedPromises.get(key) as ReturnType<F>
@@ -67,6 +66,8 @@ function memo <F extends Fn>(fn: F, cacheBy?: CacheBy<F>, cache?: FnCache<F>): M
   }
 
   memoized.cache = computedCache
+
+  memoized.clean = computedCache.clean.bind(computedCache)
 
   return memoized
 }
