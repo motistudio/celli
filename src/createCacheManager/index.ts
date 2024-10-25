@@ -1,13 +1,14 @@
+import type {CacheManager, Cleanable} from '../types/cache.t'
+
 import reduce from '../commons/iterators/reduce'
 import isThentable from '../commons/promise/isThentable'
 import singlify from '../commons/promise/singlify'
-import type {AnyCacheType} from '../types/cache.t'
 
-const createCacheManager = () => {
-  const caches: Set<AnyCacheType<any, any>> = new Set()
+const createCacheManager = (): CacheManager => {
+  const caches: Set<Cleanable> = new Set()
 
   return {
-    register: (cache: AnyCacheType<any, any>) => {
+    register: (cache: Cleanable) => {
       caches.add(cache)
     },
     clean: singlify(() => {
@@ -17,7 +18,7 @@ const createCacheManager = () => {
           promises.push(result as Promise<void>)
         }
         return promises
-      }, []))
+      }, [])).then(() => undefined)
     })
   }
 }

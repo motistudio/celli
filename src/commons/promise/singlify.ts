@@ -1,22 +1,22 @@
 import type {Fn} from '../../types/commons.t'
 
-const singlify = <C extends Fn<any[], Promise<any>>>(fn: C): C => {
-  let promise: ReturnType<C> | undefined = undefined
+const singlify = <F extends Fn<any[], Promise<any>>>(fn: F): F => {
+  let promise: ReturnType<F> | undefined = undefined
 
-  return ((...args: Parameters<C>) => {
+  return (function (this: ThisType<F> | void, ...args: Parameters<F>) {
     if (promise) {
-      return promise as ReturnType<C>
+      return promise as ReturnType<F>
     }
-    promise = Promise.resolve(fn(...args)).then((result) => {
+    promise = Promise.resolve(fn.apply(this, args)).then((result) => {
       promise = undefined
       return result
     }).catch((e) => {
       promise = undefined
       return Promise.reject(e)
-    }) as ReturnType<C>
+    }) as ReturnType<F>
 
     return promise
-  }) as unknown as C
+  }) as unknown as F
 }
 
 export default singlify
