@@ -8,6 +8,11 @@ import promisify from '../../commons/promise/promisify'
 
 import getSignatureKey from '../getSignatureKey'
 
+type MemoizedFn<F extends Fn> = {
+  (...args: Parameters<F>): ReturnType<F>
+  cache: FnCache<F>
+}
+
 const registerPromise = <T>(promisesCache: Cache<string, Promise<T>>, key: string, promise: PromiseLike<T>): Promise<T> => {
   const computedPromise = Promise.resolve(promise).then((result) => {
     promisesCache.delete(key)
@@ -28,7 +33,7 @@ const registerPromise = <T>(promisesCache: Cache<string, Promise<T>>, key: strin
  * @param {AnyCacheType<string, Awaited<ReturnType<Fn>>>?} cache - An optional key to work with
  * @returns {Fn} A memoized instance of the original function
  */
-function memo <F extends Fn>(fn: F, cacheBy?: CacheBy<F>, cache?: FnCache<F>) {
+function memo <F extends Fn>(fn: F, cacheBy?: CacheBy<F>, cache?: FnCache<F>): MemoizedFn<F> {
   const getKey = cacheBy || (getSignatureKey as CacheBy<F>)
   const computedCache: FnCache<F> = cache || new Cache<string, Awaited<ReturnType<F>>>()
   const cachedPromises = new Cache<string, Promise<Awaited<ReturnType<F>>>>()
@@ -60,6 +65,8 @@ function memo <F extends Fn>(fn: F, cacheBy?: CacheBy<F>, cache?: FnCache<F>) {
 
     return potentialPromise
   }
+
+  memoized.cache = computedCache
 
   return memoized
 }

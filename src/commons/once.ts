@@ -12,7 +12,7 @@ type OnceFn<C extends Fn> = {
  * @param {C} fn - Any function 
  * @returns {OnceFn<C>} The wrapped function, along with a clean callback to reset the cache
  */
-const once = <C extends Fn>(fn: C): OnceFn<C> => {
+function once <C extends Fn>(fn: C): OnceFn<C> {
   let result: Awaited<ReturnType<C>> | undefined = undefined
   let isAsync: boolean = false
   let resolved: boolean = false
