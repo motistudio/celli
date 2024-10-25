@@ -11,6 +11,7 @@ import backup from '../cache/transformers/backup'
 
 import memo from '../memoization/memo'
 import cacheWith from '../memoization/cacheWith'
+import Cache from '../cache/implementations/Cache'
 
 export * from '../types/cache.t'
 
@@ -26,5 +27,6 @@ export {
   SourceCleanupPolicies,
   // Memoization:
   memo,
-  cacheWith
+  cacheWith,
+  Cache
 }

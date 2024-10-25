@@ -51,7 +51,7 @@ describe('Cache decorator', () => {
     expect(method).toHaveBeenCalledTimes(4)
 
     // Wait for TTL to expire
-    jest.advanceTimersByTime(101);
+    jest.advanceTimersByTime(101)
 
     // Call after TTL expiration should compute again
     const result7 = StaticClass.expensiveMethod(15)

@@ -51,7 +51,7 @@ function memo <F extends Fn>(fn: F, cacheBy?: CacheBy<F>, cache?: FnCache<F>): M
         return isAsync ? registerPromise<Awaited<ReturnType<F>>>(cachedPromises, key, promisify(cached)) : cached
       }
       const result = fn(...args) as ReturnType<F>
-      isAsync = isAsync || isThentable(result);
+      isAsync = isAsync || isThentable(result)
 
       return evaluate(result, (result) => {
         return evaluate(computedCache.set(key, result as Awaited<ReturnType<F>>), () => result)
