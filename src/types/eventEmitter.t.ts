@@ -1,7 +1,4 @@
 export type EventMap = Record<string, any[]>
-// export type EventMap = {[eventName: string]: any[]}
-
-type X = keyof EventMap
 
 export type EventMapKey<M extends EventMap> = string & keyof M
 export type EventListener<T extends any[]> = (...params: T) => void

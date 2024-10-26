@@ -5,8 +5,7 @@ import type {
   CacheKey,
   CacheValue,
   CacheEventMap,
-  CacheEventMapKey,
-  AnyCacheType
+  CacheEventMapKey
 } from '../../../types/cache.t'
 import type {
   EventListener,

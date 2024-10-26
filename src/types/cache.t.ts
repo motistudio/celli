@@ -1,5 +1,5 @@
 import type {Effect} from './effects.t'
-import type {EventEmitter, EventEmitterKey, EventEmitterListener, EventListener} from './eventEmitter.t'
+import type {EventListener} from './eventEmitter.t'
 
 export type Key = string | number | symbol
 

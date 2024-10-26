@@ -1,4 +1,4 @@
-import {Effect} from "../../../../types/effects.t"
+import {Effect} from '../../../../types/effects.t'
 
 type TtlOptions = {
   timeout: number

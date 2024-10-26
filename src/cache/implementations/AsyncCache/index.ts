@@ -13,7 +13,6 @@ import type {
 } from '../../../types/eventEmitter.t'
 
 import getAsyncIterator from '../../../commons/iterators/getAsyncIterator'
-import isThentable from '../../../commons/promise/isThentable'
 import createEventEmitter from '../../../commons/eventEmitter/createEventEmitter'
 import subscribe from '../../../commons/eventEmitter/subscribe'
 
@@ -27,9 +26,6 @@ import {
 } from '../../constants'
 import Cache from '../Cache'
 import promisify from '../../../commons/promise/promisify'
-
-// get, set overrides get
-// get should be a wrapper in case it's interrupted by set
 
 type SupportedInnerCache<K extends Key, T> = ICache<K, T> | IAsyncCache<K, T> | IAbstractCache<K, T> | BaseCache<K, T>
 

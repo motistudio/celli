@@ -1,3 +1,8 @@
+/**
+ * Gets a key from a function signature
+ * @param {unknown[]} args - Function arguments
+ * @returns {string}
+ */
 const getSignatureKey = (...args: unknown[]): string => {
   if (args.length === 0) {
     return ''

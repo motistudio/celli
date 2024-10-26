@@ -3,7 +3,6 @@ import type {CacheBy, CacheFrom, FnCache, MemoizedFn} from '../../types/memoizat
 import type {Fn} from '../../types/commons.t'
 
 import reduce from '../../commons/iterators/reduce'
-import forEach from '../../commons/iterators/forEach'
 
 import memo from '../memo'
 import getSignatureKey from '../getSignatureKey'

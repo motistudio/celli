@@ -35,10 +35,8 @@ const createDisposeEffect = <T>(dispose: (value: T) => void | Promise<void>): Ef
 }
 
 function createCache <K extends Key, T>(options?: Merge<Omit<Partial<CacheCreationOptions<K, T>>, 'source'>, {async?: false}>): ICache<K, T>
-// function createCache <K extends Key, T>(options: Merge<Partial<CacheOptions<K, T>>, {async: false, effects: Effect<T>[]}>): ILifeCycleCache<ICache<K, T>>
 function createCache <K extends Key, T>(options?: Merge<Partial<CacheCreationOptions<K, T>>, {async: true}>): IAsyncCache<K, T>
 function createCache <K extends Key, T>(options?: Merge<Partial<CacheCreationOptions<K, T>>, {source: IAsyncCache<K, T>}>): IAsyncCache<K, T>
-// function createCache <K extends Key, T>(options: Merge<Partial<CacheOptions<K, T>>, {async: true, effects: Effect<T>[]}>): ILifeCycleCache<IAsyncCache<K, T>>
 function createCache <K extends Key, T>(options?: Partial<CacheCreationOptions<K, T>>): AnyCacheType<K, T> {
   const {
     async: isAsync,

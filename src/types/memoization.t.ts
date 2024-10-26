@@ -9,6 +9,5 @@ export type CachePer<F extends Fn> = (...args: Parameters<F>) => unknown
 
 export type MemoizedFn<F extends Fn> = {
   (this: ThisType<F> | void, ...args: Parameters<F>): ReturnType<F>
-  // cache: FnCache<F>
   clean: () => void | Promise<void>
 }

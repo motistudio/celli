@@ -4,6 +4,10 @@ import reduce from '../commons/iterators/reduce'
 import isThentable from '../commons/promise/isThentable'
 import singlify from '../commons/promise/singlify'
 
+/**
+ * Creates a cache manager
+ * @returns {CacheManager}
+ */
 const createCacheManager = (): CacheManager => {
   const caches: Set<Cleanable> = new Set()
 

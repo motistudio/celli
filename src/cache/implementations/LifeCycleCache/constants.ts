@@ -1,6 +1,4 @@
 import type {
-  Key,
-  AbstractCache as IAbstractCache,
   AsyncInnerCache,
   AnyCacheType,
   LifeCycleCache as ILifeCycleCache,

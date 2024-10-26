@@ -1,4 +1,4 @@
-import isThentable from "../promise/isThentable"
+import isThentable from '../promise/isThentable'
 
 const key = Symbol.for('async-iterable-iterator-wrapper-key')
 

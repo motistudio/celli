@@ -1,4 +1,4 @@
-import type {Key, AsyncCache, AnyCache} from '../../types/cache.t'
+import type {Key, AsyncCache} from '../../types/cache.t'
 import SourceAsyncCache from './SourceAsyncCache'
 
 import type {SourceOptions} from './constants'

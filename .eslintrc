@@ -7,7 +7,8 @@
   "plugins": ["@typescript-eslint"],
   "root": true,
   "rules": {
-    "semi": ["error", "never"],
+    "semi": 2,
+    "no-unused-vars": 2,
     "@typescript-eslint/no-explicit-any": 0
   },
   "ignore": ["dist"]

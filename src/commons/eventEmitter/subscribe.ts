@@ -1,12 +1,9 @@
 import type {
   EventMap,
-  // EventEmitter as IEventEmitter,
   EventEmitter,
   EventListener,
   EventMapKey
 } from '../../types/eventEmitter.t'
-
-// import EventEmitter from './EventEmitter'
 
 type Unsubscribe = () => void
 
