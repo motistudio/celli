@@ -199,7 +199,6 @@ describe('Creating and composing cache', () => {
     expect(fn).toHaveBeenCalledTimes(2)
   })
 
-  // TODO: This is the application's responsibility, this ability should probably be removed
   test('Should imperatively auto clean a cache', async () => {
     const cache = compose(
       effects([

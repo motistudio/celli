@@ -9,18 +9,20 @@ import type {
   CacheEventMapKey
 } from '../../../types/cache.t'
 import {EventListener} from '../../../types/eventEmitter.t'
+import type {LruItemSizeGetter, LruCacheOptions} from '../../../types/functional.t'
 
 import getAsyncIterator from '../../../commons/iterators/getAsyncIterator'
-import isThentable from '../../../commons/promise/isThentable'
-
-import Cache from '../Cache'
-
-import {CACHE_KEY, EVENT_EMITTER_KEY} from '../../constants'
-
-import type {LruItemSizeGetter, LruCacheOptions} from '../../../types/functional.t'
 import evaluate from '../../../commons/evaluate'
 
+import {CACHE_KEY} from '../../constants'
+import Cache from '../Cache'
+import { Merge } from '../../../types/commons.t'
+
 const KEYS_CACHE_KEY = Symbol.for('keys-cache')
+
+type LruOptions<K extends Key, T> = Merge<LruCacheOptions<K, T>, {
+  getItemSize?: LruItemSizeGetter<K, T>
+}>
 
 const DEFAULT_MAX_CACHE_SIZE = 500
 
@@ -119,7 +121,7 @@ class LruCache<C extends AnyCacheType<any, any> = ICache<any, any>> implements I
   public usedSize: number
   public getItemSize: LruItemSizeGetter<CacheKey<C>, CacheValue<C>>
 
-  constructor (cache?: C, options?: Partial<LruCacheOptions<CacheKey<C>, CacheValue<C>>>) {
+  constructor (cache?: C, options?: LruOptions<CacheKey<C>, CacheValue<C>>) {
     this[CACHE_KEY] = cache || (new Cache<CacheKey<C>, CacheValue<C>>() as unknown as C)
     this[KEYS_CACHE_KEY] = new Map()
     this.usedSize = 0
