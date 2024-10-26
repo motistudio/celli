@@ -11,13 +11,14 @@ import backup from '../cache/transformers/backup'
 
 import memo from '../memoization/memo'
 import cacheWith from '../memoization/cacheWith'
-// import Cache from '../decorators/cache'
-
-export * from '../types/cache.t'
+import Cache from '../decorators/cache'
 
 import cacheManager from './cacheManager'
 import wrapUtil from './wrapUtil'
 import wrapTransformer from './wrapTransformer'
+import wrapDecorator from './wrapDecorator'
+export * from '../types/cache.t'
+import type {Cache as ICache} from '../types/cache.t'
 
 const {clean} = cacheManager
 
@@ -31,6 +32,7 @@ const libAsync = wrapTransformer(async, cacheManager)
 const libLifeCycle = wrapTransformer(lifeCycle, cacheManager)
 const libEffects = wrapTransformer(effects, cacheManager)
 const libBackup = wrapTransformer(backup, cacheManager)
+const libCache = wrapDecorator(Cache, cacheManager)
 
 export {
   // Cache:
@@ -45,6 +47,7 @@ export {
   // Memoization:
   libMemo as memo,
   libCacheWith as cacheWith,
-  // Cache,
+  libCache as Cache,
+  ICache,
   clean
 }
