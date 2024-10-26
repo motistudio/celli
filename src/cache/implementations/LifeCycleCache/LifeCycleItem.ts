@@ -1,54 +1,55 @@
-import type {Effect, Cleanup, EffectApi} from '../../../types/effects.t'
-import type {Observable as IObservable} from '../../../types/observables.t'
-
-import Observable from '../../../commons/observables/Observable'
-
-import createCleanup from './createCleanup'
+import type {Effect, Cleanup} from '../../../types/effects.t'
+import type {AnyCacheType} from '../../../types/cache.t'
 import isThentable from '../../../commons/promise/isThentable'
+
+import {
+  INTERNAL_REMOTE_READ,
+  INTERNAL_REMOTE_CLEAN,
+  type LifeCycleCache
+} from './constants'
+import RemoteApi from './RemoteApi'
 
 class LifeCycleItem<T> {
   public isCleaned: boolean
-  public lastValue: T
-  public cleanup: Cleanup
-  public stream: IObservable<T>
+  public remoteApi: RemoteApi<LifeCycleCache<AnyCacheType<any, any>>>
+  public cleanupCalls: Cleanup[]
 
-  constructor (effects: Effect<T>[], initialValue: T, setSelf: (value: T) => Promise<void> | void, removeSelf: () => void) {
-    this.lastValue = initialValue
+  constructor (effects: Effect<T>[], remoteApi: RemoteApi<LifeCycleCache<AnyCacheType<any, T>>>) {
     this.isCleaned = false
-    this.stream = new Observable<T>()
+    this.remoteApi = remoteApi
+    this.cleanupCalls = []
 
-    const api: Omit<EffectApi<T>, 'onRead'> = {
-      getSelf: () => this.lastValue,
-      setSelf: (value) => {
-        const result = setSelf(value)
-        if (isThentable(result)) {
-          return result.then((val) => {
-            this.lastValue = value
-            return val
-          })
-        }
-        this.lastValue = value
-        return undefined
-      },
-      deleteSelf: () => {
-        if (!this.isCleaned) {
-          removeSelf()
-        }
+    this.cleanupCalls = effects.reduce<Cleanup[]>((cleanups, effect) => {
+      const cleanup = effect(this.remoteApi)
+      if (typeof cleanup === 'function') {
+        cleanups.push(cleanup)
       }
-    }
-
-    this.cleanup = createCleanup(api, this.stream, initialValue, effects)
+      return cleanups
+    }, [])
   }
 
   read (value: T) {
-    this.lastValue = value
-    this.stream.next(value)
+    this.remoteApi[INTERNAL_REMOTE_READ](value)
   }
 
   clean () {
     if (!this.isCleaned) {
+      const cleanupPromises = this.cleanupCalls.reduce<Promise<void>[]>((promises, cleanup) => {
+        const promise = cleanup()
+        if (isThentable(promise)) {
+          promises.push(promise)
+        }
+        return promises
+      }, [])
+
+      if (cleanupPromises.length) {
+        return Promise.all(cleanupPromises).then(() => undefined).then(() => {
+          this.remoteApi[INTERNAL_REMOTE_CLEAN]()
+          this.isCleaned = true
+        })
+      }
+      this.remoteApi[INTERNAL_REMOTE_CLEAN]()
       this.isCleaned = true
-      return this.cleanup()
     }
   }
 }

@@ -3,24 +3,29 @@ import type {
   Cache as ICache,
   AsyncCache as IAsyncCache,
   AbstractCache as IAbstractCache,
-  BaseCache
+  BaseCache,
+  CacheEventMap,
+  CacheEventMapKey
 } from '../../../types/cache.t'
+import type {
+  EventEmitter,
+  EventListener
+} from '../../../types/eventEmitter.t'
 
 import getAsyncIterator from '../../../commons/iterators/getAsyncIterator'
-import Observable from '../../../commons/observables/Observable'
-import isThentable from '../../../commons/promise/isThentable'
+import createEventEmitter from '../../../commons/eventEmitter/createEventEmitter'
+import subscribe from '../../../commons/eventEmitter/subscribe'
 
 import {
   CACHE_KEY,
-  SET_STREAM_KEY,
   GET_PROMISES_KEY,
   SET_PROMISES_KEY,
   HAS_PROMISES_KEY,
-  DELETE_PROMISES_KEY
+  DELETE_PROMISES_KEY,
+  EVENT_EMITTER_KEY
 } from '../../constants'
-
-// get, set overrides get
-// get should be a wrapper in case it's interrupted by set
+import Cache from '../Cache'
+import promisify from '../../../commons/promise/promisify'
 
 type SupportedInnerCache<K extends Key, T> = ICache<K, T> | IAsyncCache<K, T> | IAbstractCache<K, T> | BaseCache<K, T>
 
@@ -28,6 +33,7 @@ const getValuePromise = <K extends Key, T>(cache: AsyncCache<K, T>, key: K): Pro
   return new Promise((resolve, reject) => {
     const result = cache[CACHE_KEY].get(key)
     return Promise.resolve(result).then((result) => {
+      cache[EVENT_EMITTER_KEY].emit('get', key)
       cache[GET_PROMISES_KEY].delete(key)
       return result
     }).then(resolve).catch((e) => {
@@ -43,15 +49,15 @@ class AsyncCache<K extends Key, T> implements IAsyncCache<K, T> {
   public [SET_PROMISES_KEY]: Map<K, Promise<void>>
   public [HAS_PROMISES_KEY]: Map<K, Promise<boolean>>
   public [DELETE_PROMISES_KEY]: Map<K, Promise<void>>
-  public [SET_STREAM_KEY]: Observable<[K, T, Promise<void> | undefined]>
+  public [EVENT_EMITTER_KEY]: EventEmitter<CacheEventMap<K, T>>
 
-  constructor (cache?: SupportedInnerCache<K, T>) {
-    this[CACHE_KEY] = cache || new Map()
+  constructor(cache?: SupportedInnerCache<K, T>) {
+    this[CACHE_KEY] = cache || new Cache<K, T>()
     this[GET_PROMISES_KEY] = new Map()
     this[SET_PROMISES_KEY] = new Map()
     this[HAS_PROMISES_KEY] = new Map()
     this[DELETE_PROMISES_KEY] = new Map()
-    this[SET_STREAM_KEY] = new Observable()
+    this[EVENT_EMITTER_KEY] = createEventEmitter<CacheEventMap<K, T>>()
   }
 
   get (key: K): Promise<T | undefined> {
@@ -78,7 +84,7 @@ class AsyncCache<K extends Key, T> implements IAsyncCache<K, T> {
 
     // The double wrapping is a defense against finally()
     const getPromise = getValuePromise<K, T>(this, key)
-    
+
     this[GET_PROMISES_KEY].set(key, getPromise)
 
     return getPromise
@@ -90,7 +96,10 @@ class AsyncCache<K extends Key, T> implements IAsyncCache<K, T> {
     if (existingSetPromise) {
       const setPromise = new Promise<void>((resolve, reject) => {
         existingSetPromise.finally(() => {
-          Promise.resolve(this[CACHE_KEY].set(key, value)).then(resolve).catch(reject)
+          Promise.resolve(this[CACHE_KEY].set(key, value)).then((result) => {
+            this[EVENT_EMITTER_KEY].emit('set', key, value)
+            resolve(result)
+          }).catch(reject)
         })
       }).then(() => {
         this[SET_PROMISES_KEY].delete(key)
@@ -98,13 +107,14 @@ class AsyncCache<K extends Key, T> implements IAsyncCache<K, T> {
         this[SET_PROMISES_KEY].delete(key)
         return Promise.reject(e)
       })
-      
+
       this[SET_PROMISES_KEY].set(key, setPromise)
 
       return Promise.resolve(setPromise)
     }
 
     const setPromise = Promise.resolve(this[CACHE_KEY].set(key, value)).then(() => {
+      this[EVENT_EMITTER_KEY].emit('set', key, value)
       this[SET_PROMISES_KEY].delete(key)
     }).catch((e) => {
       this[SET_PROMISES_KEY].delete(key)
@@ -167,6 +177,7 @@ class AsyncCache<K extends Key, T> implements IAsyncCache<K, T> {
       return existingPromise
     }
     const deletePromise = Promise.resolve(Promise.resolve(this[CACHE_KEY].delete(key)).then(() => {
+      this[EVENT_EMITTER_KEY].emit('delete', key)
       this[DELETE_PROMISES_KEY].delete(key)
       return undefined
     }, (e) => {
@@ -194,10 +205,15 @@ class AsyncCache<K extends Key, T> implements IAsyncCache<K, T> {
     return this.entries()
   }
 
-  clean () {
-    if (typeof (this[CACHE_KEY] as (ICache<K, T> | IAsyncCache<K, T>)).clean === 'function') {
-      const result = (this[CACHE_KEY] as (ICache<K, T> | IAsyncCache<K, T>)).clean()
-      return isThentable(result) ? result : Promise.resolve(result)
+  on <M extends CacheEventMap<K, T> = CacheEventMap<K, T>, EK extends CacheEventMapKey = CacheEventMapKey>(eventName: EK, listener: EventListener<M[EK]>) {
+    return subscribe<M, EK>(this[EVENT_EMITTER_KEY], eventName, listener)
+  }
+
+  clean (): Promise<void> {
+    if (typeof (this[CACHE_KEY] as ICache<K, T> | IAsyncCache<K, T>).clean === 'function') {
+      return promisify((this[CACHE_KEY] as ICache<K, T> | IAsyncCache<K, T>).clean()).then(() => {
+        this[EVENT_EMITTER_KEY].emit('clean')
+      })
     }
 
     // Unless we got another implementation, we will go over each key and remove it
@@ -207,7 +223,7 @@ class AsyncCache<K extends Key, T> implements IAsyncCache<K, T> {
 
       // loop:
       const enrichDeletePromises = (iterator: AsyncIterableIterator<K>, deletePromises: Promise<void>[]): Promise<void> => {
-        return keysIterator.next().then(({value: key, done}) => {
+        return keysIterator.next().then(({ value: key, done }) => {
           const existingDeletePromise = this[DELETE_PROMISES_KEY].get(key)
           deletePromises.push(existingDeletePromise || this.delete(key))
 
@@ -219,7 +235,10 @@ class AsyncCache<K extends Key, T> implements IAsyncCache<K, T> {
       }
 
       return enrichDeletePromises(keysIterator, deletePromises).then(() => {
-        return Promise.all(deletePromises).then(() => resolve(undefined)).catch(reject)
+        return Promise.all(deletePromises).then(() => {
+          resolve(undefined)
+          this[EVENT_EMITTER_KEY].emit('clean')
+        }).catch(reject)
       })
     })
   }

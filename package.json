@@ -11,7 +11,7 @@
   "scripts": {
     "build": "npx tsc --project tsconfig.lib.json",
     "prepack": "npm run build",
-    "lint": "npx eslint",
+    "lint": "npx eslint .",
     "test": "npx jest"
   },
   "keywords": [

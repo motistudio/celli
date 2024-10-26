@@ -1,19 +1,20 @@
 import LruCache from '../implementations/LruCache'
 import type {
   Key,
-  Cache,
+  AnyCacheType,
   CacheKey,
-  CacheValue,
-  Transformer,
-  AnyCache,
-  BaseCache
+  CacheValue
 } from '../../types/cache.t'
+import type {LruCacheOptions, LruItemSizeGetter} from '../../types/functional.t'
+import {Merge} from '../../types/commons.t'
 
-// type LruTransformer<C extends AnyCache<any, any>> = Transformer<C, C extends BaseCache<infer K, infer T> ? Cache<K, T> : C>
+type LruOptions<K extends Key, T> = Merge<LruCacheOptions<K, T>, {
+  getItemSize?: LruItemSizeGetter<K, T>
+}>
 
-const lru = <K extends Key, T>(options: NonNullable<ConstructorParameters<typeof LruCache<K, T>>[1]>) => {
-  return <C extends AnyCache<K, T> = AnyCache<K, T>>(cache: C): (C extends BaseCache<infer K, infer T> ? Cache<K, T> : C) => {
-    return new LruCache(cache, options) as unknown as (C extends BaseCache<infer K, infer T> ? Cache<K, T> : C)
+const lru = <C extends AnyCacheType<any, any>>(options: LruOptions<CacheKey<C>, CacheValue<C>>) => {
+  return (cache: C) => {
+    return new LruCache(cache, options)
   }
 }
 

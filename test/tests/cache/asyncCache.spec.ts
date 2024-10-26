@@ -1,4 +1,3 @@
-import delay from '../../../src/commons/promise/delay'
 import isThentable from '../../../src/commons/promise/isThentable'
 import {
   GET_PROMISES_KEY,
@@ -12,7 +11,7 @@ import AsyncCache from '../../../src/cache/implementations/AsyncCache'
 import getPromiseState from '../../../src/commons/promise/getPromiseState'
 
 describe('Async Cache', () => {
-  test.each([new AsyncCache<string, any>(), new AsyncCache<string, any>(new AsyncCache)])('Should create a simple async cache', async (cache) => {
+  test.each([new AsyncCache<string, any>(), new AsyncCache<string, any>(new Map()), new AsyncCache<string, any>(new AsyncCache)])('Should create a simple async cache', async (cache) => {
     const key = 'k'
     const value = 'val'
     const value2 = 'val2'
@@ -21,23 +20,29 @@ describe('Async Cache', () => {
     expect(cache[HAS_PROMISES_KEY].get(key)).toBe(undefined)
     await expect(cache.get(key)).resolves.toBe(undefined)
     expect(cache[GET_PROMISES_KEY].get(key)).toBe(undefined)
-    
+
     await cache.set(key, value)
     expect(cache[SET_PROMISES_KEY].get(key)).toBe(undefined)
-    
+
     await expect(cache.has(key)).resolves.toBe(true)
     await expect(cache.get(key)).resolves.toBe(value)
-    
+
     await cache.set(key, value2)
     await expect(cache.has(key)).resolves.toBe(true)
     await expect(cache.get(key)).resolves.toBe(value2)
-    
+
     await cache.delete(key)
     expect(cache[DELETE_PROMISES_KEY].get(key)).toBe(undefined)
     await expect(cache.has(key)).resolves.toBe(false)
     await expect(cache.get(key)).resolves.toBe(undefined)
+
+    await cache.set(key, value)
+    await expect(cache.get(key)).resolves.toBe(value)
+    await expect(cache.has(key)).resolves.toBe(true)
+    await cache.clean()
+    await expect(cache.has(key)).resolves.toBe(false)
   })
-  
+
   test('Should cache delete calls', async () => {
     const cache = new AsyncCache()
 
@@ -88,27 +93,75 @@ describe('Async Cache', () => {
     await expect(Promise.all(pairs.map(([key]) => cache.has(key))).then((indications) => indications.every((indication) => !indication))).resolves.toBe(true)
   })
 
+  test('Should subscribe to events', async () => {
+    const getHandler = jest.fn()
+    const setHandler = jest.fn()
+    const deleteHandler = jest.fn()
+    const cleanHandler = jest.fn()
+
+    const cache = new AsyncCache<string, string>()
+
+    const unsubscribeGet = cache.on('get', getHandler)
+    const unsubscribeSet = cache.on('set', setHandler)
+    const unsubscribeDelete = cache.on('delete', deleteHandler)
+    const unsubscribeClean = cache.on('clean', cleanHandler)
+
+    const key = 'key'
+    const value = 'value'
+
+    await expect(cache.get(key)).resolves.toBe(undefined)
+    expect(getHandler).toHaveBeenCalledTimes(1)
+    expect(getHandler).toHaveBeenCalledWith(key)
+
+    await cache.set(key, value)
+    await expect(cache.get(key)).resolves.toBe(value)
+    expect(getHandler).toHaveBeenCalledTimes(2)
+    expect(setHandler).toHaveBeenCalledTimes(1)
+    expect(setHandler.mock.calls.at(-1)).toMatchObject([key, value])
+
+    await cache.delete(key)
+    expect(deleteHandler).toHaveBeenCalledTimes(1)
+    expect(deleteHandler).toHaveBeenCalledWith(key)
+
+    await cache.clean()
+    expect(cleanHandler).toHaveBeenCalledTimes(1)
+
+    unsubscribeGet()
+    unsubscribeSet()
+    unsubscribeDelete()
+    unsubscribeClean()
+
+    await cache.set(key, value)
+    expect(setHandler).toHaveBeenCalledTimes(1)
+    await cache.get(key)
+    expect(getHandler).toHaveBeenCalledTimes(2)
+    await cache.delete(key)
+    expect(deleteHandler).toHaveBeenCalledTimes(1)
+    await cache.clean()
+    expect(cleanHandler).toHaveBeenCalledTimes(1)
+  })
+
   describe('Get() behaviour', () => {
     test('Should cache get promises', async () => {
       const cache = new AsyncCache()
-  
+
       const key = 'key'
       const value = 'value'
-  
+
       await cache.set(key, value)
-  
+
       const getPromise = cache.get(key)
       const getPromise2 = cache.get(key)
-  
+
       expect(getPromise2).toBe(getPromise)
       await expect(getPromise).resolves.toBe(value)
-      
+
       const getPromise3 = cache.get(key)
       expect(getPromise3).not.toBe(getPromise)
       await expect(getPromise3).resolves.toBe(value)
       expect(cache[GET_PROMISES_KEY].get(key)).toBeFalsy()
     })
-  
+
     test('Should wait for existing set operation to finish', async () => {
       const baseCache = new AsyncCache()
       const setter = jest.spyOn(baseCache, 'set')
@@ -123,7 +176,7 @@ describe('Async Cache', () => {
       expect(isThentable((setter.mock.results[0] as unknown as {value: Promise<typeof value>}).value)).toBe(true)
       // The state of the inner promise
       const promiseState = getPromiseState((setter.mock.results[0] as unknown as {value: Promise<typeof value>}).value)
-  
+
       const getPromise = cache.get(key)
       const getterState = getPromiseState(getPromise)
       expect(promiseState.finished).toBe(false)
@@ -156,7 +209,7 @@ describe('Async Cache', () => {
       const cache = new AsyncCache(baseCache)
 
       const key = 'key'
-      const value = 'value'
+      // const value = 'value'
 
       // expect(() => cache.set(key, value)).rejects.toThrow()
       const error = new Error('Expected reject')
@@ -189,7 +242,7 @@ describe('Async Cache', () => {
       // expect(rejectedPromise).rejects.toThrow()
       // await expect(cache.get(key)).resolves.toBe(undefined)
     })
-  
+
     test.skip('Should wait for existing set operation to finish even when it fails', async () => {
       await expect(Promise.reject(new Error('Rejects!'))).rejects.toThrow()
       const baseCache = new AsyncCache()
@@ -248,7 +301,7 @@ describe('Async Cache', () => {
       expect(isThentable((setter.mock.results[0] as unknown as {value: Promise<typeof value>}).value)).toBe(true)
       // The state of the inner promise
       const promiseState = getPromiseState((setter.mock.results[0] as unknown as {value: Promise<typeof value>}).value)
-      
+
       const setPromise2 = cache.set(key, value2)
       const promiseState2 = getPromiseState(setPromise2)
 
@@ -280,7 +333,7 @@ describe('Async Cache', () => {
       const promiseState = getPromiseState((setter.mock.results[0] as unknown as {value: Promise<typeof value>}).value)
 
       setter.mockImplementation(() => Promise.reject(new Error('Intentional rejection')))
-  
+
       const setPromise2 = cache.set(key, 'val')
       const setPromiseState = getPromiseState(setPromise2)
       expect(promiseState.finished).toBe(false)
@@ -341,7 +394,7 @@ describe('Async Cache', () => {
       expect(isThentable((setter.mock.results[0] as unknown as {value: Promise<typeof value>}).value)).toBe(true)
       // The state of the inner promise
       const promiseState = getPromiseState((setter.mock.results[0] as unknown as {value: Promise<typeof value>}).value)
-  
+
       const hasPromise = cache.has(key)
       const getterState = getPromiseState(hasPromise)
       expect(promiseState.finished).toBe(false)
@@ -368,7 +421,7 @@ describe('Async Cache', () => {
       expect(isThentable((setter.mock.results[0] as unknown as {value: Promise<typeof value>}).value)).toBe(true)
       // The state of the inner promise
       const promiseState = getPromiseState((setter.mock.results[0] as unknown as {value: Promise<typeof value>}).value)
-  
+
       const hasPromise = cache.has(key)
       const hasPromiseState = getPromiseState(hasPromise)
       expect(promiseState.finished).toBe(false)

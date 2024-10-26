@@ -1,19 +1,28 @@
-import getAsyncIterator from '../../../commons/iterators/getAsyncIterator'
-import isThentable from '../../../commons/promise/isThentable'
-
 import type {
   Key,
   Cache as ICache,
-  AsyncCache as IAsyncCache,
-  AbstractCache,
-  AsyncInnerCache
+  AnyCacheType,
+  CacheKey,
+  CacheValue,
+  LruCache as ILruCache,
+  CacheEventMap,
+  CacheEventMapKey
 } from '../../../types/cache.t'
+import {EventListener} from '../../../types/eventEmitter.t'
+import type {LruItemSizeGetter, LruCacheOptions} from '../../../types/functional.t'
+
+import getAsyncIterator from '../../../commons/iterators/getAsyncIterator'
+import evaluate from '../../../commons/evaluate'
 
 import {CACHE_KEY} from '../../constants'
-
-import type {ItemSizeGetter, LruCacheOptions} from './types.t'
+import Cache from '../Cache'
+import { Merge } from '../../../types/commons.t'
 
 const KEYS_CACHE_KEY = Symbol.for('keys-cache')
+
+type LruOptions<K extends Key, T> = Merge<LruCacheOptions<K, T>, {
+  getItemSize?: LruItemSizeGetter<K, T>
+}>
 
 const DEFAULT_MAX_CACHE_SIZE = 500
 
@@ -28,19 +37,19 @@ const DEFAULT_OPTIONS: LruCacheOptions<Key, any> = {
  * Returns an existing key's size.
  * If the key does not exist - it will return 0
  * @param {LruCache<Key, any>} cache - Any LruCache
- * @param {Key} key - Any key 
+ * @param {Key} key - Any key
  * @returns {number} the item's size
  */
-const getKeySize = <C extends LruCache<any, any>>(cache: C, key: Key): number => {
+const getKeySize = <C extends LruCache<AnyCacheType<any, any>>>(cache: C, key: Key): number => {
   return cache[KEYS_CACHE_KEY].has(key) ? (cache[KEYS_CACHE_KEY].get(key) || 1) : 0
 }
 
 /**
  * Util function: refreshes a give key of an LruCache
  * @param {LruCache<Key, any>} cache - Any LruCache
- * @param {Key} key - Any key 
+ * @param {Key} key - Any key
  */
-const refreshKey = <C extends LruCache<any, any>>(cache: C, key: Key) => {
+const refreshKey = <C extends LruCache<AnyCacheType<any, any>>>(cache: C, key: Key) => {
   if (cache[KEYS_CACHE_KEY].has(key)) {
     const existingSize = cache[KEYS_CACHE_KEY].get(key)
     cache[KEYS_CACHE_KEY].delete(key)
@@ -52,10 +61,10 @@ const refreshKey = <C extends LruCache<any, any>>(cache: C, key: Key) => {
  * Sets a new key.
  * It might cause delete calls as side-effect
  * @param {LruCache<Key, any>} cache - Any LruCache
- * @param {Key} key - Any key 
- * @param {number} size - The size the item takes 
+ * @param {Key} key - Any key
+ * @param {number} size - The size the item takes
  */
-const setKey = <C extends LruCache<any, any>>(cache: C, key: Key, size: number) => {
+const setKey = <C extends LruCache<AnyCacheType<any, any>>>(cache: C, key: Key, size: number) => {
   if (size < 1) {
     throw new Error('LruCacheError: Size cannot be smaller than 1')
   }
@@ -86,15 +95,15 @@ const setKey = <C extends LruCache<any, any>>(cache: C, key: Key, size: number) 
 /**
  * Removes a key
  * @param {LruCache<Key, any>} cache - Any LruCache
- * @param {Key} key - Any key 
+ * @param {Key} key - Any key
  */
-const removeKey = <C extends LruCache<any, any>>(cache: C, key: Key) => {
+const removeKey = <C extends LruCache<AnyCacheType<any, any>>>(cache: C, key: Key) => {
   const existingSize = cache[KEYS_CACHE_KEY].has(key) ? (cache[KEYS_CACHE_KEY].get(key) || 1) : 0
   cache[KEYS_CACHE_KEY].delete(key)
   cache.usedSize = cache.usedSize - existingSize
 }
 
-const introduce = <C extends LruCache<any, any>>(cache: C, key: Key, item?: any) => {
+const introduce = <C extends LruCache<AnyCacheType<any, any>>>(cache: C, key: Key, item?: any) => {
   if (item !== undefined && !cache[KEYS_CACHE_KEY].has(key)) {
     setKey(cache, key, cache.getItemSize(key, item))
   } else {
@@ -104,70 +113,79 @@ const introduce = <C extends LruCache<any, any>>(cache: C, key: Key, item?: any)
 
 /**
  * An LRU Cache implementation
- * @todo Customize the basic key setters/getters, since they might be async as well
  */
-class LruCache<K extends Key, T> implements AbstractCache<K, T> {
-  public [CACHE_KEY]: AsyncInnerCache<K, T>
-  public [KEYS_CACHE_KEY]: Map<K, number | undefined> // we treat 1's as undefined to save space
+class LruCache<C extends AnyCacheType<any, any> = ICache<any, any>> implements ILruCache<C> {
+  public [CACHE_KEY]: C
+  public [KEYS_CACHE_KEY]: Map<CacheKey<C>, number | undefined> // we treat 1's as undefined to save space
   public maxCacheSize: number
   public usedSize: number
-  public getItemSize: ItemSizeGetter<K, T>
+  public getItemSize: LruItemSizeGetter<CacheKey<C>, CacheValue<C>>
 
-  constructor (cache?: AsyncInnerCache<K, T>, options?: Partial<LruCacheOptions<K, T>>) {
-    this[CACHE_KEY] = cache || new Map()
+  constructor (cache?: C, options?: LruOptions<CacheKey<C>, CacheValue<C>>) {
+    this[CACHE_KEY] = cache || (new Cache<CacheKey<C>, CacheValue<C>>() as unknown as C)
     this[KEYS_CACHE_KEY] = new Map()
     this.usedSize = 0
 
-    const computedOptions = {...(DEFAULT_OPTIONS as LruCacheOptions<K, T>), ...options} as LruCacheOptions<K, T>
+    const computedOptions = {...(DEFAULT_OPTIONS as LruCacheOptions<CacheKey<C>, CacheValue<C>>), ...options} as LruCacheOptions<CacheKey<C>, CacheValue<C>>
     this.maxCacheSize = computedOptions.maxSize
     this.getItemSize = computedOptions.getItemSize
+
+    // This is done anyways when delete() is called,
+    // but sometimes events would come up from the cache we wrap with no call through this API
+    this.on('delete', (key) => {
+      if (this[KEYS_CACHE_KEY].has(key)) {
+        removeKey(this, key)
+      }
+    })
+
+    this.on('clean', () => {
+      // Resets again if needed - in case the event came from the wrapped cache
+      if (this[KEYS_CACHE_KEY].size > 0) {
+        this[KEYS_CACHE_KEY] = new Map()
+      }
+    })
   }
 
-  get (key: K) {
-    const item = this[CACHE_KEY].get(key)
-    if (isThentable(item)) {
-      return item.then((item) => {
-        introduce(this, key, item)
-        return item
-      })
-    }
-
-    introduce(this, key, item)
-    return item
+  get (...args: Parameters<C['get']>) {
+    const key = args[0]
+    return evaluate(this[CACHE_KEY].get.apply(this[CACHE_KEY], args), (item) => {
+      introduce(this, key, item)
+      return item
+    })
   }
 
-  set (key: K, value: T) {
-    const result = this[CACHE_KEY].set(key, value)
-    if (isThentable(result)) {
-      return result.then((result) => {
-        setKey(this, key, this.getItemSize(key, value))
-        return result
-      })
-    }
-
-    setKey(this, key, this.getItemSize(key, value))
-    return result
+  set (...args: Parameters<C['set']>): ReturnType<C['set']> {
+    const [key, value] = args as [key: CacheKey<C>, value: CacheValue<C>]
+    return evaluate(this[CACHE_KEY].set.apply(this[CACHE_KEY], args), (result) => {
+      setKey(this, key, this.getItemSize(key, value))
+      return result
+    }) as ReturnType<C['set']>
   }
 
-  has (key: K) {
-    return this[CACHE_KEY].has(key)
+  has (...args: Parameters<C['has']>) {
+    return this[CACHE_KEY].has.apply(this[CACHE_KEY], args) as ReturnType<C['has']>
   }
 
-  delete (key: K) {
-    removeKey(this, key)
-    return this[CACHE_KEY].delete(key)
+  delete (...args: Parameters<C['delete']>) {
+    // Removing the metadata first is basically assuming this operation will always work.
+    // This comes from hypothesis that we shouldn't ever fail a set() operation if a delete() had failed.
+    // Since set() requires the removal of keys (cause of lru), we should "always succeeed" to delete. At least the metadata.
+    removeKey(this, args[0])
+    return evaluate(this[CACHE_KEY].delete.apply(this[CACHE_KEY], args), (result) => {
+      return result
+    }) as ReturnType<C['delete']>
   }
 
   keys () {
-    return this[CACHE_KEY].keys()
+    return this[CACHE_KEY].keys() as ReturnType<C['keys']>
   }
 
   values () {
-    return this[CACHE_KEY].values()
+    return this[CACHE_KEY].values() as ReturnType<C['values']>
   }
 
   entries () {
-    return this[CACHE_KEY].entries()
+    return this[CACHE_KEY].entries() as ReturnType<C['entries']>
   }
 
   [Symbol.iterator] () {
@@ -179,25 +197,15 @@ class LruCache<K extends Key, T> implements AbstractCache<K, T> {
   }
 
   clean () {
-    if (typeof (this[CACHE_KEY] as (ICache<K, T> | IAsyncCache<K, T>)).clean === 'function') {
-      const result = (this[CACHE_KEY] as (ICache<K, T> | IAsyncCache<K, T>)).clean()
-      if (isThentable(result)) {
-        return result.then(() => {
-          this[KEYS_CACHE_KEY] = new Map()
-          this.usedSize = 0
-        })
-      }
+    return evaluate(this[CACHE_KEY].clean(), () => {
       this[KEYS_CACHE_KEY] = new Map()
       this.usedSize = 0
       return undefined
-    }
+    }) as ReturnType<C['clean']>
+  }
 
-    // Assuming 'clean' is not exist - it means we're running on a simple synchronous cache.
-    // Therefor, we can use the KEYS_CACHE_KEY instead of reading all the keys
-    const keys = Array.from(this[KEYS_CACHE_KEY].keys())
-    keys.forEach((key) => this.delete(key))
-
-    return undefined
+  on <M extends CacheEventMap<CacheKey<C>, CacheValue<C>> = CacheEventMap<CacheKey<C>, CacheValue<C>>, EK extends CacheEventMapKey = CacheEventMapKey>(eventName: EK, listener: EventListener<M[EK]>) {
+    return this[CACHE_KEY].on(eventName, listener)
   }
 }
 
