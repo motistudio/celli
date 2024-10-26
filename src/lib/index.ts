@@ -13,6 +13,8 @@ import memo from '../memoization/memo'
 import cacheWith from '../memoization/cacheWith'
 import cache from '../decorators/cache'
 import Cache from '../decorators/cache'
+import once from '../commons/once'
+import compose from '../commons/compose'
 
 import cacheManager from './cacheManager'
 import wrapUtil from './wrapUtil'
@@ -51,5 +53,8 @@ export {
   libCacheWith as cacheWith,
   libCache as Cache,
   ICache,
-  clean
+  clean,
+  // Commons:
+  once,
+  compose
 }
