@@ -24,7 +24,7 @@ const DEFAULT_EFFECTS: Effect<any>[] = []
 /**
  * Adds a promise to the clean queue
  * @template C extends LifeCycleCache<AnyCacheType<any, any>>
- * @param {C} cache - LifeCycleCache reference 
+ * @param {C} cache - LifeCycleCache reference
  * @param {Promise<void>} cleanupPromise - any promsise
  * @returns {Promise<void>} A promise that will be resolved after the cleanup has been deleted
  */
@@ -39,7 +39,7 @@ const clean = <C extends LifeCycleCache<AnyCacheType<any, any>>>(cache: C, clean
 /**
  * Cleans a key (effects) if exists
  * @template C extends LifeCycleCache<AnyCacheType<any, any>>
- * @param {C} cache - LifeCycleCache reference 
+ * @param {C} cache - LifeCycleCache reference
  * @param {CacheKey<C>} key - A key to clean
  * @returns {Promise<void> | undefined} A promise if the cleanup returns one
  */
@@ -65,8 +65,8 @@ const deleteKey = <C extends LifeCycleCache<AnyCacheType<any, any>>>(cache: C, k
  * @template C extends LifeCycleCache<AnyCacheType<any, any>>
  * @param {C} cache - LifeCycleCache reference
  * @param {CacheKey<C>} key - A key to clean
- * @param {CacheValue<C>} initialValue - The item's initial value 
- * @param {Effect<CacheValue<C>>[]} effects - An array of effects 
+ * @param {CacheValue<C>} initialValue - The item's initial value
+ * @param {Effect<CacheValue<C>>[]} effects - An array of effects
  */
 const setLifeCycleItem = <C extends LifeCycleCache<AnyCacheType<any, any>>>(cache: C, key: Key, initialValue: any, effects: Effect<any>[]) => {
   const cleanPromise = cleanByKey(cache, key)
@@ -169,7 +169,7 @@ class LifeCycleCache<C extends AnyCacheType<any, any> = ICache<any, any>> implem
       this[DELETE_QUEUE].add(deletePromise)
       this[DELETE_PROMISES_KEY].set(key, deletePromise)
 
-      return deletePromise  as ReturnType<C['delete']>
+      return deletePromise as ReturnType<C['delete']>
     }
 
     deleteKey(this, key)

@@ -17,7 +17,7 @@ describe('Backup cache', () => {
 
     expect(cache.has(key)).toBe(false)
     expect(cache.get(key)).toBe(undefined)
-    
+
     expect(isThentable(cache.set(key, value))).toBe(false)
     expect(cache.get(key)).toBe(value)
 
@@ -48,7 +48,7 @@ describe('Backup cache', () => {
 
     await expect(cache.has(key)).resolves.toBe(false)
     await expect(cache.get(key)).resolves.toBe(undefined)
-    
+
     await cache.set(key, value)
     await expect(cache.get(key)).resolves.toBe(value)
 
@@ -86,7 +86,7 @@ describe('Backup cache', () => {
     await cache.set(pairs[0][0], pairs[0][1])
     await expect(cache.has(pairs[0][0])).resolves.toBe(true)
     await expect(cache.get(pairs[0][0])).resolves.toBe(pairs[0][1])
-    
+
     await cache.set(pairs[1][0], pairs[1][1])
     await expect(cache.get(pairs[1][0])).resolves.toBe(pairs[1][1])
 
@@ -96,7 +96,7 @@ describe('Backup cache', () => {
 
     await expect(lruCache.has(pairs[0][0])).resolves.toBe(false) // The first key is no longer saved on the lruCache
     await expect(cache.has(pairs[0][0])).resolves.toBe(true) // however, the cache says it's there
-    
+
     await expect(cache.get(pairs[0][0])).resolves.toBe(pairs[0][1]) // The value is being taken from the backupCache
     await expect(lruCache.has(pairs[0][0])).resolves.toBe(true) // And re-introduce it to the lru cache
 
@@ -124,13 +124,13 @@ describe('Backup cache', () => {
     await expect(cache.get(key)).resolves.toBe(undefined)
     expect(getHandler).toHaveBeenCalledTimes(1)
     expect(getHandler).toHaveBeenCalledWith(key)
-    
+
     await cache.set(key, value)
     await expect(cache.get(key)).resolves.toBe(value)
     expect(getHandler).toHaveBeenCalledTimes(2)
     expect(setHandler).toHaveBeenCalledTimes(1)
     expect(setHandler.mock.calls.at(-1)).toMatchObject([key, value])
-    
+
     await cache.delete(key)
     expect(deleteHandler).toHaveBeenCalledTimes(1)
     expect(deleteHandler).toHaveBeenCalledWith(key)
@@ -158,13 +158,13 @@ describe('Backup cache', () => {
     const frontCache = new AsyncCache<string, string>()
 
     const cache = new BackupCache(frontCache, backupCache, {deleteFromSource: false})
-    
+
     const key = 'k1'
     const value = 'v1'
 
     await cache.set(key, value)
     await expect(cache.get(key)).resolves.toBe(value)
-    
+
     await cache.delete(key)
     await expect(frontCache.has(key)).resolves.toBe(false)
     await expect(backupCache.has(key)).resolves.toBe(true)
@@ -172,7 +172,7 @@ describe('Backup cache', () => {
     await cache.set(key, value)
     await expect(Array.fromAsync(frontCache.keys())).resolves.toMatchObject([key])
     await expect(Array.fromAsync(cache.keys())).resolves.toMatchObject([key])
-    
+
     await cache.clean()
     await expect(Array.fromAsync(frontCache.keys())).resolves.toMatchObject([])
     await expect(Array.fromAsync(backupCache.keys())).resolves.toMatchObject([key])
@@ -198,7 +198,7 @@ describe('Backup cache', () => {
 
     await expect(Array.fromAsync(backupCache.keys())).resolves.toMatchObject(pairs.map(pair => pair[0]))
     await expect(Array.fromAsync(frontCache.keys())).resolves.toMatchObject(pairs.slice(0, -1).map(pair => pair[0]))
-    
+
     await cache.clean()
     await expect(Array.fromAsync(frontCache.keys())).resolves.toMatchObject([])
     await expect(Array.fromAsync(cache.keys())).resolves.toMatchObject([pairs[2][0]])

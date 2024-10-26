@@ -24,7 +24,7 @@ describe('Cache creation', () => {
 
   test('Should create an async cache', async () => {
     const cache = createCache({async: true})
-    
+
     const key = 'key'
     const value = 'value'
 
@@ -37,7 +37,7 @@ describe('Cache creation', () => {
   test.each([createCache({lru: 1}), createCache({lru: {maxSize: 1}})])('Should create a cache with built-in lru', async (cache) => {
     const key = 'key'
     const value = 'value'
-    
+
     const key2 = 'key2'
     const value2 = 'value2'
 
@@ -56,7 +56,7 @@ describe('Cache creation', () => {
 
     cache.set(key, value)
     expect(cache.has(key)).toBe(true)
-    
+
     jest.advanceTimersByTime(1001)
     expect(cache.has(key)).toBe(false)
   })

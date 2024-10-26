@@ -1,4 +1,4 @@
-import type {AnyCacheType, Cache as ICache, AsyncCache as IAsyncCache} from '../../../src/types/cache.t'
+import type {Cache as ICache} from '../../../src/types/cache.t'
 import type {Effect} from '../../../src/types/effects.t'
 
 import defer from '../../../src/commons/promise/defer'
@@ -12,9 +12,7 @@ import ttl from '../../../src/cache/implementations/LifeCycleCache/effects/ttl'
 
 import {CLEANUP_QUEUE} from '../../../src/cache/implementations/LifeCycleCache/constants'
 import {CACHE_KEY} from '../../../src/cache/constants'
-import delay from '../../../src/commons/promise/delay'
-import tick from '../../../src/commons/promise/tick'
-  
+
 describe('LifeCycle Cache', () => {
   test('Should create a simple sync lifecycle cache', () => {
     const cache = new LifeCycleCache<ICache<string, string>>()
@@ -54,7 +52,7 @@ describe('LifeCycle Cache', () => {
 
     await expect(cache.get(key)).resolves.toBe(value)
     await expect(cache.has(key)).resolves.toBe(true)
-    
+
     // enumeration:
     await expect(Array.fromAsync(cache.keys())).resolves.toMatchObject([key])
     await expect(Array.fromAsync(cache.values())).resolves.toMatchObject([value])
@@ -174,18 +172,18 @@ describe('LifeCycle Cache', () => {
       await cache.set(key, value, [effect])
       await expect(cache.has(key)).resolves.toBe(true)
       expect(effect).toHaveBeenCalledTimes(1)
-      
+
       // resetting a key, should run the effect again
       await cache.set(key, value, [effect])
       expect(cleanup).toHaveBeenCalledTimes(1)
       expect(effect).toHaveBeenCalledTimes(2)
-      
+
       await cache.delete(key)
       expect(cleanup).toHaveBeenCalledTimes(2)
 
       await cache.set(key, value, [effect])
       expect(effect).toHaveBeenCalledTimes(3)
-      
+
       await cache.clean()
       expect(cleanup).toHaveBeenCalledTimes(3)
       await expect(cache.has(key)).resolves.toBe(false)
@@ -304,14 +302,14 @@ describe('LifeCycle Cache', () => {
 
       cache.set(key, value, [ttl({timeout: 1000})])
       expect(cache.has(key)).toBe(true)
-      
+
       jest.advanceTimersByTime(600) // half way to deletion
       expect(cache.has(key)).toBe(true)
-      
+
       expect(cache.get(key)).toBe(value) // but a read action should reset the item
       jest.advanceTimersByTime(500) // (600 + 500) more than the timeout
       expect(cache.has(key)).toBe(true) // and it still exists
-      
+
       jest.advanceTimersByTime(1001)
       expect(cache.has(key)).toBe(false) // resets after waiting again
 
@@ -341,7 +339,7 @@ describe('LifeCycle Cache', () => {
       const cleanHandler = jest.fn()
 
       const cache = new LifeCycleCache<ICache<string, string>>()
-  
+
       const unsubscribeGet = cache.on('get', getHandler)
       const unsubscribeSet = cache.on('set', setHandler)
       const unsubscribeDelete = cache.on('delete', deleteHandler)
@@ -387,7 +385,7 @@ describe('LifeCycle Cache', () => {
 
       const cleanup = jest.fn()
       const ttlEffect: Effect<string> = jest.fn((api) => {
-        let timeoutHandler = setTimeout(() => api.deleteSelf(), cleanupTime)
+        const timeoutHandler = setTimeout(() => api.deleteSelf(), cleanupTime)
         return () => {
           clearTimeout(timeoutHandler)
           return cleanup()

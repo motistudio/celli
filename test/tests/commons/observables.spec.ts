@@ -13,7 +13,7 @@ describe('Observables', () => {
       const subscription = observable.subscribe({next, error, complete})
 
       observable.next(1)
-      
+
       expect(next).toHaveBeenCalledWith(1)
       expect(next).toHaveBeenCalledTimes(1)
 

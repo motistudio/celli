@@ -20,7 +20,7 @@ export const LIFECYCLE_ITEMS_KEY = Symbol.for('cache-effects')
 export const REMOTE_REF = Symbol.for('lifecycle-cache-remote-ref')
 export const INTERNAL_REMOTE_READ = Symbol.for('lifecycle-cache-remote-read')
 export const INTERNAL_REMOTE_CLEAN = Symbol.for('lifecycle-cache-remote-clean')
- 
+
 // export interface LifeCycleCache<K extends Key, T> extends ILifeCycleCache<IAbstractCache<K, T>> {
 //   [MAIN_CACHE_KEY]: AsyncInnerCache<K, T>
 //   set: (key: K, value: T, effects?: Effect<T>[]) => ReturnType<IAbstractCache<K, T>['set']>

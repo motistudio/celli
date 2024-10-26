@@ -84,13 +84,13 @@ describe('Source Cache', () => {
     await expect(source.get(key)).resolves.toBe(undefined)
     expect(getHandler).toHaveBeenCalledTimes(1)
     expect(getHandler).toHaveBeenCalledWith(key)
-    
+
     await source.set(key, value)
     await expect(source.get(key)).resolves.toBe(value)
     expect(getHandler).toHaveBeenCalledTimes(2)
     expect(setHandler).toHaveBeenCalledTimes(1)
     expect(setHandler.mock.calls.at(-1)).toMatchObject([key, value])
-    
+
     await source.delete(key)
     expect(deleteHandler).toHaveBeenCalledTimes(1)
     expect(deleteHandler).toHaveBeenCalledWith(key)

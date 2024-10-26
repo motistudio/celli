@@ -11,7 +11,7 @@ type OnceFn<F extends Fn> = Merge<MemoizedFn<F>, {
 /**
  * Caches a function to run only once
  * @template {C} Any function type
- * @param {F} fn - Any function 
+ * @param {F} fn - Any function
  * @returns {OnceFn<F>} The wrapped function, along with a clean callback to reset the cache
  */
 function once <F extends Fn>(fn: F): OnceFn<F> {

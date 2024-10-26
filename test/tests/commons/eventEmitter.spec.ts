@@ -7,7 +7,7 @@ describe('Event Emitter', () => {
     test('Should define an event emitter and emit events', () => {
       const em = new EventEmitter<{'event': [number]}>()
       const event = jest.fn()
-  
+
       em.on('event', event)
       em.emit('event', 0)
       expect(event).toHaveBeenCalledTimes(1)
@@ -22,7 +22,7 @@ describe('Event Emitter', () => {
       type Map = {'event': [number]}
       const em = createEventEmitter<Map>()
       const event = jest.fn()
-  
+
       const unsubscribe = subscribe(em, 'event', event)
       em.emit('event', 0)
       expect(event).toHaveBeenCalledTimes(1)

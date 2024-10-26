@@ -51,14 +51,14 @@ describe('LRU Cache', () => {
 
   test('Should create an async LRU cache', async () => {
     const cache = new LruCache(new AsyncCache(), {maxSize: 1}) as unknown as IAsyncCache<string, string>
-    
+
     const key = 'k'
     const value = 'val'
     const value2 = 'val2'
 
     await expect(cache.has(key)).resolves.toBe(false)
     await expect(cache.get(key)).resolves.toBe(undefined)
-    
+
     await cache.set(key, value)
 
     await expect(cache.has(key)).resolves.toBe(true)
@@ -77,7 +77,7 @@ describe('LRU Cache', () => {
     await expect(Array.fromAsync(cache.values())).resolves.toMatchObject([value])
     await expect(Array.fromAsync(cache.entries())).resolves.toMatchObject([[key, value]])
     await expect(Array.fromAsync(cache)).resolves.toMatchObject([[key, value]])
-    
+
     await cache.clean()
     await expect(Array.fromAsync(cache.keys())).resolves.toMatchObject([])
   })
@@ -119,7 +119,7 @@ describe('LRU Cache', () => {
     expect(cache.has(pairs[0][0])).toBe(true) // new key is indeed saved now
     expect(cache.has(pairs[1][0])).toBe(true) // the last key we got (get()) is still saved
     expect(cache.has(pairs[2][0])).toBe(false) // the actual last key (2) is deleted
-    
+
     cache.clean()
     const values = Array.from(cache.entries())
     expect(values.length).toBe(0) // clean is synchronous
@@ -144,7 +144,7 @@ describe('LRU Cache', () => {
     cache.set(pairs[1][0], pairs[1][1]) // size: 2
     expect(lruCache.usedSize).toBe(3) // 3 is ok
     expect(lruCache.usedSize).toBe(maxSize) // but 3 is maxSize...!
-    
+
     cache.set(pairs[2][0], pairs[2][1]) // size: 1
     expect(lruCache.usedSize).toBe(3) // it's still 3
     expect(cache.has(pairs[0][0])).toBe(false) // but the first key is deleted
@@ -185,7 +185,7 @@ describe('LRU Cache', () => {
     lruCache.set(pairs[1][0], pairs[1][1])
     lruCache.set(pairs[2][0], pairs[2][1])
     expect(lruCache.usedSize).toBe(2)
-    
+
     // When we perform get, which we didn't know but is now suddenly exists
     // it's being introduced to the cache and will clean older keys
     expect(lruCache.get(key)).toBe(value)
@@ -226,29 +226,29 @@ describe('LRU Cache', () => {
 
       const key = 'key'
       const value = 'value'
-  
+
       expect(cache.get(key)).toBe(undefined)
       expect(getHandler).toHaveBeenCalledTimes(1)
       expect(getHandler).toHaveBeenCalledWith(key)
-      
+
       cache.set(key, value)
       expect(cache.get(key)).toBe(value)
       expect(getHandler).toHaveBeenCalledTimes(2)
       expect(setHandler).toHaveBeenCalledTimes(1)
       expect(setHandler.mock.calls.at(-1)).toMatchObject([key, value])
-      
+
       cache.delete(key)
       expect(deleteHandler).toHaveBeenCalledTimes(1)
       expect(deleteHandler).toHaveBeenCalledWith(key)
-  
+
       cache.clean()
       expect(cleanHandler).toHaveBeenCalledTimes(1)
-  
+
       unsubscribeGet()
       unsubscribeSet()
       unsubscribeDelete()
       unsubscribeClean()
-  
+
       cache.set(key, value)
       expect(setHandler).toHaveBeenCalledTimes(1)
       cache.get(key)
@@ -258,7 +258,7 @@ describe('LRU Cache', () => {
       cache.clean()
       expect(cleanHandler).toHaveBeenCalledTimes(1)
     })
-  
+
     test('Should notify when a key is cleaned', () => {
       const deleteHandler = jest.fn()
       const cleanHandler = jest.fn()

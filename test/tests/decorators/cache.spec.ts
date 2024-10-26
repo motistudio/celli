@@ -12,7 +12,7 @@ describe('Cache decorator', () => {
 
   test('Should cache a method', () => {
     const method = jest.fn((number: number) => ({value: number * 2}))
-    
+
     class StaticClass {
       @Cache({cacheBy: (x) => String(x), async: false, lru: 2, ttl: 100})
       static expensiveMethod(x: number) {
@@ -63,7 +63,7 @@ describe('Cache decorator', () => {
 
   test('Should cache an async method', async () => {
     const method = jest.fn((number: number) => Promise.resolve({value: number * 2}))
-    
+
     class StaticClass {
       @Cache({cacheBy: (x) => String(x), async: true, lru: 2, ttl: 100})
       static expensiveMethod(x: number) {
@@ -162,6 +162,7 @@ describe('Cache decorator', () => {
           return method(5)
         }
       }
+      new SomeClass()
     }).toThrow()
   })
 })

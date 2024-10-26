@@ -35,7 +35,7 @@ describe('Promise utils', () => {
       const promise = delay(1000).then(next)
       expect(isThentable(promise)).toBe(true)
       expect(next).not.toHaveBeenCalled()
-      
+
       jest.advanceTimersByTime(500)
       expect(next).not.toHaveBeenCalled()
 
@@ -61,7 +61,7 @@ describe('Promise utils', () => {
       const promise = tick().then(next)
       expect(isThentable(promise)).toBe(true)
       expect(next).not.toHaveBeenCalled()
-      
+
       jest.advanceTimersByTime(500)
       expect(next).not.toHaveBeenCalled()
 
@@ -105,9 +105,9 @@ describe('Promise utils', () => {
       expect(promiseState.finished).toBe(false)
       expect(promiseState.rejectedError).toBe(undefined)
       expect(promiseState.resolvedValue).toBe(undefined)
-      
+
       await promise
-      
+
       expect(promiseState.resolved).toBe(true)
       expect(promiseState.rejected).toBe(false)
       expect(promiseState.finished).toBe(true)
@@ -125,9 +125,9 @@ describe('Promise utils', () => {
       expect(promiseState.finished).toBe(false)
       expect(promiseState.rejectedError).toBe(undefined)
       expect(promiseState.resolvedValue).toBe(undefined)
-      
+
       await Promise.allSettled([promise])
-      
+
       expect(promiseState.resolved).toBe(false)
       expect(promiseState.rejected).toBe(true)
       expect(promiseState.finished).toBe(true)
@@ -166,7 +166,7 @@ describe('Promise utils', () => {
       expect(promise2).toBe(promise)
 
       await expect(promise).resolves.toBe(value)
-      
+
       const promise3 = getValue()
       expect(promise3).not.toBe(promise) // after the promise is resolved, it is no longer cached
       await expect(promise3).resolves.toBe(value)
@@ -182,7 +182,7 @@ describe('Promise utils', () => {
       expect(promise2).toBe(promise)
 
       await expect(promise).rejects.toThrow()
-      
+
       const promise3 = getValue()
       expect(promise3).not.toBe(promise) // after the promise is resolved, it is no longer cached
       await expect(promise3).rejects.toThrow()

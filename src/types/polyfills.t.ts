@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface ArrayConstructor {
   // no unwrapping of promises
   fromAsync<T>(asyncIterable: AsyncIterable<T>): Promise<Array<T>>

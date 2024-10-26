@@ -11,7 +11,6 @@ import type {
 
 import createEventEmitter from '../../commons/eventEmitter/createEventEmitter'
 import subscribe from '../../commons/eventEmitter/subscribe'
-import evaluate from '../../commons/evaluate'
 
 import Cache from '../implementations/Cache'
 import {CACHE_KEY, EVENT_EMITTER_KEY} from '../constants'

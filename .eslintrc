@@ -7,9 +7,14 @@
   "plugins": ["@typescript-eslint"],
   "root": true,
   "rules": {
-    "semi": 2,
-    "no-unused-vars": 2,
+    "semi": ["error", "never"],
+    "no-multi-spaces": 2,
+    "no-multiple-empty-lines": 2,
+    "no-trailing-spaces": 2,
+    "prefer-spread": 0,
+    "@typescript-eslint/ban-types": 0,
+    "@typescript-eslint/no-unused-vars": 2,
     "@typescript-eslint/no-explicit-any": 0
   },
-  "ignore": ["dist"]
+  "ignorePatterns": ["dist"]
 }

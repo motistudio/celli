@@ -29,7 +29,7 @@ describe('EffectsCache', () => {
     expect(Array.from(effectsCache.values())).toMatchObject([value, value2])
     expect(Array.from(effectsCache.entries())).toMatchObject([[key, value], [key2, value2]])
     expect(Array.from(effectsCache)).toMatchObject([[key, value], [key2, value2]])
-    
+
     // override
     effectsCache.set(key, value)
     expect(effectsCache.has(key)).toBe(true)
@@ -40,7 +40,7 @@ describe('EffectsCache', () => {
     effectsCache.delete(key)
     expect(effectsCache.has(key)).toBe(false)
     expect(cleanup).toHaveBeenCalledTimes(2)
-    
+
     effectsCache.clean()
     expect(cleanup).toHaveBeenCalledTimes(3)
   })
@@ -50,7 +50,7 @@ describe('EffectsCache', () => {
 
     const key = 'key'
     const value = 'value'
-    
+
     effectsCache.set(key, value)
     expect(effectsCache.has(key)).toBe(true)
     expect(effectsCache.get(key)).toBe(value)
@@ -85,7 +85,7 @@ describe('EffectsCache', () => {
     await expect(Array.fromAsync(effectsCache.values())).resolves.toMatchObject([value, value2])
     await expect(Array.fromAsync(effectsCache.entries())).resolves.toMatchObject([[key, value], [key2, value2]])
     await expect(Array.fromAsync(effectsCache)).resolves.toMatchObject([[key, value], [key2, value2]])
-    
+
     // override
     await effectsCache.set(key, value)
     await expect(effectsCache.has(key)).resolves.toBe(true)
@@ -96,7 +96,7 @@ describe('EffectsCache', () => {
     await effectsCache.delete(key)
     await expect(effectsCache.has(key)).resolves.toBe(false)
     expect(cleanup).toHaveBeenCalledTimes(2)
-    
+
     await effectsCache.clean()
     expect(cleanup).toHaveBeenCalledTimes(3)
   })
@@ -120,13 +120,13 @@ describe('EffectsCache', () => {
     expect(cache.get(key)).toBe(undefined)
     expect(getHandler).toHaveBeenCalledTimes(1)
     expect(getHandler).toHaveBeenCalledWith(key)
-    
+
     cache.set(key, value)
     expect(cache.get(key)).toBe(value)
     expect(getHandler).toHaveBeenCalledTimes(2)
     expect(setHandler).toHaveBeenCalledTimes(1)
     expect(setHandler.mock.calls.at(-1)).toMatchObject([key, value])
-    
+
     cache.delete(key)
     expect(deleteHandler).toHaveBeenCalledTimes(1)
     expect(deleteHandler).toHaveBeenCalledWith(key)

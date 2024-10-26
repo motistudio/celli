@@ -27,7 +27,7 @@ const registerPromise = <T>(promisesCache: Cache<string, Promise<T>>, key: strin
 
 /**
  * Memoizes a function
- * @param {Fn} fn - Any function 
+ * @param {Fn} fn - Any function
  * @param {CacheBy<Fn>?} cacheBy - An optional cache-by function
  * @param {AnyCacheType<string, Awaited<ReturnType<Fn>>>?} cache - An optional key to work with
  * @returns {Fn} A memoized instance of the original function

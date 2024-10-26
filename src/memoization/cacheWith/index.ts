@@ -34,7 +34,7 @@ const getMemoizedInstance = <F extends Fn>(fn: F, cacheBy: CacheBy<F>, cache: Fn
 /**
  * Caches a function dynamically by a given cache
  * @template F - Any function
- * @param {F} fn - Any function 
+ * @param {F} fn - Any function
  * @param {CacheWithOptions<F>} options - Caching options
  * @param {CacheBy<F>} options.by - Cache by callback
  * @param {CacheFrom<F>} options.from - Cache from callback

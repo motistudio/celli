@@ -4,7 +4,7 @@ import ttl from '../../../src/cache/implementations/LifeCycleCache/effects/ttl'
 import compose from '../../../src/commons/compose'
 
 import {
-  createCache,
+  cache as createCache,
   source,
   lru,
   async,
@@ -36,12 +36,12 @@ describe('Creating and composing cache', () => {
 
     expect(cache.get(key)).toBe(undefined)
     expect(cache.has(key)).toBe(false)
-    
+
     cache.set(key, value)
-    
+
     expect(cache.get(key)).toBe(value)
     expect(cache.has(key)).toBe(true)
-    
+
     cache.delete(key)
 
     expect(cache.get(key)).toBe(undefined)
@@ -55,12 +55,12 @@ describe('Creating and composing cache', () => {
 
     await expect(cache.get(key)).resolves.toBe(undefined)
     await expect(cache.has(key)).resolves.toBe(false)
-    
+
     await cache.set(key, value)
-    
+
     await expect(cache.get(key)).resolves.toBe(value)
     await expect(cache.has(key)).resolves.toBe(true)
-    
+
     await cache.delete(key)
 
     await expect(cache.get(key)).resolves.toBe(undefined)
@@ -75,12 +75,12 @@ describe('Creating and composing cache', () => {
 
     await expect(cache.get(key)).resolves.toBe(undefined)
     await expect(cache.has(key)).resolves.toBe(false)
-    
+
     await cache.set(key, value)
-    
+
     await expect(cache.get(key)).resolves.toBe(value)
     await expect(cache.has(key)).resolves.toBe(true)
-    
+
     await cache.delete(key)
 
     await expect(cache.get(key)).resolves.toBe(undefined)
@@ -128,7 +128,7 @@ describe('Creating and composing cache', () => {
 
     effectsCache.set(pairs[0][0], pairs[0][1])
     expect(effectsCache.has(pairs[0][0])).toBe(true)
-    
+
     jest.advanceTimersByTime(1001)
     expect(effectsCache.has(pairs[0][0])).toBe(false)
 
@@ -192,7 +192,7 @@ describe('Creating and composing cache', () => {
 
     expect(memoized()).toBe('v')
     expect(fn).toHaveBeenCalledTimes(1)
-    
+
     await clean()
     expect(memoized()).toBe('v')
     expect(fn).toHaveBeenCalledTimes(2)
@@ -213,7 +213,7 @@ describe('Creating and composing cache', () => {
 
     await cache.set(key, value)
     await expect(cache.has(key)).resolves.toBe(true)
-    
+
     await clean()
     await expect(cache.has(key)).resolves.toBe(false)
   })

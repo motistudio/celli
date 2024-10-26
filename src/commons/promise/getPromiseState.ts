@@ -10,7 +10,7 @@ type PromiseState<T> = {
 /**
  * Returns an object representing the promise state
  * This is used mostly for tests
- * @param {Promise<any>} promise - any promise 
+ * @param {Promise<any>} promise - any promise
  * @returns {PromiseState}
  */
 const getPromiseState = <T>(promise: Promise<T>): PromiseState<T> => {

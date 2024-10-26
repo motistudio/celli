@@ -37,7 +37,7 @@ const DEFAULT_OPTIONS: LruCacheOptions<Key, any> = {
  * Returns an existing key's size.
  * If the key does not exist - it will return 0
  * @param {LruCache<Key, any>} cache - Any LruCache
- * @param {Key} key - Any key 
+ * @param {Key} key - Any key
  * @returns {number} the item's size
  */
 const getKeySize = <C extends LruCache<AnyCacheType<any, any>>>(cache: C, key: Key): number => {
@@ -47,7 +47,7 @@ const getKeySize = <C extends LruCache<AnyCacheType<any, any>>>(cache: C, key: K
 /**
  * Util function: refreshes a give key of an LruCache
  * @param {LruCache<Key, any>} cache - Any LruCache
- * @param {Key} key - Any key 
+ * @param {Key} key - Any key
  */
 const refreshKey = <C extends LruCache<AnyCacheType<any, any>>>(cache: C, key: Key) => {
   if (cache[KEYS_CACHE_KEY].has(key)) {
@@ -61,8 +61,8 @@ const refreshKey = <C extends LruCache<AnyCacheType<any, any>>>(cache: C, key: K
  * Sets a new key.
  * It might cause delete calls as side-effect
  * @param {LruCache<Key, any>} cache - Any LruCache
- * @param {Key} key - Any key 
- * @param {number} size - The size the item takes 
+ * @param {Key} key - Any key
+ * @param {number} size - The size the item takes
  */
 const setKey = <C extends LruCache<AnyCacheType<any, any>>>(cache: C, key: Key, size: number) => {
   if (size < 1) {
@@ -95,7 +95,7 @@ const setKey = <C extends LruCache<AnyCacheType<any, any>>>(cache: C, key: Key, 
 /**
  * Removes a key
  * @param {LruCache<Key, any>} cache - Any LruCache
- * @param {Key} key - Any key 
+ * @param {Key} key - Any key
  */
 const removeKey = <C extends LruCache<AnyCacheType<any, any>>>(cache: C, key: Key) => {
   const existingSize = cache[KEYS_CACHE_KEY].has(key) ? (cache[KEYS_CACHE_KEY].get(key) || 1) : 0

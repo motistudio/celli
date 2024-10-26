@@ -9,6 +9,6 @@ export type Observer<T> = {
 export type Observable<T> = {
   next: (value: T) => void
   error: (error: Error) => void,
-  complete: () => void, 
+  complete: () => void,
   subscribe: (callback: Listener<T> | Observer<T>) => {unsubscribe: () => void}
 }

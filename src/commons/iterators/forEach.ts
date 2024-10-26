@@ -16,7 +16,7 @@ const innerForEach = <T>(it: IterableIterator<T> | AsyncIterableIterator<T>, ind
  * If the iterator is async then it will return a promise
  * @template T
  * @param {IterableIterator<T> | AsyncIterableIterator<T>} it - any iterator
- * @param {Callback<T>} callback - A callback to run per item 
+ * @param {Callback<T>} callback - A callback to run per item
  * @returns {Promise<void> | void} If a promise
  */
 const forEach = <T>(it: IterableIterator<T> | AsyncIterableIterator<T>, callback: Callback<T>): Promise<void> | void => {

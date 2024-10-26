@@ -21,7 +21,7 @@ class Observable<T> implements IObservable<T> {
   next (value: T) {
     this.listeners.forEach((listener) => listener(value))
   }
-  
+
   error (error: Error) {
     this.errorListeners.forEach((listener) => listener(error))
   }

@@ -11,6 +11,7 @@ import backup from '../cache/transformers/backup'
 
 import memo from '../memoization/memo'
 import cacheWith from '../memoization/cacheWith'
+import cache from '../decorators/cache'
 import Cache from '../decorators/cache'
 
 import cacheManager from './cacheManager'
@@ -36,7 +37,7 @@ const libCache = wrapDecorator(Cache, cacheManager)
 
 export {
   // Cache:
-  libCreateCache as createCache,
+  libCreateCache as cache,
   source,
   libLru as lru,
   libAsync as async,
@@ -46,6 +47,7 @@ export {
   SourceCleanupPolicies,
   // Memoization:
   libMemo as memo,
+  cache as createCache,
   libCacheWith as cacheWith,
   libCache as Cache,
   ICache,

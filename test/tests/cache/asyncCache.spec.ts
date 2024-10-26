@@ -112,13 +112,13 @@ describe('Async Cache', () => {
     await expect(cache.get(key)).resolves.toBe(undefined)
     expect(getHandler).toHaveBeenCalledTimes(1)
     expect(getHandler).toHaveBeenCalledWith(key)
-    
+
     await cache.set(key, value)
     await expect(cache.get(key)).resolves.toBe(value)
     expect(getHandler).toHaveBeenCalledTimes(2)
     expect(setHandler).toHaveBeenCalledTimes(1)
     expect(setHandler.mock.calls.at(-1)).toMatchObject([key, value])
-    
+
     await cache.delete(key)
     expect(deleteHandler).toHaveBeenCalledTimes(1)
     expect(deleteHandler).toHaveBeenCalledWith(key)
@@ -144,24 +144,24 @@ describe('Async Cache', () => {
   describe('Get() behaviour', () => {
     test('Should cache get promises', async () => {
       const cache = new AsyncCache()
-  
+
       const key = 'key'
       const value = 'value'
-  
+
       await cache.set(key, value)
-  
+
       const getPromise = cache.get(key)
       const getPromise2 = cache.get(key)
-  
+
       expect(getPromise2).toBe(getPromise)
       await expect(getPromise).resolves.toBe(value)
-      
+
       const getPromise3 = cache.get(key)
       expect(getPromise3).not.toBe(getPromise)
       await expect(getPromise3).resolves.toBe(value)
       expect(cache[GET_PROMISES_KEY].get(key)).toBeFalsy()
     })
-  
+
     test('Should wait for existing set operation to finish', async () => {
       const baseCache = new AsyncCache()
       const setter = jest.spyOn(baseCache, 'set')
@@ -176,7 +176,7 @@ describe('Async Cache', () => {
       expect(isThentable((setter.mock.results[0] as unknown as {value: Promise<typeof value>}).value)).toBe(true)
       // The state of the inner promise
       const promiseState = getPromiseState((setter.mock.results[0] as unknown as {value: Promise<typeof value>}).value)
-  
+
       const getPromise = cache.get(key)
       const getterState = getPromiseState(getPromise)
       expect(promiseState.finished).toBe(false)
@@ -209,7 +209,7 @@ describe('Async Cache', () => {
       const cache = new AsyncCache(baseCache)
 
       const key = 'key'
-      const value = 'value'
+      // const value = 'value'
 
       // expect(() => cache.set(key, value)).rejects.toThrow()
       const error = new Error('Expected reject')
@@ -242,7 +242,7 @@ describe('Async Cache', () => {
       // expect(rejectedPromise).rejects.toThrow()
       // await expect(cache.get(key)).resolves.toBe(undefined)
     })
-  
+
     test.skip('Should wait for existing set operation to finish even when it fails', async () => {
       await expect(Promise.reject(new Error('Rejects!'))).rejects.toThrow()
       const baseCache = new AsyncCache()
@@ -301,7 +301,7 @@ describe('Async Cache', () => {
       expect(isThentable((setter.mock.results[0] as unknown as {value: Promise<typeof value>}).value)).toBe(true)
       // The state of the inner promise
       const promiseState = getPromiseState((setter.mock.results[0] as unknown as {value: Promise<typeof value>}).value)
-      
+
       const setPromise2 = cache.set(key, value2)
       const promiseState2 = getPromiseState(setPromise2)
 
@@ -333,7 +333,7 @@ describe('Async Cache', () => {
       const promiseState = getPromiseState((setter.mock.results[0] as unknown as {value: Promise<typeof value>}).value)
 
       setter.mockImplementation(() => Promise.reject(new Error('Intentional rejection')))
-  
+
       const setPromise2 = cache.set(key, 'val')
       const setPromiseState = getPromiseState(setPromise2)
       expect(promiseState.finished).toBe(false)
@@ -394,7 +394,7 @@ describe('Async Cache', () => {
       expect(isThentable((setter.mock.results[0] as unknown as {value: Promise<typeof value>}).value)).toBe(true)
       // The state of the inner promise
       const promiseState = getPromiseState((setter.mock.results[0] as unknown as {value: Promise<typeof value>}).value)
-  
+
       const hasPromise = cache.has(key)
       const getterState = getPromiseState(hasPromise)
       expect(promiseState.finished).toBe(false)
@@ -421,7 +421,7 @@ describe('Async Cache', () => {
       expect(isThentable((setter.mock.results[0] as unknown as {value: Promise<typeof value>}).value)).toBe(true)
       // The state of the inner promise
       const promiseState = getPromiseState((setter.mock.results[0] as unknown as {value: Promise<typeof value>}).value)
-  
+
       const hasPromise = cache.has(key)
       const hasPromiseState = getPromiseState(hasPromise)
       expect(promiseState.finished).toBe(false)

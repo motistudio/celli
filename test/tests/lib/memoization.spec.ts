@@ -10,7 +10,7 @@ describe('Memoization', () => {
 
     expect(memoized()).toBe('v')
     expect(fn).toHaveBeenCalledTimes(1)
-    
+
     await clean()
     expect(memoized()).toBe('v')
     expect(fn).toHaveBeenCalledTimes(2)

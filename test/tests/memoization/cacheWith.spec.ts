@@ -61,10 +61,10 @@ describe('CacheWith', () => {
     const context1ResultPromise = memoized(context1, 1)
     const context1ResultPromise2 = memoized(context1, 1)
     expect(context1ResultPromise2).toBe(context1ResultPromise)
-    
+
     const context1Result = await context1ResultPromise
     expect(context1Result).toMatchObject({x: 1})
-    
+
     const context1Result2Promise = memoized(context1, 1)
     const context1Result2Promise2 = memoized(context1, 1)
     expect(context1Result2Promise2).toBe(context1Result2Promise)
@@ -122,32 +122,32 @@ describe('CacheWith', () => {
     test('Should clean cached results', async () => {
       type Result = {x: number}
       type Context = {cache: AsyncCache<string, Result>}
-  
+
       const getResult = (context: Context, x: number): Promise<Result> => Promise.resolve({x})
-  
+
       const memoized = cacheWith(getResult, {
         by: (context, x) => String(x),
         from: (context) => context.cache
       })
-  
+
       const cache1 = new AsyncCache<string, Result>()
       const cache2 = new AsyncCache<string, Result>()
-  
+
       const context1 = {cache: cache1}
       const context2 = {cache: cache2}
-  
+
       await memoized(context1, 1)
       await memoized(context2, 1)
       await memoized(context1, 2)
       await memoized(context2, 2)
-  
+
       await expect(cache1.has('1')).resolves.toBe(true)
       await expect(cache2.has('1')).resolves.toBe(true)
       await expect(cache1.has('2')).resolves.toBe(true)
       await expect(cache2.has('2')).resolves.toBe(true)
-  
+
       await memoized.clean()
-  
+
       await expect(cache1.has('1')).resolves.toBe(false)
       await expect(cache2.has('1')).resolves.toBe(false)
       await expect(cache1.has('2')).resolves.toBe(false)

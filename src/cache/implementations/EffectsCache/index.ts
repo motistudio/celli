@@ -44,7 +44,7 @@ class EffectsCache<C extends AnyCacheType<any, any>> implements WrappedCache<C> 
   keys () {
     return this[CACHE_KEY].keys()
   }
-  
+
   values () {
     return this[CACHE_KEY].values()
   }

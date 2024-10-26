@@ -10,16 +10,16 @@ describe('Synchronous cache', () => {
 
     expect(cache.has(key)).toBe(false)
     expect(cache.get(key)).toBe(undefined)
-    
+
     cache.set(key, value)
-    
+
     expect(cache.has(key)).toBe(true)
     expect(cache.get(key)).toBe(value)
-    
+
     cache.set(key, value2)
     expect(cache.has(key)).toBe(true)
     expect(cache.get(key)).toBe(value2)
-    
+
     cache.delete(key)
     expect(cache.has(key)).toBe(false)
     expect(cache.get(key)).toBe(undefined)

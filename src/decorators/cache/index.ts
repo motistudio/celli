@@ -2,8 +2,6 @@ import type {Fn} from '../../types/commons.t'
 import type {CacheBy, CacheFrom} from '../../types/memoization.t'
 import type {CacheCreationOptions} from '../../types/functional.t'
 
-import once from '../../commons/once'
-
 import createCache from '../../memoization/cache'
 import cacheWith from '../../memoization/cacheWith'
 import memo from '../../memoization/memo'
@@ -29,26 +27,26 @@ function cacheFn <F extends Fn>(fn: F, options: CommonOptions<F> & (MemoOptions<
     })
   }
   const {cacheBy, ...rest} = options
-  return memo(fn, options.cacheBy, createCache<string, Awaited<ReturnType<Fn>>>(rest as Parameters<typeof createCache<string, Awaited<ReturnType<Fn>>>>[0]))
+  return memo(fn, cacheBy, createCache<string, Awaited<ReturnType<Fn>>>(rest as Parameters<typeof createCache<string, Awaited<ReturnType<Fn>>>>[0]))
 }
 
 /**
  * Decorator function for caching method or getter results.
- * 
+ *
  * @template F - Function type extending Fn
  * @param {CommonOptions<F> & (MemoOptions<F> | CacheWithOptions<F>)} options - Configuration options for caching
  * @returns {MethodDecorator} - A method decorator function
- * 
+ *
  * @description
  * This decorator can be used to cache the results of class methods or getters.
  * It supports two main caching strategies:
  * 1. Memoization with custom cache creation options
  * 2. Caching with a provided cache source
- * 
+ *
  * The caching behavior is determined by the provided options:
  * - If 'from' is present in options, it uses the cacheWith strategy
  * - Otherwise, it uses the memo strategy with a custom cache
- * 
+ *
  * @example
  * class Example {
  *   @Cache({ cacheBy: (x) => x.toString(), async: true })

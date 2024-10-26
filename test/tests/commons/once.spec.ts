@@ -10,7 +10,7 @@ describe('Once', () => {
     expect(fn).toHaveBeenCalledTimes(1)
     expect(onceFn()).toBe(value) // second call
     expect(fn).toHaveBeenCalledTimes(1) // still only one call
-    
+
     onceFn.clean()
     expect(onceFn()).toBe(value) // first call after clean
     expect(fn).toHaveBeenCalledTimes(2) // one more call to the original function
@@ -29,7 +29,7 @@ describe('Once', () => {
 
     await expect(promise).resolves.toBe(value) // first call ended
     expect(fn).toHaveBeenCalledTimes(1)
-    
+
     await expect(onceFn()).resolves.toBe(value)
     expect(fn).toHaveBeenCalledTimes(1) // still only one call
   })

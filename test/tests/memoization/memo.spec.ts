@@ -10,7 +10,7 @@ describe('Memo', () => {
     expect(fn).toHaveBeenCalledWith(1, 1)
     expect(memoized(1, 1)).toBe(2)
     expect(fn).toHaveBeenCalledTimes(1) // original function still happened only once
-    
+
     expect(memoized(1, 2)).toBe(3)
     expect(fn).toHaveBeenCalledTimes(2)
     expect(memoized(1, 2)).toBe(3)
@@ -26,7 +26,7 @@ describe('Memo', () => {
     expect(fn).toHaveBeenCalledWith(1, 1)
     await expect(memoized(1, 1)).resolves.toBe(2)
     expect(fn).toHaveBeenCalledTimes(1) // original function still happened only once
-    
+
     await expect(memoized(1, 2)).resolves.toBe(3)
     expect(fn).toHaveBeenCalledTimes(2)
     await expect(memoized(1, 2)).resolves.toBe(3)
@@ -46,11 +46,11 @@ describe('Memo', () => {
     const successPromise2 = memoizedSuccess()
     expect(successPromise2).toBe(successPromise)
     await expect(successPromise).resolves.toBe(value)
-    
+
     const successPromise3 = memoizedSuccess()
     expect(successPromise3).not.toBe(successPromise)
     await expect(successPromise3).resolves.toBe(value)
-    
+
     const failurePromise = memoizedFailure()
     const failurePromise2 = memoizedFailure()
     expect(failurePromise2).toBe(failurePromise)

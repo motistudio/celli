@@ -13,7 +13,7 @@ describe('Memoization', () => {
       expect(typeof getSignatureKey(value3)).toBe('string')
       expect(typeof getSignatureKey(value4)).toBe('string')
       expect(typeof getSignatureKey()).toBe('string')
-      
+
       expect(getSignatureKey()).toBe(getSignatureKey())
       expect(getSignatureKey(value3)).not.toBe(getSignatureKey(value4))
     })

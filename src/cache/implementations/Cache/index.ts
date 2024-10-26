@@ -81,6 +81,4 @@ class Cache<K extends Key, T> implements ICache<K, T> {
   }
 }
 
-const c = new Cache<string, number>()
-
 export default Cache
