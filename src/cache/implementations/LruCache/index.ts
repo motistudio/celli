@@ -111,7 +111,6 @@ const introduce = <C extends LruCache<AnyCacheType<any, any>>>(cache: C, key: Ke
 
 /**
  * An LRU Cache implementation
- * @todo Customize the basic key setters/getters, since they might be async as well
  */
 class LruCache<C extends AnyCacheType<any, any> = ICache<any, any>> implements ILruCache<C> {
   public [CACHE_KEY]: C

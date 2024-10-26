@@ -71,4 +71,40 @@ describe('Cache creation', () => {
     await source.set(key, value)
     await expect(cache.get(key)).resolves.toBe(value)
   })
+
+  test('Should create a cache with a dispose function', () => {
+    const dispose = jest.fn()
+    const cache = createCache({dispose})
+
+    const key = 'key'
+    const value = 'value'
+
+    cache.set(key, value)
+    expect(cache.has(key)).toBe(true)
+    cache.delete(key)
+    expect(cache.has(key)).toBe(false)
+    expect(dispose).toHaveBeenCalledWith(value)
+    expect(dispose).toHaveBeenCalledTimes(1)
+
+    cache.set(key, value)
+    expect(cache.has(key)).toBe(true)
+    cache.clean()
+    expect(cache.has(key)).toBe(false)
+    expect(dispose).toHaveBeenCalledWith(value)
+    expect(dispose).toHaveBeenCalledTimes(2)
+  })
+
+  test('Should create a cache with effects', () => {
+    const cleanup = jest.fn()
+    const effect = jest.fn(() => cleanup)
+    const cache = createCache({effects: [effect]})
+
+    const key = 'key'
+    const value = 'value'
+
+    cache.set(key, value)
+    expect(effect).toHaveBeenCalledTimes(1)
+    cache.delete(key)
+    expect(cleanup).toHaveBeenCalledTimes(1)
+  })
 })

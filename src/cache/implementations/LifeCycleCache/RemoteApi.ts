@@ -23,7 +23,7 @@ const setValue = <R extends RemoteApi<LifeCycleCache<AnyCacheType<any, any>>>>(r
 /**
  * A remote for a single key item
  * The purpose of this class is to avoid callbacks to save up memory
- * @todo Remove the double binding, let the garbage collector collect
+ * @note The garbage collector will collect the weak references. Also double binding is alright because of the hierarchy.
  */
 class RemoteApi<C extends LifeCycleCache<AnyCacheType<any, any>>> implements AbstractEffectApi<CacheValue<C>> {
   public [REMOTE_REF]: C
