@@ -11,8 +11,6 @@ import {
   lifeCycle,
   effects,
   backup,
-  memo,
-  clean,
   SourceCleanupPolicies,
   type ICache,
   type AsyncCache
@@ -181,40 +179,5 @@ describe('Creating and composing cache', () => {
     await expect(cache.has(pairs[2][0])).resolves.toBe(false)
 
     jest.runAllTimers()
-  })
-
-  test('Should memoize a function', async () => {
-    const fn = jest.fn(() => 'v')
-    const memoized = memo(fn)
-
-    expect(memoized()).toBe('v')
-    expect(fn).toHaveBeenCalledTimes(1)
-
-    expect(memoized()).toBe('v')
-    expect(fn).toHaveBeenCalledTimes(1)
-
-    await clean()
-    expect(memoized()).toBe('v')
-    expect(fn).toHaveBeenCalledTimes(2)
-  })
-
-  test('Should imperatively auto clean a cache', async () => {
-    const cache = compose(
-      effects([
-        ttl({timeout: 1000})
-      ]),
-      lru({maxSize: 2}),
-      async(),
-      backup(source(createCache()), {cleanupPolicy: SourceCleanupPolicies.ALL}) // potentially redis and stuff
-    )(createCache()) as AsyncCache<string, string>
-
-    const key = 'k'
-    const value = 'v'
-
-    await cache.set(key, value)
-    await expect(cache.has(key)).resolves.toBe(true)
-
-    await clean()
-    await expect(cache.has(key)).resolves.toBe(false)
   })
 })

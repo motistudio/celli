@@ -1,4 +1,4 @@
-import {clean, memo} from '../../../src/lib'
+import {memo} from '../../../src/lib'
 
 describe('Memoization', () => {
   test('Should memoize a function', async () => {
@@ -10,9 +10,5 @@ describe('Memoization', () => {
 
     expect(memoized()).toBe('v')
     expect(fn).toHaveBeenCalledTimes(1)
-
-    await clean()
-    expect(memoized()).toBe('v')
-    expect(fn).toHaveBeenCalledTimes(2)
   })
 })

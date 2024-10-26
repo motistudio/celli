@@ -18,37 +18,27 @@ import compose from '../commons/compose'
 
 import cacheManager from './cacheManager'
 import wrapUtil from './wrapUtil'
-import wrapTransformer from './wrapTransformer'
 import wrapDecorator from './wrapDecorator'
 export * from '../types/cache.t'
 import type {Cache as ICache} from '../types/cache.t'
 
 const {clean} = cacheManager
 
-const libMemo = wrapUtil(memo, cacheManager)
 const libCacheWith = wrapUtil(cacheWith, cacheManager)
-const source = wrapUtil(createSource, cacheManager)
-const libCreateCache = wrapUtil(createCache, cacheManager)
-
-const libLru = wrapTransformer(lru, cacheManager)
-const libAsync = wrapTransformer(async, cacheManager)
-const libLifeCycle = wrapTransformer(lifeCycle, cacheManager)
-const libEffects = wrapTransformer(effects, cacheManager)
-const libBackup = wrapTransformer(backup, cacheManager)
 const libCache = wrapDecorator(Cache, cacheManager)
 
 export {
   // Cache:
-  libCreateCache as cache,
-  source,
-  libLru as lru,
-  libAsync as async,
-  libLifeCycle as lifeCycle,
-  libEffects as effects,
-  libBackup as backup,
+  createCache as cache,
+  createSource as source,
+  lru,
+  async,
+  lifeCycle,
+  effects,
+  backup,
   SourceCleanupPolicies,
   // Memoization:
-  libMemo as memo,
+  memo,
   cache as createCache,
   libCacheWith as cacheWith,
   libCache as Cache,
