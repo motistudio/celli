@@ -1,7 +1,7 @@
-# Opis
-Goddess of resources and plenty, goddess of cache as well
+# Celli
+Derived from the Latin word "cella," meaning "storage"
 
-Opis is a versatile library designed for caching and memoization in various runtime environments. It provides two primary functionalities:
+Celli is a versatile library designed for caching and memoization in various runtime environments. It provides two primary functionalities:
 
 1. Cache Creation and Management:
    - Offers flexible ways to create and manage caches
@@ -17,7 +17,7 @@ It's coming without any external dependencies, perfectly typed and has 100% test
 ## Installation
 
 ```bash
-npm install opis
+npm install celli
 ```
 
 ## Usage
@@ -27,7 +27,7 @@ The main goal of the library is caching functions without effort.
 We offer utilities that wrap up most of the API in order to provide easy and quick memoization.
 
 ```typescript
-import {Cache} from 'opis'
+import {Cache} from 'celli'
 
 class SomeService {
   @Cache({
@@ -56,7 +56,7 @@ What if we have different caches or we want to use a cache of our own?
 
 Let's examine such a case with an alternative API:
 ```typescript
-import {createCache} from 'opis'
+import {createCache} from 'celli'
 
 const cache = createCache({
   ttl: 1000,
@@ -88,7 +88,7 @@ Using this `from` option will specify where our cache is coming from. Then, each
 Creating a basic cache instance is quite simple:
 
 ```typescript
-import {createCache} from 'opis'
+import {createCache} from 'celli'
 
 const cache = createCache() // This is a simple synchronous cache
 const asyncCache = createCache({async: true}) // This will produce an async cache
@@ -136,7 +136,7 @@ For making things simpler, we also expose a global `clean()` method for all the 
 It will clean every memoized function created with `@Cache` decorator, designed to cache shutdowns:
 
 ```typescript
-import {clean} from 'opis'
+import {clean} from 'celli'
 
 process.on('SIGTERM', () => {
   clean()
@@ -144,12 +144,12 @@ process.on('SIGTERM', () => {
 ```
 
 ### Custom cache composition
-In the end, every application has different needs.
-It's good practice to have every cache configured with LRU and TTL to avoid memory leaks - but maybe your application needs its own behavior.
+Every application has different needs.
+While it's good practice to configure each cache with LRU and TTL to avoid memory leaks, your application may require its own custom behavior.
 
-For that purpose, we offer a set of utils to compose caches together.
+For this purpose, we provide a set of utilities to compose caches together.
 ```typescript
-import {cache, lru, async, lifeCycle, effects, backup, compose} from 'opis'
+import {cache, lru, async, lifeCycle, effects, backup, compose} from 'celli'
 
 const baseCache = cache() // This is a simple synchronous cache
 const asyncCache = async()(baseCache) // This will produce an async cache, on top of our base cache
@@ -159,10 +159,10 @@ const lifecycleCache = lifeCycle()(ttlCache) // This will produce a cache with l
 const effectsCache = effects([...effects])(lifecycleCache) // This will produce a cache with effects
 const backupCache = backup(anotherCacheFromAnotherService)(effectsCache) // This will produce a cache with backup
 ```
-As you can see, every cache could use another one to enforce its logic and strategy.
-Each strategy is exposed as a higher order function, so we can use it to wrap up our base cache.
+As you can see, each cache can use another cache to enforce its logic and strategy.
+Each strategy is exposed as a high-order function that can wrap around our base cache.
 
-So if we're putting everything together, we'll get:
+When putting everything together, we get:
 
 ```typescript
 const ultimateCache = compose(
@@ -176,7 +176,8 @@ const ultimateCache = compose(
 ```
 
 ### Events
-All cache instances emit events, which you can easily subscribe to:
+Cache instances emit events that you can subscribe to:
+
 ```typescript
 cache.on('get', (key) => {
   console.log('set', key)
@@ -202,14 +203,14 @@ unsubscribe()
 ```
 
 ### Designing a source-cache
-As mentioned, we potentially want to be able to lean on bigger caches in another services, such as redis.
-For this behavior we've talked about with the usage of `backup` and `source`.
+As mentioned, we may want to utilize larger caches in other services, such as Redis.
+We can achieve this behavior using the `backup` and `source` features.
 
-But redis is no cache and we should design it somehow.
-For that purpose we've created a `source` cache:
+Since Redis itself is not a cache implementation, we need to design an interface for it.
+This is where the `source` cache comes in:
 
 ```typescript
-import {source} from 'opis'
+import {source} from 'celli'
 
 const sourceCache = source({
   get: async (key) => {
@@ -224,7 +225,7 @@ const sourceCache = source({
 })
 ```
 
-This util helps us to create an `AsyncCache` that will work as a proxy. Then, we could use this cache as a source for another.
+This utility helps create an `AsyncCache` that works as a proxy. You can then use this cache as a source for another cache.
 
 Creating a source could happen in two ways. We could either provide a `set` method or not.
 Providing a `set` method will make this cache a proxy. It will not save any data by itself, but it will forward the data to the source cache.
@@ -422,7 +423,7 @@ This decorator expects either a cache options, or a function that will provide a
 #### Cache options:
 If we want to create a new cache for a specific function, we will provide cache-options (same API as `createCache`) + an optional `cacheBy` to calculate the key.
 ```typescript
-import {Cache} from 'opis'
+import {Cache} from 'celli'
 
 class SomeService {
   @Cache({
@@ -440,7 +441,7 @@ class SomeService {
 #### Cache from context
 Otherwise, we will provide a function that will receive the function's arguments and will extract a cache instance from there.
 ```typescript
-import {createCache} from 'opis'
+import {createCache} from 'celli'
 
 const cache = createCache({
   ttl: 1000,
