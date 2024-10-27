@@ -175,6 +175,32 @@ const ultimateCache = compose(
 )(baseCache)
 ```
 
+### Events
+All cache instances emit events, which you can easily subscribe to:
+```typescript
+cache.on('get', (key) => {
+  console.log('set', key)
+})
+cache.on('set', (key, value) => {
+  console.log('set', key, value)
+})
+cache.on('delete', (key) => {
+  console.log('delete', key)
+})
+cache.on('clean', () => {
+  console.log('clean')
+})
+```
+
+Each function will return a callback to unsubscribe from the event:
+```typescript
+const unsubscribe = cache.on('get', (key) => {
+  console.log('set', key)
+})
+
+unsubscribe()
+```
+
 ### Designing a source-cache
 As mentioned, we potentially want to be able to lean on bigger caches in another services, such as redis.
 For this behavior we've talked about with the usage of `backup` and `source`.
