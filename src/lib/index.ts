@@ -11,7 +11,7 @@ import backup from '../cache/transformers/backup'
 
 import memo from '../memoization/memo'
 import cacheWith from '../memoization/cacheWith'
-import cache from '../decorators/cache'
+import cache from '../memoization/cache'
 import Cache from '../decorators/cache'
 import once from '../commons/once'
 import compose from '../commons/compose'
