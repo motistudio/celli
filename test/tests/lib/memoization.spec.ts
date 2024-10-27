@@ -1,4 +1,4 @@
-import {clean, memo} from '../../../src/lib'
+import {memo, cacheWith, createCache, type AnyCacheType} from '../../../src/lib'
 
 describe('Memoization', () => {
   test('Should memoize a function', async () => {
@@ -10,9 +10,32 @@ describe('Memoization', () => {
 
     expect(memoized()).toBe('v')
     expect(fn).toHaveBeenCalledTimes(1)
+  })
 
-    await clean()
-    expect(memoized()).toBe('v')
+  test('Should memoize a function by context', () => {
+    const context = {cache: createCache({
+      async: false,
+      lru: 100,
+      ttl: 1000
+    })}
+
+    const context2 = {cache: createCache({
+      async: false,
+      lru: 100,
+      ttl: 1000
+    })}
+
+    const fn = jest.fn((context: {cache: AnyCacheType<any, any>}, a: number) => a)
+    const memoized = cacheWith(fn, {by: (context, a) => String(a), from: (context) => context.cache})
+
+    expect(memoized(context, 1)).toBe(1)
+    expect(fn).toHaveBeenCalledTimes(1)
+    expect(memoized(context, 1)).toBe(1)
+    expect(fn).toHaveBeenCalledTimes(1)
+
+    expect(memoized(context2, 1)).toBe(1)
+    expect(fn).toHaveBeenCalledTimes(2)
+    expect(memoized(context2, 1)).toBe(1)
     expect(fn).toHaveBeenCalledTimes(2)
   })
 })

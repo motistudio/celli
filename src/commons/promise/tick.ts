@@ -1,6 +1,10 @@
 const tick = (): Promise<void> => {
   return new Promise((resolve) => {
-    setImmediate(resolve)
+    const ref = setImmediate(resolve)
+
+    if (ref.unref) {
+      ref.unref()
+    }
   })
 }
 
