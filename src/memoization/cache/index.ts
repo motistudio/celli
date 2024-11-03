@@ -10,7 +10,7 @@ import type {Effect} from '../../types/effects.t'
 
 import createBaseCache from '../../cache/createCache'
 import async from '../../cache/transformers/async'
-import backup from '../../cache/transformers/backup'
+import remote from '../../cache/transformers/remote'
 import lru from '../../cache/transformers/lru'
 import effects from '../../cache/transformers/effects'
 import ttl from '../../cache/implementations/LifeCycleCache/effects/ttl'
@@ -59,7 +59,7 @@ function createCache <K extends Key, T>(options?: Partial<CacheCreationOptions<K
   let cache: AnyCacheType<K, T> = createBaseCache<K, T>()
   cache = lru(lruOptions)(cache)
   cache = computedEffects.length ? effects(computedEffects)(cache) : cache
-  cache = source ? backup(source)(cache) : cache
+  cache = source ? remote(source)(cache) : cache
   cache = (isAsync || source) ? async()(cache) as AnyCacheType<K, T> : cache // async should always be the last since it's synchronizing the cache's methods and normalizes a specific behavior
 
   return cache

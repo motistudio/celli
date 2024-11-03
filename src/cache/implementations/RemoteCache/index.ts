@@ -20,7 +20,7 @@ import {CACHE_KEY, EVENT_EMITTER_KEY} from '../../constants'
 import forEach from '../../../commons/iterators/forEach'
 
 import {
-  BACKUP_CACHE_KEY,
+  REMOTE_CACHE_KEY,
   OPTIONS_KEY,
   CleanupPolicies,
   type SourceOptions
@@ -31,20 +31,16 @@ const defaultOptions: SourceOptions = {
   cleanupPolicy: CleanupPolicies.ALL
 }
 
-const getFrontCache = <C extends BackupCache<any, any>>(cache: C) => {
+const getFrontCache = <C extends RemoteCache<any, any>>(cache: C) => {
   return cache[CACHE_KEY]
 }
 
-const getBackupCache = <C extends BackupCache<any, any>>(cache: C) => {
-  return cache[BACKUP_CACHE_KEY]
+const getRemoteCache = <C extends RemoteCache<any, any>>(cache: C) => {
+  return cache[REMOTE_CACHE_KEY]
 }
 
-const introduce = <C extends BackupCache<any, any>>(cache: C, key: Key, value: any) => {
+const introduce = <C extends RemoteCache<any, any>>(cache: C, key: Key, value: any) => {
   return cache[CACHE_KEY].set(key, value)
-  // return evaluate(cache[CACHE_KEY].set(key, value), (result) => {
-  //   cache[EVENT_EMITTER_KEY].emit('set', key, value)
-  //   return result
-  // })
 }
 
 const cleanKeys = <C extends AnyCache<any, any>>(cache: C, keysIterator: IterableIterator<CacheKey<C>> | AsyncIterableIterator<CacheKey<C>>) => {
@@ -61,28 +57,28 @@ const clean = <C extends AnyCache<any, any>>(cache: C) => {
   return cleanKeys(cache, cache.keys())
 }
 
-const cleanBackupCache = <C extends BackupCache<any, any>>(cache: C) => {
+const cleanRemoteCache = <C extends RemoteCache<any, any>>(cache: C) => {
   if (cache[OPTIONS_KEY].deleteFromSource) {
     if (cache[OPTIONS_KEY].cleanupPolicy === CleanupPolicies.ALL) {
-      return clean(getBackupCache(cache))
+      return clean(getRemoteCache(cache))
     }
     if (cache[OPTIONS_KEY].cleanupPolicy === CleanupPolicies.KEYS) {
-      return cleanKeys(getBackupCache(cache), getFrontCache(cache).keys())
+      return cleanKeys(getRemoteCache(cache), getFrontCache(cache).keys())
     }
   }
 
   return undefined
 }
 
-class BackupCache<K extends Key, T> implements AbstractCache<K, T> {
+class RemoteCache<K extends Key, T> implements AbstractCache<K, T> {
   public [CACHE_KEY]: AnyCache<K, T>
-  public [BACKUP_CACHE_KEY]: AnyCache<K, T>
+  public [REMOTE_CACHE_KEY]: AnyCache<K, T>
   public [OPTIONS_KEY]: SourceOptions
   public [EVENT_EMITTER_KEY]: EventEmitter<CacheEventMap<K, T>>
 
-  constructor (frontCache: AnyCache<K, T>, backupCache: AnyCache<K, T>, options?: Partial<SourceOptions>) {
+  constructor (frontCache: AnyCache<K, T>, remoteCache: AnyCache<K, T>, options?: Partial<SourceOptions>) {
     this[CACHE_KEY] = frontCache
-    this[BACKUP_CACHE_KEY] = backupCache
+    this[REMOTE_CACHE_KEY] = remoteCache
     this[OPTIONS_KEY] = {...defaultOptions, ...options}
     this[EVENT_EMITTER_KEY] = createEventEmitter<CacheEventMap<K, T>>()
   }
@@ -91,7 +87,7 @@ class BackupCache<K extends Key, T> implements AbstractCache<K, T> {
     return evaluate(getFrontCache(this).get(key), (value) => {
       // specifically undefined
       if (value === undefined) {
-        return evaluate(getBackupCache(this).get(key), (value) => {
+        return evaluate(getRemoteCache(this).get(key), (value) => {
           return evaluate(introduce(this, key, value), () => {
             this[EVENT_EMITTER_KEY].emit('get', key)
             return value
@@ -106,7 +102,7 @@ class BackupCache<K extends Key, T> implements AbstractCache<K, T> {
 
   set (key: K, value: T) {
     return evaluate(getFrontCache(this).set(key, value), () => {
-      return evaluate(getBackupCache(this).set(key, value), (result) => {
+      return evaluate(getRemoteCache(this).set(key, value), (result) => {
         this[EVENT_EMITTER_KEY].emit('set', key, value)
         return result
       })
@@ -114,12 +110,12 @@ class BackupCache<K extends Key, T> implements AbstractCache<K, T> {
   }
 
   has (key: K) {
-    return evaluate(getFrontCache(this).has(key), (isExist) => isExist || getBackupCache(this).has(key))
+    return evaluate(getFrontCache(this).has(key), (isExist) => isExist || getRemoteCache(this).has(key))
   }
 
   delete (key: K) {
     return evaluate(getFrontCache(this).delete(key), (result) => {
-      return evaluate(this[OPTIONS_KEY].deleteFromSource ? getBackupCache(this).delete(key) : result, (result) => {
+      return evaluate(this[OPTIONS_KEY].deleteFromSource ? getRemoteCache(this).delete(key) : result, (result) => {
         this[EVENT_EMITTER_KEY].emit('delete', key)
         return result
       })
@@ -127,15 +123,15 @@ class BackupCache<K extends Key, T> implements AbstractCache<K, T> {
   }
 
   keys () {
-    return this[BACKUP_CACHE_KEY].keys()
+    return this[REMOTE_CACHE_KEY].keys()
   }
 
   values () {
-    return this[BACKUP_CACHE_KEY].values()
+    return this[REMOTE_CACHE_KEY].values()
   }
 
   entries () {
-    return this[BACKUP_CACHE_KEY].entries()
+    return this[REMOTE_CACHE_KEY].entries()
   }
 
   [Symbol.iterator] () {
@@ -147,7 +143,7 @@ class BackupCache<K extends Key, T> implements AbstractCache<K, T> {
   }
 
   clean () {
-    return evaluate(cleanBackupCache(this), () => {
+    return evaluate(cleanRemoteCache(this), () => {
       return evaluate(clean(getFrontCache(this)), () => {
         this[EVENT_EMITTER_KEY].emit('clean')
       })
@@ -160,4 +156,4 @@ class BackupCache<K extends Key, T> implements AbstractCache<K, T> {
   }
 }
 
-export default BackupCache
+export default RemoteCache

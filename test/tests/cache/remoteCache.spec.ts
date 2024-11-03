@@ -1,14 +1,14 @@
 import isThentable from '../../../src/commons/promise/isThentable'
 
-import BackupCache from '../../../src/cache/implementations/BackupCache'
+import RemoteCache from '../../../src/cache/implementations/RemoteCache'
 import Cache from '../../../src/cache/implementations/Cache'
 import AsyncCache from '../../../src/cache/implementations/AsyncCache'
 import LruCache from '../../../src/cache/implementations/LruCache'
-import { CleanupPolicies } from '../../../src/cache/implementations/BackupCache/constants'
+import {CleanupPolicies} from '../../../src/cache/implementations/RemoteCache/constants'
 
-describe('Backup cache', () => {
-  test('Should create a basic backup cache', () => {
-    const cache = new BackupCache<string, string>(new Map(), new Cache<string, string>())
+describe('Remote cache', () => {
+  test('Should create a basic remote cache', () => {
+    const cache = new RemoteCache<string, string>(new Map(), new Cache<string, string>())
 
     const key = 'key'
     const key2 = 'key2'
@@ -38,8 +38,8 @@ describe('Backup cache', () => {
     expect(cache.has(key)).toBe(false)
   })
 
-  test('Should create a basic async backup cache', async () => {
-    const cache = new BackupCache<string, string>(new AsyncCache(), new AsyncCache())
+  test('Should create a basic async remote cache', async () => {
+    const cache = new RemoteCache<string, string>(new AsyncCache(), new AsyncCache())
 
     const key = 'key'
     const key2 = 'key2'
@@ -71,10 +71,10 @@ describe('Backup cache', () => {
   })
 
   test('Should create an async cache with lru', async () => {
-    const backupCache = new AsyncCache<string, string>()
+    const remoteCache = new AsyncCache<string, string>()
     const lruCache = new LruCache(new AsyncCache<string, string>(), {maxSize: 2})
 
-    const cache = new BackupCache(lruCache, backupCache)
+    const cache = new RemoteCache(lruCache, remoteCache)
 
     const pairs: [string, string][] = [
       ['k1', 'v1'],
@@ -97,7 +97,7 @@ describe('Backup cache', () => {
     await expect(lruCache.has(pairs[0][0])).resolves.toBe(false) // The first key is no longer saved on the lruCache
     await expect(cache.has(pairs[0][0])).resolves.toBe(true) // however, the cache says it's there
 
-    await expect(cache.get(pairs[0][0])).resolves.toBe(pairs[0][1]) // The value is being taken from the backupCache
+    await expect(cache.get(pairs[0][0])).resolves.toBe(pairs[0][1]) // The value is being taken from the remoteCache
     await expect(lruCache.has(pairs[0][0])).resolves.toBe(true) // And re-introduce it to the lru cache
 
     // Now key 2 is the oldest and no longer exists on the lru
@@ -111,7 +111,7 @@ describe('Backup cache', () => {
     const deleteHandler = jest.fn()
     const cleanHandler = jest.fn()
 
-    const cache = new BackupCache<string, string>(new AsyncCache(), new AsyncCache())
+    const cache = new RemoteCache<string, string>(new AsyncCache(), new AsyncCache())
 
     const unsubscribeGet = cache.on('get', getHandler)
     const unsubscribeSet = cache.on('set', setHandler)
@@ -154,10 +154,10 @@ describe('Backup cache', () => {
   })
 
   test('Should create a cache that doesn\'t clean from the source', async () => {
-    const backupCache = new AsyncCache<string, string>()
+    const remoteCache = new AsyncCache<string, string>()
     const frontCache = new AsyncCache<string, string>()
 
-    const cache = new BackupCache(frontCache, backupCache, {deleteFromSource: false})
+    const cache = new RemoteCache(frontCache, remoteCache, {deleteFromSource: false})
 
     const key = 'k1'
     const value = 'v1'
@@ -167,7 +167,7 @@ describe('Backup cache', () => {
 
     await cache.delete(key)
     await expect(frontCache.has(key)).resolves.toBe(false)
-    await expect(backupCache.has(key)).resolves.toBe(true)
+    await expect(remoteCache.has(key)).resolves.toBe(true)
 
     await cache.set(key, value)
     await expect(Array.fromAsync(frontCache.keys())).resolves.toMatchObject([key])
@@ -175,15 +175,15 @@ describe('Backup cache', () => {
 
     await cache.clean()
     await expect(Array.fromAsync(frontCache.keys())).resolves.toMatchObject([])
-    await expect(Array.fromAsync(backupCache.keys())).resolves.toMatchObject([key])
+    await expect(Array.fromAsync(remoteCache.keys())).resolves.toMatchObject([key])
     await expect(Array.fromAsync(cache.keys())).resolves.toMatchObject([key])
   })
 
-  test('Should clean backup cache only from known keys', async () => {
-    const backupCache = new AsyncCache<string, string>()
+  test('Should clean remote cache only from known keys', async () => {
+    const remoteCache = new AsyncCache<string, string>()
     const frontCache = new LruCache(new AsyncCache<string, string>(), {maxSize: 10})
 
-    const cache = new BackupCache(frontCache, backupCache, {cleanupPolicy: CleanupPolicies.KEYS})
+    const cache = new RemoteCache(frontCache, remoteCache, {cleanupPolicy: CleanupPolicies.KEYS})
 
     const pairs: [string, string][] = [
       ['k1', 'v1'],
@@ -191,12 +191,12 @@ describe('Backup cache', () => {
       ['k3', 'v3']
     ]
 
-    await Promise.all(pairs.map(([key, value]) => backupCache.set(key, value)))
+    await Promise.all(pairs.map(([key, value]) => remoteCache.set(key, value)))
 
     await expect(cache.get(pairs[0][0])).resolves.toBe(pairs[0][1]) // new value introduced to the cache
     await expect(cache.get(pairs[1][0])).resolves.toBe(pairs[1][1]) // new value introduced to the cache
 
-    await expect(Array.fromAsync(backupCache.keys())).resolves.toMatchObject(pairs.map(pair => pair[0]))
+    await expect(Array.fromAsync(remoteCache.keys())).resolves.toMatchObject(pairs.map(pair => pair[0]))
     await expect(Array.fromAsync(frontCache.keys())).resolves.toMatchObject(pairs.slice(0, -1).map(pair => pair[0]))
 
     await cache.clean()

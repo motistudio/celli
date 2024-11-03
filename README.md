@@ -1,14 +1,14 @@
 # Celli
-Derived from the Latin word "cella," meaning "storage"
+> Derived from the Latin word "cella," meaning "storage"
 
 Celli is a versatile library designed for caching and memoization in various runtime environments. It provides two primary functionalities:
 
 1. Cache Creation and Management:
    - Offers flexible ways to create and manage caches
-   - Allows for custom and composable cache configurations
+   - Provides utils to create a custom cache in a composable manner
 
 2. Memoization Tools:
-   - Includes utilities for function memoization
+   - Offers utilities for function memoization
    - Provides decorators for easy caching of class methods
 
 The library is designed to be flexible and extensible, allowing developers to choose the most appropriate caching strategy based on their specific needs.
@@ -45,7 +45,7 @@ class SomeService {
 This code will create a cache behind the scenes and will memoize getUserSecret method.
 We can specify parameters as the following:
 - `cacheBy` - function that will be used to determine the cache key
-- `async` - if true, the cache will be asynchronous and will enforce async concurrency and cache promises
+- `async` - if true, the cache will necessarily be asynchronous and will enforce async concurrency and cache promises
 - `ttl` - time to live for each item
 - `lru` - maximum number of items in the cache, it supports `getItemSize` to allow dynamic allocations.
 - `dispose` - function that will be called for a deleted item
@@ -56,7 +56,7 @@ What if we have different caches or we want to use a cache of our own?
 
 Let's examine such a case with an alternative API:
 ```typescript
-import {createCache} from 'celli'
+import {createCache, Cache} from 'celli'
 
 const cache = createCache({
   ttl: 1000,
@@ -84,16 +84,24 @@ class SomeService {
 
 Using this `from` option will specify where our cache is coming from. Then, each function we'd cache this way will be memoized separately for each cache reference! Allowing us the flexibility to store caches within the application.
 
-### Basic Cache
-Creating a basic cache instance is quite simple:
+### Cache creation
+Creating a cache instance is quite simple, and easily done by the `createCache` utility.
 
 ```typescript
 import {createCache} from 'celli'
 
-const cache = createCache() // This is a simple synchronous cache
-const asyncCache = createCache({async: true}) // This will produce an async cache
-const lruCache = createCache({lru: 100}) // This will produce an LRU cache with 100 items
-const ttlCache = createCache({ttl: 1000}) // This will produce a TTL cache with 1000ms ttl
+// This is a simple synchronous cache:
+const cache = createCache()
+
+// This will produce an async cache:
+const asyncCache = createCache({async: true})
+
+// This will produce an LRU cache with 100 items:
+const lruCache = createCache({lru: 100})
+
+// This will produce a TTL cache with 1000ms ttl
+const ttlCache = createCache({ttl: 1000})
+
 // This will produce a cache that enforces a lifecycle for items:
 const lifecycleCache = createCache({
   effects: [
@@ -107,7 +115,7 @@ const lifecycleCache = createCache({
 })
 
 // This will produce a cache that will call dispose function when the item is deleted
-const disposeCache = createCache({
+const cacheWithDispose = createCache({
   dispose: (client) => {
     // This code will run once when the item is deleted
     client.disconnect()
@@ -116,9 +124,9 @@ const disposeCache = createCache({
 
 // This will create a cache that leans on another cache for data.
 // It's useful if we want to use services like redis to hold a bigger cache than our own, while we consume a portion of it for the application.
-const cacheWithBackup = createCache({
+const cacheWithRemote = createCache({
   lru: 100,
-  backup: anotherCacheFromAnotherService
+  source: anotherCacheFromAnotherService
 })
 ```
 
@@ -128,9 +136,10 @@ And of course, we can combine all of these options together.
 Each cache implements a similar API to Map.
 We have some simple methods such as `set`, `get`, `delete` and `has`.
 The cache is also iterable, if we need to iterate over its values, keys or entries.
-And, we get a special `clean()` method.
-This method will not only clear the cache from all its values, but it will also wait for every cleanup operation if we have any.
-This is important for memory management and **graceful shutdowns**.
+
+In addition, we get a special `clean()` method.
+This method will not only clear the cache from all its values, but it will also wait for every cleanup operation if there are any.
+This is important for freeing resources and for **graceful shutdowns**.
 
 For making things simpler, we also expose a global `clean()` method for all the top-level memoization.
 It will clean every memoized function created with `@Cache` decorator, designed to cache shutdowns:
@@ -142,6 +151,7 @@ process.on('SIGTERM', () => {
   clean()
 })
 ```
+However, it will not clean custom caches, which are the application's responsibility.
 
 ### Custom cache composition
 Every application has different needs.
@@ -149,7 +159,7 @@ While it's good practice to configure each cache with LRU and TTL to avoid memor
 
 For this purpose, we provide a set of utilities to compose caches together.
 ```typescript
-import {cache, lru, async, lifeCycle, effects, backup, compose} from 'celli'
+import {cache, lru, async, lifeCycle, effects, remote, compose} from 'celli'
 
 const baseCache = cache() // This is a simple synchronous cache
 const asyncCache = async()(baseCache) // This will produce an async cache, on top of our base cache
@@ -157,7 +167,7 @@ const lruCache = lru({maxSize: 100})(asyncCache) // This will produce an LRU cac
 const ttlCache = ttl({timeout: 1000})(lruCache) // This will produce a TTL cache with 1000ms ttl
 const lifecycleCache = lifeCycle()(ttlCache) // This will produce a cache with lifecycle
 const effectsCache = effects([...effects])(lifecycleCache) // This will produce a cache with effects
-const backupCache = backup(anotherCacheFromAnotherService)(effectsCache) // This will produce a cache with backup
+const remoteCache = remote(anotherCacheFromAnotherService)(effectsCache) // This will produce a cache with remote-backup
 ```
 As you can see, each cache can use another cache to enforce its logic and strategy.
 Each strategy is exposed as a high-order function that can wrap around our base cache.
@@ -165,13 +175,15 @@ Each strategy is exposed as a high-order function that can wrap around our base 
 When putting everything together, we get:
 
 ```typescript
+import {compose, lru, ttl, lifeCycle, async, effects, remote} from 'celli'
+
 const ultimateCache = compose(
   lru(100),
   ttl(1000),
   lifeCycle(),
   async(),
   effects([...effects]),
-  backup(anotherCacheFromAnotherService)
+  remote(anotherCacheFromAnotherService)
 )(baseCache)
 ```
 
@@ -204,7 +216,7 @@ unsubscribe()
 
 ### Designing a source-cache
 As mentioned, we may want to utilize larger caches in other services, such as Redis.
-We can achieve this behavior using the `backup` and `source` features.
+We can achieve this behavior using the `remote` and `source` features.
 
 Since Redis itself is not a cache implementation, we need to design an interface for it.
 This is where the `source` cache comes in:
@@ -369,8 +381,8 @@ effectsCache.delete('key')
 // "log: deleted"
 ```
 
-#### `backup(sourceCache, options)`
-Creates a backup cache with a source cache.
+#### `remote(sourceCache, options)`
+Creates a cache with a remote backup.
 This is useful if we want to use services like redis to hold a bigger cache than our own, while we consume a portion of it for the application.
 ```typescript
 const sourceCache = source({
@@ -380,12 +392,12 @@ const sourceCache = source({
 })
 
 const appCache = lru({maxSize: 100})(baseCache)
-const appCacheWithBackup = backup(sourceCache)(appCache)
+const appCacheWithRemote = remote(sourceCache)(appCache)
 ```
 
 This backup strategy comes with some configurations as well:
 ```typescript
-const appCacheWithBackup = backup(sourceCache, {
+const appCacheWithRemote = remote(sourceCache, {
   deleteFromSource: false, // When a value is deleted from the cache - don't delete it from the source
   cleanupPolicy: CleanupPolicies.NONE // When the cache is cleaned - don't try to clean the source cache
 })(appCache)
@@ -492,7 +504,7 @@ This is a pretty common implementation, nothing special here.
 ### Constants
 
 #### `SourceCleanupPolicies`
-Enum for source cleanup policies in backup caches.
+Enum for source cleanup policies in remote caches.
 
 ### Types and Interfaces
 
