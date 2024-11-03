@@ -1,4 +1,10 @@
-import {memo, cacheWith, createCache, type AnyCacheType} from '../../../src/lib'
+import {
+  memo,
+  cacheWith,
+  createCache,
+  once,
+  type AnyCacheType
+} from '../../../src/index'
 
 describe('Memoization', () => {
   test('Should memoize a function', async () => {
@@ -37,5 +43,14 @@ describe('Memoization', () => {
     expect(fn).toHaveBeenCalledTimes(2)
     expect(memoized(context2, 1)).toBe(1)
     expect(fn).toHaveBeenCalledTimes(2)
+  })
+
+  test('Should memoize a function to run once', () => {
+    const fn = jest.fn(() => 'v')
+    const memoized = once(fn)
+
+    expect(memoized()).toBe('v')
+    expect(memoized()).toBe('v')
+    expect(fn).toHaveBeenCalledTimes(1)
   })
 })

@@ -1,20 +1,20 @@
 import {CACHE_KEY} from '../../../src/cache/constants'
-import BackupCache from '../../../src/cache/implementations/BackupCache'
+import RemoteCache from '../../../src/cache/implementations/RemoteCache'
 import ttl from '../../../src/cache/implementations/LifeCycleCache/effects/ttl'
-import compose from '../../../src/commons/compose'
 
 import {
+  compose,
   cache as createCache,
   source,
   lru,
   async,
   lifeCycle,
   effects,
-  backup,
+  remote,
   SourceCleanupPolicies,
   type ICache,
   type AsyncCache
-} from '../../../src/lib'
+} from '../../../src/index'
 
 describe('Creating and composing cache', () => {
   beforeAll(() => {
@@ -141,17 +141,17 @@ describe('Creating and composing cache', () => {
     jest.clearAllTimers()
   })
 
-  test('Should compose a backup cache', async () => {
+  test('Should compose a remote cache', async () => {
     const cache = compose(
       effects([
         ttl({timeout: 1000})
       ]),
       lru({maxSize: 2}),
       async(),
-      backup(source(createCache()), {cleanupPolicy: SourceCleanupPolicies.ALL}) // potentially redis and stuff
+      remote(source(createCache()), {cleanupPolicy: SourceCleanupPolicies.ALL}) // potentially redis and stuff
     )(createCache()) as AsyncCache<string, string>
 
-    const frontCache = (cache as BackupCache<string, string>)[CACHE_KEY]
+    const frontCache = (cache as RemoteCache<string, string>)[CACHE_KEY]
 
     const pairs: [string, string][] = [
       ['k1', 'v1'],

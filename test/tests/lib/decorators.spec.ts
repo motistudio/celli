@@ -1,4 +1,4 @@
-import {clean, Cache} from '../../../src/lib'
+import {clean, Cache} from '../../../src/index'
 
 describe('Decorators', () => {
   test('Should cache a function', async () => {

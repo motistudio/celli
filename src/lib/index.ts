@@ -1,4 +1,4 @@
-import {CleanupPolicies as SourceCleanupPolicies} from '../cache/implementations/BackupCache/constants'
+import {CleanupPolicies as SourceCleanupPolicies} from '../cache/implementations/RemoteCache/constants'
 
 import createCache from '../cache/createCache'
 import createSource from '../cache/createSource'
@@ -7,7 +7,7 @@ import lru from '../cache/transformers/lru'
 import async from '../cache/transformers/async'
 import lifeCycle from '../cache/transformers/lifeCycle'
 import effects from '../cache/transformers/effects'
-import backup from '../cache/transformers/backup'
+import remote from '../cache/transformers/remote'
 
 import memo from '../memoization/memo'
 import cacheWith from '../memoization/cacheWith'
@@ -48,7 +48,7 @@ export {
   async,
   lifeCycle,
   effects,
-  backup,
+  remote,
   SourceCleanupPolicies,
   // Memoization:
   memo,

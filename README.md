@@ -124,9 +124,9 @@ const cacheWithDispose = createCache({
 
 // This will create a cache that leans on another cache for data.
 // It's useful if we want to use services like redis to hold a bigger cache than our own, while we consume a portion of it for the application.
-const cacheWithBackup = createCache({
+const cacheWithRemote = createCache({
   lru: 100,
-  backup: anotherCacheFromAnotherService
+  source: anotherCacheFromAnotherService
 })
 ```
 
@@ -159,7 +159,7 @@ While it's good practice to configure each cache with LRU and TTL to avoid memor
 
 For this purpose, we provide a set of utilities to compose caches together.
 ```typescript
-import {cache, lru, async, lifeCycle, effects, backup, compose} from 'celli'
+import {cache, lru, async, lifeCycle, effects, remote, compose} from 'celli'
 
 const baseCache = cache() // This is a simple synchronous cache
 const asyncCache = async()(baseCache) // This will produce an async cache, on top of our base cache
@@ -167,7 +167,7 @@ const lruCache = lru({maxSize: 100})(asyncCache) // This will produce an LRU cac
 const ttlCache = ttl({timeout: 1000})(lruCache) // This will produce a TTL cache with 1000ms ttl
 const lifecycleCache = lifeCycle()(ttlCache) // This will produce a cache with lifecycle
 const effectsCache = effects([...effects])(lifecycleCache) // This will produce a cache with effects
-const backupCache = backup(anotherCacheFromAnotherService)(effectsCache) // This will produce a cache with backup
+const remoteCache = remote(anotherCacheFromAnotherService)(effectsCache) // This will produce a cache with remote-backup
 ```
 As you can see, each cache can use another cache to enforce its logic and strategy.
 Each strategy is exposed as a high-order function that can wrap around our base cache.
@@ -175,13 +175,15 @@ Each strategy is exposed as a high-order function that can wrap around our base 
 When putting everything together, we get:
 
 ```typescript
+import {compose, lru, ttl, lifeCycle, async, effects, remote} from 'celli'
+
 const ultimateCache = compose(
   lru(100),
   ttl(1000),
   lifeCycle(),
   async(),
   effects([...effects]),
-  backup(anotherCacheFromAnotherService)
+  remote(anotherCacheFromAnotherService)
 )(baseCache)
 ```
 
@@ -214,7 +216,7 @@ unsubscribe()
 
 ### Designing a source-cache
 As mentioned, we may want to utilize larger caches in other services, such as Redis.
-We can achieve this behavior using the `backup` and `source` features.
+We can achieve this behavior using the `remote` and `source` features.
 
 Since Redis itself is not a cache implementation, we need to design an interface for it.
 This is where the `source` cache comes in:
@@ -379,8 +381,8 @@ effectsCache.delete('key')
 // "log: deleted"
 ```
 
-#### `backup(sourceCache, options)`
-Creates a backup cache with a source cache.
+#### `remote(sourceCache, options)`
+Creates a cache with a remote backup.
 This is useful if we want to use services like redis to hold a bigger cache than our own, while we consume a portion of it for the application.
 ```typescript
 const sourceCache = source({
@@ -390,12 +392,12 @@ const sourceCache = source({
 })
 
 const appCache = lru({maxSize: 100})(baseCache)
-const appCacheWithBackup = backup(sourceCache)(appCache)
+const appCacheWithRemote = remote(sourceCache)(appCache)
 ```
 
 This backup strategy comes with some configurations as well:
 ```typescript
-const appCacheWithBackup = backup(sourceCache, {
+const appCacheWithRemote = remote(sourceCache, {
   deleteFromSource: false, // When a value is deleted from the cache - don't delete it from the source
   cleanupPolicy: CleanupPolicies.NONE // When the cache is cleaned - don't try to clean the source cache
 })(appCache)
@@ -502,7 +504,7 @@ This is a pretty common implementation, nothing special here.
 ### Constants
 
 #### `SourceCleanupPolicies`
-Enum for source cleanup policies in backup caches.
+Enum for source cleanup policies in remote caches.
 
 ### Types and Interfaces
 

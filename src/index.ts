@@ -5,7 +5,7 @@ import {
   async,
   lifeCycle,
   effects,
-  backup,
+  remote,
   SourceCleanupPolicies,
   cache,
   memo,
@@ -46,7 +46,7 @@ export {
   async,
   lifeCycle,
   effects,
-  backup,
+  remote,
   SourceCleanupPolicies,
   // Memoization:
   memo,
