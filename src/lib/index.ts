@@ -19,8 +19,21 @@ import compose from '../commons/compose'
 import cacheManager from './cacheManager'
 import wrapUtil from './wrapUtil'
 import wrapDecorator from './wrapDecorator'
-export * from '../types/cache.t'
-import type {Cache as ICache} from '../types/cache.t'
+
+import type {
+  Cache as ICache,
+  AsyncCache,
+  AnyCacheType,
+  CacheKey,
+  CacheValue,
+  LifeCycleCache,
+  LruCache,
+  Cleanable
+} from '../types/cache.t'
+import type {Effect, EffectApi} from '../types/effects.t'
+import type {MemoizedFn, CacheBy, CacheFrom} from '../types/memoization.t'
+import type {CacheCreationOptions, LruCacheOptions, LruItemSizeGetter} from '../types/functional.t'
+import type {Fn} from '../types/commons.t'
 
 const {clean} = cacheManager
 
@@ -42,9 +55,30 @@ export {
   cache as createCache,
   libCacheWith as cacheWith,
   libCache as Cache,
-  ICache,
   clean,
   // Commons:
   once,
-  compose
+  compose,
+  // Cache types:
+  type ICache,
+  type AsyncCache,
+  type AnyCacheType,
+  type CacheKey,
+  type CacheValue,
+  type LifeCycleCache,
+  type LruCache,
+  type Cleanable,
+  // Effect types:
+  type Effect,
+  type EffectApi,
+  // Memoization types:
+  type MemoizedFn,
+  type CacheBy,
+  type CacheFrom,
+  // Functional types:
+  type CacheCreationOptions,
+  type LruCacheOptions,
+  type LruItemSizeGetter,
+  // Commons types:
+  type Fn
 }

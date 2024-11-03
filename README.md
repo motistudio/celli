@@ -1,14 +1,14 @@
 # Celli
-Derived from the Latin word "cella," meaning "storage"
+> Derived from the Latin word "cella," meaning "storage"
 
 Celli is a versatile library designed for caching and memoization in various runtime environments. It provides two primary functionalities:
 
 1. Cache Creation and Management:
    - Offers flexible ways to create and manage caches
-   - Allows for custom and composable cache configurations
+   - Provides utils to create a custom cache in a composable manner
 
 2. Memoization Tools:
-   - Includes utilities for function memoization
+   - Offers utilities for function memoization
    - Provides decorators for easy caching of class methods
 
 The library is designed to be flexible and extensible, allowing developers to choose the most appropriate caching strategy based on their specific needs.
@@ -45,7 +45,7 @@ class SomeService {
 This code will create a cache behind the scenes and will memoize getUserSecret method.
 We can specify parameters as the following:
 - `cacheBy` - function that will be used to determine the cache key
-- `async` - if true, the cache will be asynchronous and will enforce async concurrency and cache promises
+- `async` - if true, the cache will necessarily be asynchronous and will enforce async concurrency and cache promises
 - `ttl` - time to live for each item
 - `lru` - maximum number of items in the cache, it supports `getItemSize` to allow dynamic allocations.
 - `dispose` - function that will be called for a deleted item
@@ -56,7 +56,7 @@ What if we have different caches or we want to use a cache of our own?
 
 Let's examine such a case with an alternative API:
 ```typescript
-import {createCache} from 'celli'
+import {createCache, Cache} from 'celli'
 
 const cache = createCache({
   ttl: 1000,
@@ -84,16 +84,24 @@ class SomeService {
 
 Using this `from` option will specify where our cache is coming from. Then, each function we'd cache this way will be memoized separately for each cache reference! Allowing us the flexibility to store caches within the application.
 
-### Basic Cache
-Creating a basic cache instance is quite simple:
+### Cache creation
+Creating a cache instance is quite simple, and easily done by the `createCache` utility.
 
 ```typescript
 import {createCache} from 'celli'
 
-const cache = createCache() // This is a simple synchronous cache
-const asyncCache = createCache({async: true}) // This will produce an async cache
-const lruCache = createCache({lru: 100}) // This will produce an LRU cache with 100 items
-const ttlCache = createCache({ttl: 1000}) // This will produce a TTL cache with 1000ms ttl
+// This is a simple synchronous cache:
+const cache = createCache()
+
+// This will produce an async cache:
+const asyncCache = createCache({async: true})
+
+// This will produce an LRU cache with 100 items:
+const lruCache = createCache({lru: 100})
+
+// This will produce a TTL cache with 1000ms ttl
+const ttlCache = createCache({ttl: 1000})
+
 // This will produce a cache that enforces a lifecycle for items:
 const lifecycleCache = createCache({
   effects: [
@@ -107,7 +115,7 @@ const lifecycleCache = createCache({
 })
 
 // This will produce a cache that will call dispose function when the item is deleted
-const disposeCache = createCache({
+const cacheWithDispose = createCache({
   dispose: (client) => {
     // This code will run once when the item is deleted
     client.disconnect()
@@ -128,9 +136,10 @@ And of course, we can combine all of these options together.
 Each cache implements a similar API to Map.
 We have some simple methods such as `set`, `get`, `delete` and `has`.
 The cache is also iterable, if we need to iterate over its values, keys or entries.
-And, we get a special `clean()` method.
-This method will not only clear the cache from all its values, but it will also wait for every cleanup operation if we have any.
-This is important for memory management and **graceful shutdowns**.
+
+In addition, we get a special `clean()` method.
+This method will not only clear the cache from all its values, but it will also wait for every cleanup operation if there are any.
+This is important for freeing resources and for **graceful shutdowns**.
 
 For making things simpler, we also expose a global `clean()` method for all the top-level memoization.
 It will clean every memoized function created with `@Cache` decorator, designed to cache shutdowns:
@@ -142,6 +151,7 @@ process.on('SIGTERM', () => {
   clean()
 })
 ```
+However, it will not clean custom caches, which are the application's responsibility.
 
 ### Custom cache composition
 Every application has different needs.
