@@ -12,7 +12,7 @@ Celli is a versatile library designed for caching and memoization in various run
    - Provides decorators for easy caching of class methods
 
 The library is designed to be flexible and extensible, allowing developers to choose the most appropriate caching strategy based on their specific needs.
-It's coming without any external dependencies, perfectly typed and has 100% test coverage. Ensuring high quality and reliability.
+It comes without any dependencies (weights only 15kb!), perfectly typed and has 100% test coverage. Ensuring high quality and reliability.
 
 ## Installation
 
