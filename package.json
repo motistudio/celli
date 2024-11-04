@@ -52,6 +52,7 @@
   "license": "ISC",
   "devDependencies": {
     "@jest/globals": "^29.6.4",
+    "@swc/core": "^1.8.0",
     "@types/jest": "^29.5.4",
     "@typescript-eslint/eslint-plugin": "^6.5.0",
     "@typescript-eslint/parser": "^6.5.0",
