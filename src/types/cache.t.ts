@@ -131,8 +131,11 @@ export type Cleanable = {
   clean: () => Promise<void> | void
 }
 
-export type CacheManager = {
-  register: (cache: Cleanable) => void
+export type CacheManager<T extends Cleanable = Cleanable> = {
+  getByName: (name: string) => T | undefined,
+  register: (cache: T, name?: string) => void,
+  unregister: (cache: T) => void,
+  clear: (force?: boolean) => Promise<void>,
   clean: () => Promise<void>
 }
 

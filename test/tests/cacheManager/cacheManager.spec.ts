@@ -1,3 +1,5 @@
+import type {Cleanable} from '../../../src/types/cache.t'
+
 import AsyncCache from '../../../src/cache/implementations/AsyncCache'
 import Cache from '../../../src/cache/implementations/Cache'
 import createCacheManager from '../../../src/createCacheManager'
@@ -22,5 +24,118 @@ describe('Cache Manager', () => {
     await cleanPromise
     expect(cleanSpy1).toHaveBeenCalledTimes(1)
     expect(cleanSpy2).toHaveBeenCalledTimes(1)
+  })
+
+  test('Should register a cache with a name', () => {
+    const {register, unregister, getByName} = createCacheManager()
+
+    const cache = new Cache()
+    register(cache, 'test')
+
+    expect(getByName('test')).toBe(cache)
+
+    unregister(getByName('test') as Cleanable)
+    expect(getByName('test')).toBe(undefined)
+  })
+
+  test('Should unregister a cache', async () => {
+    const {register, unregister, clean} = createCacheManager()
+
+    const cache = new Cache()
+    cache.set('test', 'test')
+    expect(cache.get('test')).toBe('test')
+
+    register(cache)
+
+    await clean()
+    expect(cache.get('test')).toBe(undefined)
+
+    // Setting the value again
+    cache.set('test', 'test')
+    expect(cache.get('test')).toBe('test')
+
+    unregister(cache)
+
+    await clean()
+    expect(cache.get('test')).toBe('test') // the value is still there
+  })
+
+  test('Should clean saved caches', async () => {
+    const {register, clean} = createCacheManager()
+
+    const cache1 = new Cache()
+    const cache2 = new AsyncCache()
+
+    cache1.set('test', 'test')
+    await cache2.set('test', 'test')
+
+    register(cache1, 'test1')
+    register(cache2, 'test2')
+
+    await clean()
+
+    expect(cache1.get('test')).toBe(undefined)
+    await expect(cache2.get('test')).resolves.toBe(undefined)
+  })
+
+  describe('Clear logic', () => {
+    test('Should clear all caches', async () => {
+      const {register, clear} = createCacheManager()
+
+      const cache1 = new Cache()
+      const cache2 = new AsyncCache()
+
+      cache1.set('key', 'value')
+      await cache2.set('key', 'value')
+
+      register(cache1)
+      register(cache2)
+
+      await clear()
+
+      // Caches were cleaned, so the values should be undefined
+      expect(cache1.get('key')).toBe(undefined)
+      await expect(cache2.get('key')).resolves.toBe(undefined)
+
+      // Setting the values again
+      cache1.set('key', 'value')
+      await cache2.set('key', 'value')
+
+      // At this point, the caches should be already unregistered
+      await clear()
+
+      // So we anticipate the values to stay there
+      expect(cache1.get('key')).toBe('value')
+      await expect(cache2.get('key')).resolves.toBe('value')
+    })
+
+    test('Should not clean caches with more than one reference', async () => {
+      const cm1 = createCacheManager()
+      const cm2 = createCacheManager()
+
+      const cache1 = new Cache()
+      const cache2 = new Cache()
+      cm1.register(cache1)
+      cm1.register(cache2)
+      cm2.register(cache1)
+
+      cache1.set('key', 'value')
+      cache2.set('key', 'value')
+
+      expect(cache1.get('key')).toBe('value')
+      expect(cache2.get('key')).toBe('value')
+
+      await cm1.clear()
+
+      // Only cache2 was cleaned, since it's not shared with other cache managers
+      expect(cache1.has('key')).toBe(true)
+      expect(cache2.has('key')).toBe(false)
+
+      await cm2.clear()
+
+      // Now both caches should be cleaned
+      expect(cache1.has('key')).toBe(false)
+      expect(cache2.has('key')).toBe(false)
+    })
   })
 })
