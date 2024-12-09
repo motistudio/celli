@@ -1,3 +1,18 @@
+import type {
+  Cache as ICache,
+  AsyncCache,
+  AnyCacheType,
+  CacheKey,
+  CacheValue,
+  LifeCycleCache,
+  LruCache
+} from '../types/cache.t'
+import type {Cleanable} from '../types/cacheManager.t'
+import type {Effect, EffectApi} from '../types/effects.t'
+import type {MemoizedFn, CacheBy, CacheFrom, CacheManagerFrom} from '../types/memoization.t'
+import type {CacheCreationOptions, LruCacheOptions, LruItemSizeGetter} from '../types/functional.t'
+import type {Fn} from '../types/commons.t'
+
 import {CleanupPolicies as SourceCleanupPolicies} from '../cache/implementations/RemoteCache/constants'
 
 import createBaseCache from '../cache/createCache'
@@ -10,39 +25,30 @@ import effects from '../cache/transformers/effects'
 import remote from '../cache/transformers/remote'
 import createCache from '../cache/create'
 
+import createCacheManager from '../createCacheManager'
+
 import memo from '../memoization/memo'
 import cacheWith from '../memoization/cacheWith'
-import Cache from '../decorators/cache'
+import cacheVia from '../memoization/cacheVia'
 import once from '../commons/once'
 import compose from '../commons/compose'
 
+import getCacheDecorator from './getCacheDecorator'
+import getUniversalCache from './getUniversalCache'
+
 import cacheManager from './cacheManager'
 import wrapUtil from './wrapUtil'
-import wrapDecorator from './wrapDecorator'
-
-import type {
-  Cache as ICache,
-  AsyncCache,
-  AnyCacheType,
-  CacheKey,
-  CacheValue,
-  LifeCycleCache,
-  LruCache
-} from '../types/cache.t'
-import type {Cleanable} from '../types/cacheManager.t'
-import type {Effect, EffectApi} from '../types/effects.t'
-import type {MemoizedFn, CacheBy, CacheFrom} from '../types/memoization.t'
-import type {CacheCreationOptions, LruCacheOptions, LruItemSizeGetter} from '../types/functional.t'
-import type {Fn} from '../types/commons.t'
 
 const {clean} = cacheManager
 
+const libCache = getCacheDecorator(cacheManager)
+const libUniversalCache = getUniversalCache(cacheManager)
 const libCacheWith = wrapUtil(cacheWith, cacheManager)
-const libCache = wrapDecorator(Cache, cacheManager)
 
 export {
   // Cache:
-  createBaseCache as cache,
+  createCache,
+  createBaseCache as sync,
   createSource as source,
   lru,
   async,
@@ -50,9 +56,12 @@ export {
   effects,
   remote,
   SourceCleanupPolicies,
+  // CacheManager:
+  createCacheManager,
   // Memoization:
   memo,
-  createCache,
+  libUniversalCache as cache,
+  cacheVia,
   libCacheWith as cacheWith,
   libCache as Cache,
   clean,
@@ -75,10 +84,11 @@ export {
   type MemoizedFn,
   type CacheBy,
   type CacheFrom,
+  type CacheManagerFrom,
   // Functional types:
   type CacheCreationOptions,
   type LruCacheOptions,
   type LruItemSizeGetter,
   // Commons types:
-  type Fn,
+  type Fn
 }

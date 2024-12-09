@@ -1,5 +1,7 @@
 import {
+  // Cache creation:
   createCache,
+  sync,
   source,
   lru,
   async,
@@ -7,6 +9,9 @@ import {
   effects,
   remote,
   SourceCleanupPolicies,
+  // CacheManager:
+  createCacheManager,
+  // Memoization:
   cache,
   memo,
   cacheWith,
@@ -30,6 +35,7 @@ import {
   type MemoizedFn,
   type CacheBy,
   type CacheFrom,
+  type CacheManagerFrom,
   // Functional types:
   type CacheCreationOptions,
   type LruCacheOptions,
@@ -40,7 +46,9 @@ import {
 
 export {
   // Cache:
-  cache,
+  createCache,
+  createCache as createCache2,
+  sync,
   source,
   lru,
   async,
@@ -48,9 +56,11 @@ export {
   effects,
   remote,
   SourceCleanupPolicies,
+  // CacheManager:
+  createCacheManager,
   // Memoization:
   memo,
-  createCache,
+  cache,
   cacheWith,
   Cache,
   clean,
@@ -73,6 +83,7 @@ export {
   type MemoizedFn,
   type CacheBy,
   type CacheFrom,
+  type CacheManagerFrom,
   // Functional types:
   type CacheCreationOptions,
   type LruCacheOptions,

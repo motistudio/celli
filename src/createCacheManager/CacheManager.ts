@@ -29,15 +29,17 @@ class CacheManager<T extends Cleanable> implements ICacheManager<T> {
   public collectionNames: Map<T, CacheManagerRef>
   public clearListeners: ClearListener[]
 
-  constructor (base?: ICacheManager<T>) {
+  constructor (...bases: ICacheManager<T>[]) {
     this.collection = new Set()
     this.namedCollection = new Map()
     this.collectionNames = new Map()
     this.clearListeners = []
 
-    if (base) {
-      base.getAllResourceEntries().forEach(([ref, cache]) => {
-        this.register(cache, ref)
+    if (bases.length) {
+      bases.forEach((base) => {
+        base.getAllResourceEntries().forEach(([ref, cache]) => {
+          this.register(cache, ref)
+        })
       })
     }
 
