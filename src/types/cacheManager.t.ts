@@ -6,9 +6,12 @@ export type Cleanable = {
 
 export type ClearListener = () => void
 
+export type CacheManagerRef = any
+
 export type CacheManager<T extends Cleanable = Cleanable> = {
-  getByRef: (ref: any) => T | undefined,
-  register: (cache: T, ref?: any) => void,
+  getAllResourceEntries: () => [CacheManagerRef | undefined, T][],
+  getByRef: (ref: CacheManagerRef) => T | undefined,
+  register: (cache: T, ref?: CacheManagerRef) => void,
   unregister: (cache: T) => void,
   clear: (force?: boolean) => Promise<void>,
   clean: () => Promise<void>,

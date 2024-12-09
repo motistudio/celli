@@ -1,4 +1,4 @@
-import type {Cleanable, CacheManager as ICacheManager, ClearListener} from '../types/cacheManager.t'
+import type {Cleanable, CacheManager as ICacheManager, ClearListener, CacheManagerRef} from '../types/cacheManager.t'
 import type {Unsubscribe} from '../types/eventEmitter.t'
 
 import reduce from '../commons/iterators/reduce'
@@ -23,19 +23,23 @@ const unregisterByRef = <T extends Cleanable>(cacheManager: CacheManager<T>, cac
   }
 }
 
-type Ref = any
-
 class CacheManager<T extends Cleanable> implements ICacheManager<T> {
   public collection: Set<T>
-  public namedCollection: Map<Ref, T>
-  public collectionNames: Map<T, Ref>
+  public namedCollection: Map<CacheManagerRef, T>
+  public collectionNames: Map<T, CacheManagerRef>
   public clearListeners: ClearListener[]
 
-  constructor () {
+  constructor (base?: ICacheManager<T>) {
     this.collection = new Set()
     this.namedCollection = new Map()
     this.collectionNames = new Map()
     this.clearListeners = []
+
+    if (base) {
+      base.getAllResourceEntries().forEach(([ref, cache]) => {
+        this.register(cache, ref)
+      })
+    }
 
     this.clean = singlify(this.clean.bind(this))
     this.clear = singlify(this.clear.bind(this))
@@ -43,6 +47,14 @@ class CacheManager<T extends Cleanable> implements ICacheManager<T> {
     this.unregister = this.unregister.bind(this)
     this.getByRef = this.getByRef.bind(this)
     this.onClear = this.onClear.bind(this)
+    this.getAllResourceEntries = this.getAllResourceEntries.bind(this)
+  }
+
+  getAllResourceEntries (): [CacheManagerRef | undefined, T][] {
+    return reduce<[CacheManagerRef | undefined, T][]>(this.collection.values(), (result, cache) => {
+      result.push([this.collectionNames.get(cache), cache])
+      return result
+    }, [])
   }
 
   getByRef (ref: string): T | undefined {

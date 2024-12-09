@@ -6,7 +6,7 @@ import createCacheManager from '../../../src/createCacheManager'
 
 describe('Cache Manager', () => {
   test('Should create a cache manager', async () => {
-    const {register, clean} = createCacheManager()
+    const {register, clean, getAllResourceEntries} = createCacheManager()
 
     const cache1 = new Cache()
     const cache2 = new AsyncCache()
@@ -16,6 +16,8 @@ describe('Cache Manager', () => {
 
     register(cache1)
     register(cache2)
+
+    expect(getAllResourceEntries()).toEqual([[undefined, cache1], [undefined, cache2]])
 
     const cleanPromise = clean()
     const cleanPromise2 = clean()
@@ -27,12 +29,13 @@ describe('Cache Manager', () => {
   })
 
   test('Should register a cache with a name', () => {
-    const {register, unregister, getByRef} = createCacheManager()
+    const {register, unregister, getByRef, getAllResourceEntries} = createCacheManager()
 
     const cache = new Cache()
     register(cache, 'test')
 
     expect(getByRef('test')).toBe(cache)
+    expect(getAllResourceEntries()).toEqual([['test', cache]])
 
     unregister(getByRef('test') as Cleanable)
     expect(getByRef('test')).toBe(undefined)
@@ -76,6 +79,31 @@ describe('Cache Manager', () => {
 
     expect(cache1.get('test')).toBe(undefined)
     await expect(cache2.get('test')).resolves.toBe(undefined)
+  })
+
+  test('Should base a CacheManager on another CacheManager', async () => {
+    const sharedCache = new Cache()
+    const notSharedCache = new Cache()
+
+    const cleanHandler = jest.fn()
+    sharedCache.on('clean', cleanHandler)
+
+    const baseCacheManager = createCacheManager()
+    baseCacheManager.register(sharedCache, 'test')
+
+    const {register, getByRef, clear} = createCacheManager(baseCacheManager)
+    register(notSharedCache, 'notShared')
+
+    expect(getByRef('test')).toBe(sharedCache)
+    expect(getByRef('notShared')).toBe(notSharedCache)
+    expect(baseCacheManager.getByRef('test')).toBe(sharedCache)
+    expect(baseCacheManager.getByRef('notShared')).toBe(undefined)
+
+    await baseCacheManager.clear()
+    expect(cleanHandler).toHaveBeenCalledTimes(0)
+
+    await clear()
+    expect(cleanHandler).toHaveBeenCalledTimes(1)
   })
 
   describe('Clear logic', () => {
