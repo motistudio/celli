@@ -1,4 +1,4 @@
-import type {CacheManager, Cleanable} from '../types/cache.t'
+import type {CacheManager, Cleanable} from '../types/cacheManager.t'
 
 type Decorator = (...args: any[]) => MethodDecorator
 

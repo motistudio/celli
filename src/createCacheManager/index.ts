@@ -1,4 +1,4 @@
-import type {CacheManager as ICacheManager, Cleanable} from '../types/cache.t'
+import type {CacheManager as ICacheManager, Cleanable} from '../types/cacheManager.t'
 import CacheManager from './CacheManager'
 
 /**

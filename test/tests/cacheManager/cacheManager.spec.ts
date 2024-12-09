@@ -1,4 +1,4 @@
-import type {Cleanable} from '../../../src/types/cache.t'
+import type {Cleanable} from '../../../src/types/cacheManager.t'
 
 import AsyncCache from '../../../src/cache/implementations/AsyncCache'
 import Cache from '../../../src/cache/implementations/Cache'
@@ -27,15 +27,15 @@ describe('Cache Manager', () => {
   })
 
   test('Should register a cache with a name', () => {
-    const {register, unregister, getByName} = createCacheManager()
+    const {register, unregister, getByRef} = createCacheManager()
 
     const cache = new Cache()
     register(cache, 'test')
 
-    expect(getByName('test')).toBe(cache)
+    expect(getByRef('test')).toBe(cache)
 
-    unregister(getByName('test') as Cleanable)
-    expect(getByName('test')).toBe(undefined)
+    unregister(getByRef('test') as Cleanable)
+    expect(getByRef('test')).toBe(undefined)
   })
 
   test('Should unregister a cache', async () => {
@@ -136,6 +136,23 @@ describe('Cache Manager', () => {
       // Now both caches should be cleaned
       expect(cache1.has('key')).toBe(false)
       expect(cache2.has('key')).toBe(false)
+    })
+
+    test('Should subscribe to clear events', async () => {
+      const {onClear, clear} = createCacheManager()
+
+      const fn = jest.fn()
+      const unsubscribe = onClear(fn)
+
+      await clear()
+
+      expect(fn).toHaveBeenCalledTimes(1)
+
+      unsubscribe()
+
+      await clear()
+
+      expect(fn).toHaveBeenCalledTimes(1)
     })
   })
 })

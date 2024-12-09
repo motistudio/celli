@@ -1,6 +1,6 @@
 import {CleanupPolicies as SourceCleanupPolicies} from '../cache/implementations/RemoteCache/constants'
 
-import createCache from '../cache/createCache'
+import createBaseCache from '../cache/createCache'
 import createSource from '../cache/createSource'
 
 import lru from '../cache/transformers/lru'
@@ -8,10 +8,10 @@ import async from '../cache/transformers/async'
 import lifeCycle from '../cache/transformers/lifeCycle'
 import effects from '../cache/transformers/effects'
 import remote from '../cache/transformers/remote'
+import createCache from '../cache/create'
 
 import memo from '../memoization/memo'
 import cacheWith from '../memoization/cacheWith'
-import cache from '../memoization/cache'
 import Cache from '../decorators/cache'
 import once from '../commons/once'
 import compose from '../commons/compose'
@@ -27,9 +27,9 @@ import type {
   CacheKey,
   CacheValue,
   LifeCycleCache,
-  LruCache,
-  Cleanable
+  LruCache
 } from '../types/cache.t'
+import type {Cleanable} from '../types/cacheManager.t'
 import type {Effect, EffectApi} from '../types/effects.t'
 import type {MemoizedFn, CacheBy, CacheFrom} from '../types/memoization.t'
 import type {CacheCreationOptions, LruCacheOptions, LruItemSizeGetter} from '../types/functional.t'
@@ -42,7 +42,7 @@ const libCache = wrapDecorator(Cache, cacheManager)
 
 export {
   // Cache:
-  createCache as cache,
+  createBaseCache as cache,
   createSource as source,
   lru,
   async,
@@ -52,7 +52,7 @@ export {
   SourceCleanupPolicies,
   // Memoization:
   memo,
-  cache as createCache,
+  createCache,
   libCacheWith as cacheWith,
   libCache as Cache,
   clean,
@@ -80,5 +80,5 @@ export {
   type LruCacheOptions,
   type LruItemSizeGetter,
   // Commons types:
-  type Fn
+  type Fn,
 }

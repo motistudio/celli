@@ -1,4 +1,5 @@
-import type {Cleanable, CacheManager as ICacheManager} from '../types/cache.t'
+import type {Cleanable, CacheManager as ICacheManager, ClearListener} from '../types/cacheManager.t'
+import type {Unsubscribe} from '../types/eventEmitter.t'
 
 import reduce from '../commons/iterators/reduce'
 import isThentable from '../commons/promise/isThentable'
@@ -22,36 +23,41 @@ const unregisterByRef = <T extends Cleanable>(cacheManager: CacheManager<T>, cac
   }
 }
 
+type Ref = any
+
 class CacheManager<T extends Cleanable> implements ICacheManager<T> {
   public collection: Set<T>
-  public namedCollection: Map<string, T>
-  public collectionNames: Map<T, string>
+  public namedCollection: Map<Ref, T>
+  public collectionNames: Map<T, Ref>
+  public clearListeners: ClearListener[]
 
   constructor () {
     this.collection = new Set()
     this.namedCollection = new Map()
     this.collectionNames = new Map()
+    this.clearListeners = []
 
     this.clean = singlify(this.clean.bind(this))
     this.clear = singlify(this.clear.bind(this))
     this.register = this.register.bind(this)
     this.unregister = this.unregister.bind(this)
-    this.getByName = this.getByName.bind(this)
+    this.getByRef = this.getByRef.bind(this)
+    this.onClear = this.onClear.bind(this)
   }
 
-  getByName (name: string): T | undefined {
-    return this.namedCollection.get(name)
+  getByRef (ref: string): T | undefined {
+    return this.namedCollection.get(ref)
   }
 
-  register (cache: T, name?: string) {
+  register (cache: T, ref?: string) {
     if (!this.collection.has(cache)) {
       // Updating the ref count
       cacheManagerRefCount.set(cache, getCacheRefCount(cache) + 1)
 
       this.collection.add(cache)
-      if (name) {
-        this.namedCollection.set(name, cache)
-        this.collectionNames.set(cache, name)
+      if (ref) {
+        this.namedCollection.set(ref, cache)
+        this.collectionNames.set(cache, ref)
       }
     }
   }
@@ -60,10 +66,17 @@ class CacheManager<T extends Cleanable> implements ICacheManager<T> {
     unregisterByRef(this, cache)
 
     // Removes named pair
-    const name = this.collectionNames.get(cache)
-    if (name) {
-      this.namedCollection.delete(name)
+    const ref = this.collectionNames.get(cache)
+    if (ref) {
+      this.namedCollection.delete(ref)
       this.collectionNames.delete(cache)
+    }
+  }
+
+  onClear (fn: ClearListener): Unsubscribe {
+    this.clearListeners.push(fn)
+    return () => {
+      this.clearListeners.splice(this.clearListeners.indexOf(fn), 1)
     }
   }
 
@@ -86,6 +99,8 @@ class CacheManager<T extends Cleanable> implements ICacheManager<T> {
       }
       return promises
     }, [])).then(() => {
+      // Activate all events
+      this.clearListeners.forEach(fn => fn())
       return undefined
     })
   }

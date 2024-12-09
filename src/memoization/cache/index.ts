@@ -1,68 +1,37 @@
-import type {Merge} from '../../types/commons.t'
-import type {
-  Key,
-  AsyncCache as IAsyncCache,
-  Cache as ICache,
-  AnyCacheType
-} from '../../types/cache.t'
-import type {LruCacheOptions, CacheCreationOptions} from '../../types/functional.t'
-import type {Effect} from '../../types/effects.t'
+import type {Fn} from '../../types/commons.t'
+import type {MemoizedFn} from '../../types/memoization.t'
+import type {UniversalCacheOptions, UniversalCommonOptions, UniversalMemoOptions, UniversalCacheFromOptions, UniversalCacheViaOptions} from '../../types/functional.t'
 
-import createBaseCache from '../../cache/createCache'
-import async from '../../cache/transformers/async'
-import remote from '../../cache/transformers/remote'
-import lru from '../../cache/transformers/lru'
-import effects from '../../cache/transformers/effects'
-import ttl from '../../cache/implementations/LifeCycleCache/effects/ttl'
+import createCache from '../../cache/create'
+import cacheWith from '../../memoization/cacheWith'
+import memo from '../../memoization/memo'
+import cacheVia from '../../memoization/cacheVia'
+import getSignatureKey from '../../memoization/getSignatureKey'
 
-const defaultCacheOptions: CacheCreationOptions<any, any> = {
-  async: false,
-  ttl: Infinity,
-  lru: 1000
+const isCacheFromOptions = <F extends Fn>(options: UniversalCacheOptions<F>): options is (UniversalCommonOptions<F> & UniversalCacheFromOptions<F>) => {
+  return ('from' in options) && !!options.from
 }
 
-const getLruOptions = <K extends Key, T>(lruOptions: number | Merge<Partial<LruCacheOptions<K, T>>, Pick<LruCacheOptions<K, T>, 'maxSize'>>): Merge<Partial<LruCacheOptions<K, T>>, Pick<LruCacheOptions<K, T>, 'maxSize'>> => {
-  if (typeof lruOptions === 'number') {
-    return {maxSize: lruOptions}
+const isCacheViaOptions = <F extends Fn>(options: UniversalCacheOptions<F>): options is (UniversalCommonOptions<F> & UniversalMemoOptions<F> & UniversalCacheViaOptions<F>) => {
+  return ('via' in options) && !!options.via
+}
+
+function cache <F extends Fn>(fn: F, options: UniversalCommonOptions<F> & UniversalCacheViaOptions<F> & UniversalMemoOptions<F>): MemoizedFn<F>
+function cache <F extends Fn>(fn: F, options: UniversalCommonOptions<F> & UniversalMemoOptions<F>): MemoizedFn<F>
+function cache <F extends Fn>(fn: F, options: UniversalCommonOptions<F> & UniversalCacheFromOptions<F>): MemoizedFn<F>
+function cache <F extends Fn>(fn: F, options: UniversalCacheOptions<F>): MemoizedFn<F> {
+  if (isCacheFromOptions(options)) {
+    return cacheWith(fn, {
+      by: options.cacheBy,
+      from: options.from
+    })
   }
-  return lruOptions
-}
-
-const createDisposeEffect = <T>(dispose: (value: T) => void | Promise<void>): Effect<T> => {
-  return (api) => {
-    return () => dispose(api.getSelf())
+  const {cacheBy, ...rest} = options
+  const cache = createCache<string, Awaited<ReturnType<Fn>>>(rest as Parameters<typeof createCache<string, Awaited<ReturnType<Fn>>>>[0])
+  if (isCacheViaOptions(options)) {
+    return cacheVia(fn, cacheBy || getSignatureKey, options.via, cache)
   }
+  return memo(fn, cacheBy, cache)
 }
 
-function createCache <K extends Key, T>(options?: Merge<Omit<Partial<CacheCreationOptions<K, T>>, 'source'>, {async?: false}>): ICache<K, T>
-function createCache <K extends Key, T>(options?: Merge<Partial<CacheCreationOptions<K, T>>, {async: true}>): IAsyncCache<K, T>
-function createCache <K extends Key, T>(options?: Merge<Partial<CacheCreationOptions<K, T>>, {source: IAsyncCache<K, T>}>): IAsyncCache<K, T>
-function createCache <K extends Key, T>(options?: Partial<CacheCreationOptions<K, T>>): AnyCacheType<K, T> {
-  const {
-    async: isAsync,
-    ttl: timeout,
-    lru: lruInput,
-    source,
-    dispose,
-    effects: effectsInput
-  } = {...defaultCacheOptions, ...options}
-
-  const lruOptions = getLruOptions(lruInput)
-
-  const computedEffects: Effect<T>[] = [
-    ...(effectsInput || []),
-    ...(dispose ? [createDisposeEffect(dispose)] : []),
-    ...(timeout !== Infinity ? [ttl({timeout})] : [])
-  ]
-
-  // Manual compose
-  let cache: AnyCacheType<K, T> = createBaseCache<K, T>()
-  cache = lru(lruOptions)(cache)
-  cache = computedEffects.length ? effects(computedEffects)(cache) : cache
-  cache = source ? remote(source)(cache) : cache
-  cache = (isAsync || source) ? async()(cache) as AnyCacheType<K, T> : cache // async should always be the last since it's synchronizing the cache's methods and normalizes a specific behavior
-
-  return cache
-}
-
-export default createCache
+export default cache

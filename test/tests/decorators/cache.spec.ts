@@ -1,5 +1,7 @@
 import Cache from '../../../src/decorators/cache'
-import createCache from '../../../src/memoization/cache'
+import createCache from '../../../src/cache/create'
+import createCacheManager from '../../../src/createCacheManager'
+import { CacheManager } from '../../../src/types/cacheManager.t'
 
 describe('Cache decorator', () => {
   beforeEach(() => {
@@ -117,7 +119,7 @@ describe('Cache decorator', () => {
     expect(method).toHaveBeenCalledTimes(5)
   })
 
-  test('Should cache via context', () => {
+  test('Should cache via external cache', () => {
     const context = {
       cache: createCache()
     }
@@ -149,6 +151,78 @@ describe('Cache decorator', () => {
 
     const result4 = StaticClass.expensiveMethod(context2, 5)
     expect(result4).toBe(result3)
+    expect(method).toHaveBeenCalledTimes(2)
+  })
+
+  test('Should cache via external context', async () => {
+    type Context = {
+      cm: CacheManager
+    }
+
+    const context: Context = {
+      cm: createCacheManager()
+    }
+
+    const context2: Context = {
+      cm: createCacheManager()
+    }
+
+    const baseMethod = (number: number) => ({value: number * 2})
+
+    const method = jest.fn(baseMethod)
+
+    class StaticClass {
+      @Cache({
+        cacheBy: (x) => String(x),
+        via: (context) => context.cm,
+        async: false,
+        lru: 2,
+        ttl: 100
+      })
+      static expensiveMethod(c: Context, x: number) {
+        return method(x)
+      }
+
+      @Cache({
+        cacheBy: (x) => String(x),
+        via: (context) => context.cm,
+        async: false,
+        lru: 2,
+        ttl: 100
+      })
+      static second (x: string) {
+        return 'second' + x
+      }
+    }
+
+    const result1 = StaticClass.expensiveMethod(context, 5)
+    expect(result1).toMatchObject({value: 10})
+    expect(method).toHaveBeenCalledTimes(1)
+
+    const result2 = StaticClass.expensiveMethod(context, 5)
+    expect(result2).toBe(result1)
+    expect(method).toHaveBeenCalledTimes(1)
+
+    const result3 = StaticClass.expensiveMethod(context2, 5)
+    expect(result3).toBe(result1) // they share the cache instance
+    expect(method).toHaveBeenCalledTimes(1)
+
+    const result4 = StaticClass.expensiveMethod(context2, 5)
+    expect(result4).toBe(result3)
+    expect(method).toHaveBeenCalledTimes(1)
+
+    await context.cm.clear()
+
+    // The results are still there, so long at least one context share this cache
+    const result5 = StaticClass.expensiveMethod(context2, 5)
+    expect(result5).toBe(result3)
+    expect(method).toHaveBeenCalledTimes(1)
+
+    await context2.cm.clear()
+
+    // Now the results are gone
+    const result6 = StaticClass.expensiveMethod(context2, 5)
+    expect(result6).not.toBe(result3)
     expect(method).toHaveBeenCalledTimes(2)
   })
 
