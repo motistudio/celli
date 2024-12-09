@@ -4,7 +4,7 @@ import {
   createCache,
   once,
   type AnyCacheType
-} from '../../../src'
+} from '../../../src/index'
 
 describe('Memoization', () => {
   test('Should memoize a function', async () => {

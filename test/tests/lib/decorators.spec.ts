@@ -47,6 +47,9 @@ describe('Decorators', () => {
       ttl: 100
     })
 
+    // Trigger the cache since the registration is dynamic
+    expect(expensiveMethod2(context, 5)).toMatchObject({value: 10})
+
     expect(globalCacheManager.getAllResourceEntries().find(([, fn]) => fn === expensiveMethod1)).toBeTruthy()
     expect(globalCacheManager.getAllResourceEntries().find(([, fn]) => fn === expensiveMethod2)).toBe(undefined)
 
