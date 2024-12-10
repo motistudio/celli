@@ -1,5 +1,5 @@
 import Cache from '../../../src/decorators/cache'
-import createCache from '../../../src/cache/create'
+import createCache from '../../../src/createCache'
 import createCacheManager from '../../../src/createCacheManager'
 import { CacheManager } from '../../../src/types/cacheManager.t'
 

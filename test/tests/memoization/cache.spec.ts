@@ -1,7 +1,7 @@
 import type {AnyCacheType} from '../../../src/types/cache.t'
 import type {CacheManager} from '../../../src/types/cacheManager.t'
 
-import createCache from '../../../src/cache/create'
+import createCache from '../../../src/createCache'
 import createCacheManager from '../../../src/createCacheManager'
 import cache from '../../../src/memoization/cache'
 

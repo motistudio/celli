@@ -1,5 +1,5 @@
-import globalCacheManager from '../../../src/lib/cacheManager'
-import {clean, Cache, cache, createCacheManager} from '../../../src/index'
+import getGlobalCacheManager from '../../../src/lib/getGlobalCacheManager'
+import {clean, Cache, cache, createCacheManager, type Cleanable} from '../../../src/index'
 
 describe('Decorators', () => {
   test('Should cache a function', async () => {
@@ -26,6 +26,7 @@ describe('Decorators', () => {
   test('Should cache a function without registering it to the global CacheManager', async () => {
     const method = jest.fn((number: number) => ({value: number * 2}))
 
+    const globalCacheManager = getGlobalCacheManager()
     const cm = createCacheManager()
 
     const context = {
@@ -55,5 +56,50 @@ describe('Decorators', () => {
 
     expect(cm.getAllResourceEntries().find(([, fn]) => fn === expensiveMethod1)).toBe(undefined) // Inherits from global
     expect(cm.getAllResourceEntries().find(([, fn]) => fn === expensiveMethod2)).toBeTruthy()
+  })
+
+  test('Should cache a method without registering it to the global CacheManager', async () => {
+    const method = jest.fn((number: number) => ({value: number * 2}))
+
+    const globalCacheManager = getGlobalCacheManager()
+    const cm = createCacheManager()
+
+    const context = {
+      cm
+    }
+
+    class StaticClass {
+      @Cache({
+        cacheBy: (x) => String(x),
+        async: false,
+        lru: 2,
+        ttl: 100
+      })
+      static expensiveMethod(x: number) {
+        return method(x)
+      }
+    }
+
+    class StaticClass2 {
+      @Cache({
+        cacheBy: (ctx, x) => String(x),
+        via: (ctx) => ctx.cm,
+        async: false,
+        lru: 2,
+        ttl: 100,
+      })
+      static expensiveMethod(ctx: (typeof context), x: number) {
+        return method(x)
+      }
+    }
+
+    // Trigger the cache since the registration is dynamic
+    expect(StaticClass2.expensiveMethod(context, 5)).toMatchObject({value: 10})
+
+    expect(globalCacheManager.getAllResourceEntries().find(([, fn]) => fn === StaticClass.expensiveMethod as unknown as Cleanable)).toBeTruthy()
+    expect(globalCacheManager.getAllResourceEntries().find(([, fn]) => fn === StaticClass2.expensiveMethod as unknown as Cleanable)).toBe(undefined)
+
+    expect(cm.getAllResourceEntries().find(([, fn]) => fn === StaticClass.expensiveMethod as unknown as Cleanable)).toBe(undefined) // Inherits from global
+    expect(cm.getAllResourceEntries().find(([, fn]) => fn === StaticClass2.expensiveMethod as unknown as Cleanable)).toBeTruthy()
   })
 })

@@ -1,19 +1,19 @@
-import type {Merge} from '../../types/commons.t'
+import type {Merge} from '../types/commons.t'
 import type {
   Key,
   AsyncCache as IAsyncCache,
   Cache as ICache,
   AnyCacheType
-} from '../../types/cache.t'
-import type {LruCacheOptions, CacheCreationOptions} from '../../types/functional.t'
-import type {Effect} from '../../types/effects.t'
+} from '../types/cache.t'
+import type {LruCacheOptions, CacheCreationOptions} from '../types/functional.t'
+import type {Effect} from '../types/effects.t'
 
-import createBaseCache from '../../cache/createCache'
-import async from '../../cache/transformers/async'
-import remote from '../../cache/transformers/remote'
-import lru from '../../cache/transformers/lru'
-import effects from '../../cache/transformers/effects'
-import ttl from '../../cache/implementations/LifeCycleCache/effects/ttl'
+import createBaseCache from '../cache/createCache'
+import async from '../cache/transformers/async'
+import remote from '../cache/transformers/remote'
+import lru from '../cache/transformers/lru'
+import effects from '../cache/transformers/effects'
+import ttl from '../cache/implementations/LifeCycleCache/effects/ttl'
 
 const defaultCacheOptions: CacheCreationOptions<any, any> = {
   async: false,

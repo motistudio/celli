@@ -1,5 +1,5 @@
 import isThentable from '../../../src/commons/promise/isThentable'
-import createCache from '../../../src/cache/create'
+import createCache from '../../../src/createCache'
 
 describe('Cache creation', () => {
   beforeAll(() => {

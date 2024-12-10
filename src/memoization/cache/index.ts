@@ -2,7 +2,7 @@ import type {Fn} from '../../types/commons.t'
 import type {MemoizedFn} from '../../types/memoization.t'
 import type {UniversalCacheOptions, UniversalCommonOptions, UniversalMemoOptions, UniversalCacheFromOptions, UniversalCacheViaOptions} from '../../types/functional.t'
 
-import createCache from '../../cache/create'
+import createCache from '../../createCache'
 import cacheWith from '../../memoization/cacheWith'
 import memo from '../../memoization/memo'
 import cacheVia from '../../memoization/cacheVia'
