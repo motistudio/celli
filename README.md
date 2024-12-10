@@ -42,6 +42,19 @@ class SomeService {
 }
 ```
 
+Or
+
+```typescript
+import {cache} from 'celli'
+
+const getUserSecret = cache((userId: string) => fetch(`https://some.api/user/${userId}/secret`), {
+  cacheBy: (userId) => userId,
+  async: true
+  ttl: 1000,
+  lru: 100
+})
+```
+
 This code will create a cache behind the scenes and will memoize getUserSecret method.
 We can specify parameters as the following:
 - `cacheBy` - function that will be used to determine the cache key
@@ -159,9 +172,9 @@ While it's good practice to configure each cache with LRU and TTL to avoid memor
 
 For this purpose, we provide a set of utilities to compose caches together.
 ```typescript
-import {cache, lru, async, lifeCycle, effects, remote, compose} from 'celli'
+import {sync, lru, async, lifeCycle, effects, remote, compose} from 'celli'
 
-const baseCache = cache() // This is a simple synchronous cache
+const baseCache = sync() // This is a simple synchronous cache
 const asyncCache = async()(baseCache) // This will produce an async cache, on top of our base cache
 const lruCache = lru({maxSize: 100})(asyncCache) // This will produce an LRU cache with 100 items
 const ttlCache = ttl({timeout: 1000})(lruCache) // This will produce a TTL cache with 1000ms ttl
@@ -247,13 +260,13 @@ If we don't provide a `set` method, having only `get` applied, this cache will a
 
 ### Cache Creation and Management
 
-#### `cache()`
-Creates a basic cache instance.
+#### `sync()`
+Creates a basic sync instance.
 ```typescript
-const baseCache = cache()
+const baseCache = sync()
 
-cache.set('key', 'my-data')
-cache.get('key') // 'my-data'
+sync.set('key', 'my-data')
+sync.get('key') // 'my-data'
 ```
 
 #### `source()`
@@ -451,7 +464,9 @@ class SomeService {
 ```
 
 #### Cache from context
-Otherwise, we will provide a function that will receive the function's arguments and will extract a cache instance from there.
+However, sometimes we would want to work with a specific cache instance.
+For this purpose, we can provide a callback that will receive the function's arguments and will extract a cache instance from there.
+
 ```typescript
 import {createCache} from 'celli'
 
@@ -481,6 +496,53 @@ class SomeService {
 
 **Important:** be careful not to create a cache reference from this `from` callback!
 Not only will we not get any memoization (every call uses a different cache), but we'll also consume a lot of memory.
+
+#### Working with CacheManager
+When an application runs, we may want to manage different sets of caches.
+In this case, there are two issues we need to solve:
+1. We want to dynamically free resources when they're not needed anymore.
+2. We want to share those resources between sessions.
+
+For this case, we can use `createCacheManager` to create structure that will manage cache-like resources.
+A CacheManager offer a `clear()` method, which attempts to free every non-shared resources, while disconnecting from the resources it manages.
+
+In order to use it dynamically, we can use the `via` option in the `Cache` decorator.
+This option will receive the CacheManager instance and will allow us to specify which cache we want to use for the function.
+
+```typescript
+import {createCacheManager} from 'celli'
+
+const cacheManager = createCacheManager()
+
+const userContext = {
+  // ...content stuff
+  cacheManager: cacheManager
+}
+
+class SomeService {
+  @Cache({
+    cacheBy: (userId) => userId,
+    via: (context) => context.cm,
+    async: true
+    ttl: 1000,
+    lru: 100
+  })
+  static getUserSecret(context: typeof userContext, userId: string) {
+    return fetch(`https://some.api/user/${userId}/secret`)
+  }
+}
+
+SomeService.getUserSecret(userContext, '123')
+```
+
+Later in the lifecycle, we can invoke `cacheManager.clear()` to free all the resources it holds:
+```typescript
+cacheManager.clear()
+```
+
+> It's important to note that when we don't use `via`, the caches are still being registered to the global cacheManager, which we can always clean with `clean()`.
+> This applied to the `Cache` decorator, `cache` utility and `cacheWith` utility.
+> We can also take advantage of this mechanism to use it on every object that implements a `clean()` method.
 
 ### Utility Functions
 
