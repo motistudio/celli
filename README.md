@@ -540,9 +540,35 @@ Later in the lifecycle, we can invoke `cacheManager.clear()` to free all the res
 cacheManager.clear()
 ```
 
+If no other cacheManager has access to this cache, it will be cleaned.
+
 > It's important to note that when we don't use `via`, the caches are still being registered to the global cacheManager, which we can always clean with `clean()`.
 > This applied to the `Cache` decorator, `cache` utility and `cacheWith` utility.
 > We can also take advantage of this mechanism to use it on every object that implements a `clean()` method.
+
+For manual work with `CacheManager`, it has the following API:
+- `register(cache, ref?)` - Register a cache to the manager, and an optional reference to the cache instance. This ref could help us get this specific cache later on.
+- `unregister(cache)` - Unregister a cache from the manager
+- `getByRef(ref)` - Get a cache by the reference it was registered with. It uses `Map` so it doesn't have to be necessarily a string.
+- `clear()` - Clears the resources (cache instances) registered, and also **cleans the ones it doesn't share**. This is a very important mechanism, done to correctly clear redundant resources.
+- `onClear(fn)` - Subscribe to the clear event
+
+`CacheManager` will not manage only cache instances, but every object that implements a `clean()` method ("`Cleanable`").
+That includes memoized functions as well.
+
+**`Clear` marks the end of a given cacheManager's lifecycle**
+
+When creating a `CacheManager`, we can also provide another given instance in order to share its resources.
+This is useful if we want to share different `CacheManager` instances, maybe with different contexts.
+```typescript
+import {createCacheManager} from 'celli'
+
+const cacheManager = createCacheManager()
+cacheManager.register(...)
+
+const cacheManager2 = createCacheManager(cacheManager)
+// cacheManager2 has access to the same caches as cacheManager
+```
 
 ### Utility Functions
 
