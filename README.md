@@ -7,9 +7,9 @@ Celli is a versatile library designed for caching and memoization in various run
    - Offers flexible ways to create and manage caches
    - Provides utils to create a custom cache in a composable manner
 
-2. Memoization tools:
-   - Offers utilities for function memoization
-   - Provides decorators for easy caching of class methods
+2. Memoization tools & decorators:
+   - Offers utilities for function memoization, taking advantage of the flexible cache creation API
+   - Built-in cache invalidations configurations for maintaining low memory consumption, taking the application's lifecycle into account
 
 The library is designed to be flexible and extensible, allowing developers to choose the most appropriate caching strategy based on their specific needs.
 It comes without any dependencies (minified file weights only 19kb!), perfectly typed and has 100% test coverage. Hoping to ensure high reliability with no unexpected edge cases.
@@ -20,7 +20,7 @@ It comes without any dependencies (minified file weights only 19kb!), perfectly 
 npm install celli --save
 ```
 
-## Usage
+## Basic Usage
 
 ### Memoizing functions in runtime
 The main goal of the library is caching functions without effort.
@@ -145,6 +145,8 @@ const cacheWithRemote = createCache({
 
 And of course, we can combine all of these options together.
 
+## Advanced Usage
+
 ### Cache behavior & cleanup
 Each cache implements a similar API to Map.
 We have some simple methods such as `set`, `get`, `delete` and `has`.
@@ -164,7 +166,85 @@ process.on('SIGTERM', () => {
   clean()
 })
 ```
-However, it will not clean custom caches, which are the application's responsibility.
+
+It uses a global instance of `CacheManager`, which the top-level memoization API will subscribe to.
+It includes `Cache` decorator, `cache` utility and `cacheWith` utility.
+Every other util will not be automatically registered, in order to allow the application to set its own cleanup behavior.
+This is a last-resort tool to ensure a graceful shutdown.
+
+
+### Working with `CacheManager`
+When an application runs, we may want to manage different sets of caches.
+In this case, there are two issues we need to solve:
+1. We want to dynamically free resources when they're not needed anymore.
+2. We want to share those resources between sessions.
+
+For this case, we can use `createCacheManager` to create structure that will manage cache-like resources.
+A CacheManager offer a `clear()` method, which attempts to free every non-shared resources, while disconnecting from the resources it manages.
+
+In order to use it dynamically, we can use the `via` option in the `Cache` decorator.
+This option will receive the CacheManager instance and will allow us to specify which cache we want to use for the function.
+
+```typescript
+import {createCacheManager} from 'celli'
+
+const cacheManager = createCacheManager()
+
+const userContext = {
+  // ...content stuff
+  cacheManager: cacheManager
+}
+
+class SomeService {
+  @Cache({
+    cacheBy: (userId) => userId,
+    via: (context) => context.cm,
+    async: true
+    ttl: 1000,
+    lru: 100
+  })
+  static getUserSecret(context: typeof userContext, userId: string) {
+    return fetch(`https://some.api/user/${userId}/secret`)
+  }
+}
+
+SomeService.getUserSecret(userContext, '123')
+```
+
+Later in the lifecycle, we can invoke `cacheManager.clear()` to free all the resources it holds:
+```typescript
+cacheManager.clear()
+```
+
+If no other cacheManager has access to this cache, it will be cleaned.
+
+> It's important to note that when we don't use `via`, the caches are still being registered to the global cacheManager, which we can always clean with `clean()`.
+> This applied to the `Cache` decorator, `cache` utility and `cacheWith` utility.
+> We can also take advantage of this mechanism to use it on every object that implements a `clean()` method.
+
+For manual work with `CacheManager`, it has the following API:
+- `register(cache, ref?)` - Register a cache to the manager, and an optional reference to the cache instance. This ref could help us get this specific cache later on.
+- `unregister(cache)` - Unregister a cache from the manager
+- `getByRef(ref)` - Get a cache by the reference it was registered with. It uses `Map` so it doesn't have to be necessarily a string.
+- `clear()` - Clears the resources (cache instances) registered, and also **cleans the ones it doesn't share**. This is a very important mechanism, done to correctly clear redundant resources.
+- `onClear(fn)` - Subscribe to the clear event
+
+`CacheManager` will not manage only cache instances, but every object that implements a `clean()` method ("`Cleanable`").
+That includes memoized functions as well.
+
+**`Clear` marks the end of a given cacheManager's lifecycle**
+
+When creating a `CacheManager`, we can also provide another given instance in order to share its resources.
+This is useful if we want to share different `CacheManager` instances, maybe with different contexts.
+```typescript
+import {createCacheManager} from 'celli'
+
+const cacheManager = createCacheManager()
+cacheManager.register(...)
+
+const cacheManager2 = createCacheManager(cacheManager)
+// cacheManager2 has access to the same caches as cacheManager
+```
 
 ### Custom cache composition
 Every application has different needs.
@@ -199,6 +279,8 @@ const ultimateCache = compose(
   remote(anotherCacheFromAnotherService)
 )(baseCache)
 ```
+
+## Integration Features
 
 ### Events
 Cache instances emit events that you can subscribe to:
@@ -440,13 +522,43 @@ If we don't provide one, it will create a new one.
 
 Memo function works for async functions as well and will cache promises.
 
+#### `cache(fn, options)`
+Caches a function, while dynamically creating a cache instance (if needed).
+
+```typescript
+import {cache} from 'celli'
+
+const memoizedFunction = cache((a: number, b: number) => a + b, {
+  cacheBy: (a, b) => `${a}-${b}`,
+  async: false,
+  ttl: 1000,
+  lru: 100
+})
+```
+
+#### Cache options:
+When using the `cache` utility, we can provide the following options:
+
+- `cacheBy` - A function that receives the same arguments as the cached function and returns a cache key. If not provided, arguments will be stringified.
+- `from` - Function to get an existing cache instance from function arguments. This option is an alternative to the rest of the cache options, since it will use this cache instance instead of creating a new one.
+- `via` - Function to get an existing `CacheManager` instance from function arguments, it will dynamically register the cache to the given `CacheManager`.
+- `async` - Whether the function is asynchronous. Defaults to false.
+- `ttl` - Time-to-live in milliseconds for cached items.
+- `lru` - LRU cache configuration:
+  - `maxSize` - Maximum number of items to store
+  - `getItemSize` - Optional function to calculate item size
+- `effects` - Array of effect functions that run on item lifecycle events
+- `dispose` - Function called when an item is deleted from cache
+- `source` - Another cache to use as a data source
+
 #### `Cache(options)`
 Decorator for caching class methods.
 
 This decorator expects either a cache options, or a function that will provide a cache instance from the function's arguments.
 
 #### Cache options:
-If we want to create a new cache for a specific function, we will provide cache-options (same API as `createCache`) + an optional `cacheBy` to calculate the key.
+This is basically a decorator version of `cache` utility, and they share the exact same options.
+
 ```typescript
 import {Cache} from 'celli'
 
@@ -497,78 +609,31 @@ class SomeService {
 **Important:** be careful not to create a cache reference from this `from` callback!
 Not only will we not get any memoization (every call uses a different cache), but we'll also consume a lot of memory.
 
-#### Working with CacheManager
-When an application runs, we may want to manage different sets of caches.
-In this case, there are two issues we need to solve:
-1. We want to dynamically free resources when they're not needed anymore.
-2. We want to share those resources between sessions.
+### `CacheManager`
+A CacheManager helps manage multiple cache instances and their lifecycles. It provides methods to register/unregister caches, share resources between managers, and clean up resources when they're no longer needed. This is especially useful for managing caches across different sessions or contexts within an application.
 
-For this case, we can use `createCacheManager` to create structure that will manage cache-like resources.
-A CacheManager offer a `clear()` method, which attempts to free every non-shared resources, while disconnecting from the resources it manages.
-
-In order to use it dynamically, we can use the `via` option in the `Cache` decorator.
-This option will receive the CacheManager instance and will allow us to specify which cache we want to use for the function.
+#### `createCacheManager(...cacheManagerInstances: CacheManager[])`
+Creates a new CacheManager instance.
+If provided with other CacheManager instances, it will share their resources.
 
 ```typescript
-import {createCacheManager} from 'celli'
-
 const cacheManager = createCacheManager()
 
-const userContext = {
-  // ...content stuff
-  cacheManager: cacheManager
-}
-
-class SomeService {
-  @Cache({
-    cacheBy: (userId) => userId,
-    via: (context) => context.cm,
-    async: true
-    ttl: 1000,
-    lru: 100
-  })
-  static getUserSecret(context: typeof userContext, userId: string) {
-    return fetch(`https://some.api/user/${userId}/secret`)
-  }
-}
-
-SomeService.getUserSecret(userContext, '123')
-```
-
-Later in the lifecycle, we can invoke `cacheManager.clear()` to free all the resources it holds:
-```typescript
-cacheManager.clear()
-```
-
-If no other cacheManager has access to this cache, it will be cleaned.
-
-> It's important to note that when we don't use `via`, the caches are still being registered to the global cacheManager, which we can always clean with `clean()`.
-> This applied to the `Cache` decorator, `cache` utility and `cacheWith` utility.
-> We can also take advantage of this mechanism to use it on every object that implements a `clean()` method.
-
-For manual work with `CacheManager`, it has the following API:
-- `register(cache, ref?)` - Register a cache to the manager, and an optional reference to the cache instance. This ref could help us get this specific cache later on.
-- `unregister(cache)` - Unregister a cache from the manager
-- `getByRef(ref)` - Get a cache by the reference it was registered with. It uses `Map` so it doesn't have to be necessarily a string.
-- `clear()` - Clears the resources (cache instances) registered, and also **cleans the ones it doesn't share**. This is a very important mechanism, done to correctly clear redundant resources.
-- `onClear(fn)` - Subscribe to the clear event
-
-`CacheManager` will not manage only cache instances, but every object that implements a `clean()` method ("`Cleanable`").
-That includes memoized functions as well.
-
-**`Clear` marks the end of a given cacheManager's lifecycle**
-
-When creating a `CacheManager`, we can also provide another given instance in order to share its resources.
-This is useful if we want to share different `CacheManager` instances, maybe with different contexts.
-```typescript
-import {createCacheManager} from 'celli'
-
-const cacheManager = createCacheManager()
-cacheManager.register(...)
+cacheManager.register(...) // Register a cache
 
 const cacheManager2 = createCacheManager(cacheManager)
 // cacheManager2 has access to the same caches as cacheManager
 ```
+
+Every `CacheManager` instance has the following API:
+
+- `cacheManeger.register(cache, ref?)` - Register a cache instance to the manager. Optionally provide a reference key to retrieve this cache later. It uses `Map` so the ref can be any type.
+- `cacheManeger.unregister(cache)` - Remove a cache instance from the manager.
+- `cacheManeger.getByRef(ref)` - Get a cache by its reference key.
+- `cacheManeger.clear()` - Clear all registered cache instances and clean up any non-shared resources. This marks the end of the CacheManager's lifecycle.
+- `cacheManeger.onClear(fn)` - Subscribe to the clear event with a callback function.
+
+The CacheManager can manage any object that implements a `clean()` method (known as a "Cleanable"), including cache instances and memoized functions.
 
 ### Utility Functions
 
