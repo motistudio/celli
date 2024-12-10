@@ -17,3 +17,5 @@ export type EventEmitterListener<
   E extends EventEmitter<EventMap>,
   K extends EventEmitterKey<E> = EventEmitterKey<E>
 > = EventListener<EventEmitterMap<E>[K]>
+
+export type Unsubscribe = () => void

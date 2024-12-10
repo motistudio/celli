@@ -126,13 +126,3 @@ export type InnerCache<K extends Key, T> = BaseCache<K, T> | Cache<K, T>
 export type AsyncInnerCache<K extends Key, T> = InnerCache<K, T> | AsyncCache<K, T> | AbstractCache<K, T>
 
 export type Transformer<K extends AnyCache<any, any>> = <Cache extends AnyCache<any, any>>(cache: Cache) => K
-
-export type Cleanable = {
-  clean: () => Promise<void> | void
-}
-
-export type CacheManager = {
-  register: (cache: Cleanable) => void
-  clean: () => Promise<void>
-}
-

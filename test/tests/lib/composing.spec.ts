@@ -4,7 +4,7 @@ import ttl from '../../../src/cache/implementations/LifeCycleCache/effects/ttl'
 
 import {
   compose,
-  cache as createCache,
+  sync,
   source,
   lru,
   async,
@@ -28,7 +28,7 @@ describe('Creating and composing cache', () => {
   })
 
   test('Should create a basic cache', () => {
-    const cache = createCache()
+    const cache = sync()
     const key = 'k'
     const value = 'v'
 
@@ -47,7 +47,7 @@ describe('Creating and composing cache', () => {
   })
 
   test('Should compose an async cache', async () => {
-    const cache = async()(createCache())
+    const cache = async()(sync())
     const key = 'k'
     const value = 'v'
 
@@ -66,7 +66,7 @@ describe('Creating and composing cache', () => {
   })
 
   test('Should compose an lru cache', async () => {
-    const asyncCache = async()(createCache<string, string>())
+    const asyncCache = async()(sync<string, string>())
     const cache = lru({maxSize: 1})(asyncCache)
     const key = 'k'
     const value = 'v'
@@ -86,7 +86,7 @@ describe('Creating and composing cache', () => {
   })
 
   test('Should compose a lifeCycle cache', () => {
-    const lifeCycleCache = lifeCycle<ICache<string, string>>()(createCache<string, string>())
+    const lifeCycleCache = lifeCycle<ICache<string, string>>()(sync<string, string>())
     const lruCache = lru<typeof lifeCycleCache>({maxSize: 2})(lifeCycleCache)
 
     const cleanup = jest.fn(() => undefined)
@@ -116,7 +116,7 @@ describe('Creating and composing cache', () => {
   })
 
   test('Should compose effects cache', () => {
-    const lruCache = lru({maxSize: 1})(createCache<string, string>())
+    const lruCache = lru({maxSize: 1})(sync<string, string>())
     const effectsCache = effects([ttl({timeout: 1000})])(lruCache)
 
     const pairs: [string, string][] = [
@@ -148,8 +148,8 @@ describe('Creating and composing cache', () => {
       ]),
       lru({maxSize: 2}),
       async(),
-      remote(source(createCache()), {cleanupPolicy: SourceCleanupPolicies.ALL}) // potentially redis and stuff
-    )(createCache()) as AsyncCache<string, string>
+      remote(source(sync()), {cleanupPolicy: SourceCleanupPolicies.ALL}) // potentially redis and stuff
+    )(sync()) as AsyncCache<string, string>
 
     const frontCache = (cache as RemoteCache<string, string>)[CACHE_KEY]
 

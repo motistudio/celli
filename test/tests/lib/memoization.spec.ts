@@ -19,17 +19,21 @@ describe('Memoization', () => {
   })
 
   test('Should memoize a function by context', () => {
-    const context = {cache: createCache({
-      async: false,
-      lru: 100,
-      ttl: 1000
-    })}
+    const context = {
+      cache: createCache({
+        async: false,
+        lru: 100,
+        ttl: 1000
+      })
+    }
 
-    const context2 = {cache: createCache({
-      async: false,
-      lru: 100,
-      ttl: 1000
-    })}
+    const context2 = {
+      cache: createCache({
+        async: false,
+        lru: 100,
+        ttl: 1000
+      })
+    }
 
     const fn = jest.fn((context: {cache: AnyCacheType<any, any>}, a: number) => a)
     const memoized = cacheWith(fn, {by: (context, a) => String(a), from: (context) => context.cache})
