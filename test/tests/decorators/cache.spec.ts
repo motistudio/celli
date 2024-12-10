@@ -1,7 +1,8 @@
+import type {CacheManager} from '../../../src/types/cacheManager.t'
+
 import Cache from '../../../src/decorators/cache'
 import createCache from '../../../src/createCache'
 import createCacheManager from '../../../src/createCacheManager'
-import { CacheManager } from '../../../src/types/cacheManager.t'
 
 describe('Cache decorator', () => {
   beforeEach(() => {
@@ -121,17 +122,20 @@ describe('Cache decorator', () => {
 
   test('Should cache via external cache', () => {
     const context = {
-      cache: createCache()
+      cache: createCache<string, {value: number}>()
     }
 
     const context2 = {
-      cache: createCache()
+      cache: createCache<string, {value: number}>()
     }
 
     const method = jest.fn((number: number) => ({value: number * 2}))
 
     class StaticClass {
-      @Cache({cacheBy: (x) => String(x), from: (context) => context.cache})
+      @Cache({
+        cacheBy: (x) => String(x),
+        from: (context) => context.cache,
+      })
       static expensiveMethod(c: typeof context, x: number) {
         return method(x)
       }
@@ -182,17 +186,6 @@ describe('Cache decorator', () => {
       static expensiveMethod(c: Context, x: number) {
         return method(x)
       }
-
-      @Cache({
-        cacheBy: (x) => String(x),
-        via: (context) => context.cm,
-        async: false,
-        lru: 2,
-        ttl: 100
-      })
-      static second (x: string) {
-        return 'second' + x
-      }
     }
 
     const result1 = StaticClass.expensiveMethod(context, 5)
@@ -231,7 +224,7 @@ describe('Cache decorator', () => {
 
     expect(() => {
       class SomeClass {
-        @Cache({async: false, ttl: 100, lru: 2})
+        @Cache<any>({async: false, ttl: 100, lru: 2})
         get value () {
           return method(5)
         }

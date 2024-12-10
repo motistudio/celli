@@ -3,6 +3,8 @@ import type {UniversalCacheOptions, UniversalCommonOptions, UniversalMemoOptions
 
 import cacheFn from '../../memoization/cache'
 
+type CacheDecorator<F extends Fn> = (target: any, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<F>) => TypedPropertyDescriptor<F>
+
 /**
  * Decorator function for caching method or getter results.
  *
@@ -28,13 +30,13 @@ import cacheFn from '../../memoization/cache'
  *   }
  * }
  */
-function Cache <F extends Fn>(options: UniversalCommonOptions<F> & UniversalCacheViaOptions<F> & UniversalMemoOptions<F>): MethodDecorator
-function Cache <F extends Fn>(options: UniversalCommonOptions<F> & UniversalMemoOptions<F>): MethodDecorator
-function Cache <F extends Fn>(options: UniversalCommonOptions<F> & UniversalCacheFromOptions<F>): MethodDecorator
-function Cache <F extends Fn>(options: UniversalCacheOptions<F>): MethodDecorator {
-  return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+function Cache <F extends Fn>(options: UniversalCommonOptions<F> & UniversalCacheViaOptions<F> & UniversalMemoOptions<F>): CacheDecorator<F>
+function Cache <F extends Fn>(options: UniversalCommonOptions<F> & UniversalMemoOptions<F>): CacheDecorator<F>
+function Cache <F extends Fn>(options: UniversalCommonOptions<F> & UniversalCacheFromOptions<F>): CacheDecorator<F>
+function Cache <F extends Fn>(options: UniversalCacheOptions<F>): CacheDecorator<F> {
+  return function (target: any, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<F>) {
     if (descriptor.value) {
-      descriptor.value = cacheFn<F>(descriptor.value, options as Parameters<typeof cacheFn<F>>[1])
+      descriptor.value = cacheFn<F>(descriptor.value, options as Parameters<typeof cacheFn<F>>[1]) as unknown as F
     } else {
       throw new Error('Cache decorator can only be applied to methods')
     }

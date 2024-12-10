@@ -1,6 +1,6 @@
 {
   "name": "celli",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A library for caching and memoization. This library provides advanced memoization utils, cache-creating and the ability to freely composing a custom cache.",
   "type": "module",
   "main": "dist/index.cjs",
@@ -66,6 +66,6 @@
     "jest": "^29.6.4",
     "ts-jest": "^29.1.1",
     "tsup": "^8.3.5",
-    "typescript": "^5.6.3"
+    "typescript": "^5.7.2"
   }
 }
