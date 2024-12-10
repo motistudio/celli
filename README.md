@@ -1,23 +1,23 @@
 # Celli
-> Derived from the Latin word "cella," meaning "storage"
+> Derived from the Latin word "cella", meaning "storage"
 
 Celli is a versatile library designed for caching and memoization in various runtime environments. It provides two primary functionalities:
 
-1. Cache Creation and Management:
+1. Cache creation and management:
    - Offers flexible ways to create and manage caches
    - Provides utils to create a custom cache in a composable manner
 
-2. Memoization Tools:
+2. Memoization tools:
    - Offers utilities for function memoization
    - Provides decorators for easy caching of class methods
 
 The library is designed to be flexible and extensible, allowing developers to choose the most appropriate caching strategy based on their specific needs.
-It comes without any dependencies (weights only 15kb!), perfectly typed and has 100% test coverage. Ensuring high quality and reliability.
+It comes without any dependencies (minified file weights only 19kb!), perfectly typed and has 100% test coverage. Hoping to ensure high reliability with no unexpected edge cases.
 
 ## Installation
 
 ```bash
-npm install celli
+npm install celli --save
 ```
 
 ## Usage
