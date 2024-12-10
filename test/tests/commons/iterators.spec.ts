@@ -4,6 +4,7 @@ import reduce from '../../../src/commons/iterators/reduce'
 import map from '../../../src/commons/iterators/map'
 import asyncReduce from '../../../src/commons/iterators/asyncReduce'
 import forEach from '../../../src/commons/iterators/forEach'
+import find from '../../../src/commons/iterators/find'
 
 describe('Iteratables utils', () => {
   describe('getAsyncIteratable', () => {
@@ -109,6 +110,25 @@ describe('Iteratables utils', () => {
 
       await result
       expect(dest).toMatchObject(origin)
+    })
+  })
+
+  describe('find()', () => {
+    test('Should find an item in an iterator', () => {
+      const list = [1, 2, 3]
+      const set = new Set(list)
+      const iterable = set.values()
+
+      const findFn = (item: number) => item === 2
+      expect(find(iterable, findFn)).toBe(2)
+    })
+
+    test('Should not find an item in an iterator', () => {
+      const list = [1, 2, 3]
+      const set = new Set(list)
+      const iterable = set.values()
+
+      expect(find(iterable, () => false)).toBe(undefined)
     })
   })
 })
