@@ -1,13 +1,14 @@
 # Celli
+#### Helping out with memory-management
 > Derived from the Latin word "cella", meaning "storage"
 
 Celli is a versatile library designed for caching and memoization in various runtime environments. It provides two primary functionalities:
 
-1. Cache creation and management:
+1. **Cache creation and management**:
    - Offers flexible ways to create and manage caches
    - Provides utils to create a custom cache in a composable manner
 
-2. Memoization tools & decorators:
+2. **Memoization tools & decorators**:
    - Offers utilities for function memoization, taking advantage of the flexible cache creation API
    - Built-in cache invalidations configurations for maintaining low memory consumption, taking the application's lifecycle into account
 
@@ -22,7 +23,7 @@ npm install celli --save
 
 ## Basic Usage
 
-### Memoizing functions in runtime
+### Function memoization with advanced caching features
 The main goal of the library is caching functions without effort.
 We offer utilities that wrap up most of the API in order to provide easy and quick memoization.
 
