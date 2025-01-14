@@ -13,8 +13,8 @@ import type {EventListener} from '../../../types/eventEmitter.t'
 import isThentable from '../../../commons/promise/isThentable'
 import evaluate from '../../../commons/evaluate'
 
-import Cache from '../Cache'
 import {CACHE_KEY, DELETE_PROMISES_KEY} from '../../constants'
+import Cache from '../Cache'
 import {CLEANUP_QUEUE, DELETE_QUEUE, LIFECYCLE_ITEMS_KEY, type LifeCycleCache as ILifeCycleCache} from './constants'
 import LifeCycleItem from './LifeCycleItem'
 import RemoteApi from './RemoteApi'
@@ -47,7 +47,7 @@ const cleanByKey = <C extends LifeCycleCache<AnyCacheType<any, any>>>(cache: C, 
   const lifeCycleItem = cache[LIFECYCLE_ITEMS_KEY].get(key)
   if (lifeCycleItem) {
     const result = lifeCycleItem.clean()
-    cache[LIFECYCLE_ITEMS_KEY].delete(key)
+    cache[LIFECYCLE_ITEMS_KEY].delete(key) // At this point, getSelf() will return undefined
     return result
   }
   return undefined

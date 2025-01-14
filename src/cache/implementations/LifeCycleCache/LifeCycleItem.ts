@@ -9,6 +9,10 @@ import {
 } from './constants'
 import RemoteApi from './RemoteApi'
 
+/**
+ * LifeCycleItem is a wrapper around a RemoteApi that allows for cleanup of effects
+ * @template T - The type of the value
+ */
 class LifeCycleItem<T> {
   public isCleaned: boolean
   public remoteApi: RemoteApi<LifeCycleCache<AnyCacheType<any, any>>>
