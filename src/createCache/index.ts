@@ -18,7 +18,7 @@ import ttl from '../cache/implementations/LifeCycleCache/effects/ttl'
 const defaultCacheOptions: CacheCreationOptions<any, any> = {
   async: false,
   ttl: Infinity,
-  lru: 1000
+  lru: Infinity
 }
 
 const getLruOptions = <K extends Key, T>(lruOptions: number | Merge<Partial<LruCacheOptions<K, T>>, Pick<LruCacheOptions<K, T>, 'maxSize'>>): Merge<Partial<LruCacheOptions<K, T>>, Pick<LruCacheOptions<K, T>, 'maxSize'>> => {
@@ -50,14 +50,14 @@ function createCache <K extends Key, T>(options?: Partial<CacheCreationOptions<K
   const lruOptions = getLruOptions(lruInput)
 
   const computedEffects: Effect<T>[] = [
-    ...(effectsInput || []),
     ...(dispose ? [createDisposeEffect(dispose)] : []),
+    ...(effectsInput || []),
     ...(timeout !== Infinity ? [ttl({timeout})] : [])
   ]
 
   // Manual compose
   let cache: AnyCacheType<K, T> = createBaseCache<K, T>()
-  cache = lru(lruOptions)(cache)
+  cache = lruOptions.maxSize !== Infinity ? lru(lruOptions)(cache) : cache
   cache = computedEffects.length ? effects(computedEffects)(cache) : cache
   cache = source ? remote(source)(cache) : cache
   cache = (isAsync || source) ? async()(cache) as AnyCacheType<K, T> : cache // async should always be the last since it's synchronizing the cache's methods and normalizes a specific behavior
