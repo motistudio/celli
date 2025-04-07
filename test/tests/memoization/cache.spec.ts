@@ -1,3 +1,5 @@
+import {describe, test, expect, vi, beforeEach, afterEach} from 'vitest'
+
 import type {AnyCacheType} from '../../../src/types/cache.t'
 import type {CacheManager} from '../../../src/types/cacheManager.t'
 
@@ -7,15 +9,15 @@ import cache from '../../../src/memoization/cache'
 
 describe('Universal cache utility', () => {
   beforeEach(() => {
-    jest.useFakeTimers()
+    vi.useFakeTimers()
   })
 
   afterEach(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   test('Should memoize a function', () => {
-    const method = jest.fn((number: number) => ({value: number * 2}))
+    const method = vi.fn((number: number) => ({value: number * 2}))
 
     const expensiveMethod = cache(method, {cacheBy: (x) => String(x), async: false, lru: 2, ttl: 100})
 
@@ -50,7 +52,7 @@ describe('Universal cache utility', () => {
     expect(method).toHaveBeenCalledTimes(4)
 
     // Wait for TTL to expire
-    jest.advanceTimersByTime(101)
+    vi.advanceTimersByTime(101)
 
     // Call after TTL expiration should compute again
     const result7 = expensiveMethod(15)
@@ -61,7 +63,7 @@ describe('Universal cache utility', () => {
   })
 
   test('Should cache an async method', async () => {
-    const method = jest.fn((number: number) => Promise.resolve({value: number * 2}))
+    const method = vi.fn((number: number) => Promise.resolve({value: number * 2}))
 
     const expensiveMethod = cache(method, {cacheBy: (x) => String(x), async: true, lru: 2, ttl: 100})
 
@@ -101,7 +103,7 @@ describe('Universal cache utility', () => {
     expect(method).toHaveBeenCalledTimes(4)
 
     // Wait for TTL to expire
-    jest.advanceTimersByTime(101)
+    vi.advanceTimersByTime(101)
 
     // Call after TTL expiration should compute again
     const result7 = await expensiveMethod(15)
@@ -124,7 +126,7 @@ describe('Universal cache utility', () => {
       cache: createCache<string, {value: number}>()
     }
 
-    const method = jest.fn((context: Context, number: number) => ({value: number * 2}))
+    const method = vi.fn((context: Context, number: number) => ({value: number * 2}))
 
     const expensiveMethod = cache(method, {cacheBy: (context, x) => String(x), from: (context) => context.cache})
 
@@ -160,7 +162,7 @@ describe('Universal cache utility', () => {
 
     const baseMethod = (context: Context, number: number) => ({value: number * 2})
 
-    const method = jest.fn(baseMethod)
+    const method = vi.fn(baseMethod)
 
     const expensiveMethod = cache<typeof baseMethod>(method, {
       cacheBy: (context, x) => String(x),
@@ -212,7 +214,7 @@ describe('Universal cache utility', () => {
 
     const baseMethod = (context: Context, number: number) => ({value: number * 2})
 
-    const method = jest.fn(baseMethod)
+    const method = vi.fn(baseMethod)
 
     const expensiveMethod = cache<typeof baseMethod>(method, {
       via: (context) => context.cm,

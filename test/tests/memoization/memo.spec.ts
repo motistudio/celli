@@ -1,8 +1,10 @@
+import {describe, test, expect, vi} from 'vitest'
+
 import memo from '../../../src/memoization/memo'
 
 describe('Memo', () => {
   test('Should cache a simple sync function', () => {
-    const fn = jest.fn((a: number, b: number) => a + b)
+    const fn = vi.fn((a: number, b: number) => a + b)
     const memoized = memo(fn)
 
     expect(memoized(1, 1)).toBe(2)
@@ -18,7 +20,7 @@ describe('Memo', () => {
   })
 
   test('Should cache an async function', async () => {
-    const fn = jest.fn((a: number, b: number) => Promise.resolve(a + b))
+    const fn = vi.fn((a: number, b: number) => Promise.resolve(a + b))
     const memoized = memo(fn)
 
     await expect(memoized(1, 1)).resolves.toBe(2)
@@ -36,8 +38,8 @@ describe('Memo', () => {
   test('Should cache promises on async functions', async () => {
     const value = 'value'
 
-    const success = jest.fn(() => Promise.resolve(value))
-    const failure = jest.fn(() => Promise.reject(new Error('Simulated test error')))
+    const success = vi.fn(() => Promise.resolve(value))
+    const failure = vi.fn(() => Promise.reject(new Error('Simulated test error')))
 
     const memoizedSuccess = memo(success)
     const memoizedFailure = memo(failure)

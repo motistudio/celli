@@ -1,15 +1,17 @@
+import {describe, test, expect, vi, beforeAll, afterEach, afterAll} from 'vitest'
+
 import isThentable from '../../../src/commons/promise/isThentable'
 import createCache from '../../../src/createCache'
 
 describe('Cache creation', () => {
   beforeAll(() => {
-    jest.useFakeTimers()
+    vi.useFakeTimers()
   })
   afterEach(() => {
-    jest.runAllTimers()
+    vi.runAllTimers()
   })
   afterAll(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   test('Should create a simple synchronous cache', () => {
@@ -57,7 +59,7 @@ describe('Cache creation', () => {
     cache.set(key, value)
     expect(cache.has(key)).toBe(true)
 
-    jest.advanceTimersByTime(1001)
+    vi.advanceTimersByTime(1001)
     expect(cache.has(key)).toBe(false)
   })
 
@@ -73,8 +75,8 @@ describe('Cache creation', () => {
   })
 
   test('Should create a cache with effects', () => {
-    const cleanup = jest.fn()
-    const effect = jest.fn(() => cleanup)
+    const cleanup = vi.fn()
+    const effect = vi.fn(() => cleanup)
     const cache = createCache({effects: [effect]})
 
     const key = 'key'
@@ -88,7 +90,7 @@ describe('Cache creation', () => {
 
   describe('Dispose behavior', () => {
     test('Should create a cache with a dispose function', () => {
-      const dispose = jest.fn()
+      const dispose = vi.fn()
       const cache = createCache({dispose})
 
       const key = 'key'
@@ -117,7 +119,7 @@ describe('Cache creation', () => {
     })
 
     test('Should create an async cache with a dispose function', async () => {
-      const dispose = jest.fn()
+      const dispose = vi.fn()
       const cache = createCache({dispose, async: true})
 
       const key = 'key'
@@ -146,7 +148,7 @@ describe('Cache creation', () => {
     })
 
     test('Should dispose with ttl', () => {
-      const dispose = jest.fn()
+      const dispose = vi.fn()
       const cache = createCache({dispose, ttl: 100})
 
       const key = 'key'
@@ -155,7 +157,7 @@ describe('Cache creation', () => {
       cache.set(key, value)
       expect(cache.has(key)).toBe(true)
 
-      jest.advanceTimersByTime(101) // essentially delete
+      vi.advanceTimersByTime(101) // essentially delete
 
       expect(cache.has(key)).toBe(false)
       expect(dispose).toHaveBeenCalledWith(value)
@@ -163,7 +165,7 @@ describe('Cache creation', () => {
     })
 
     test('Should dispose with async ttl', async () => {
-      const dispose = jest.fn()
+      const dispose = vi.fn()
       const cache = createCache({dispose, ttl: 100, async: true})
 
       const key = 'key'
@@ -172,7 +174,7 @@ describe('Cache creation', () => {
       await cache.set(key, value)
       await expect(cache.has(key)).resolves.toBe(true)
 
-      jest.advanceTimersByTime(101) // essentially delete
+      vi.advanceTimersByTime(101) // essentially delete
 
       await expect(cache.has(key)).resolves.toBe(false)
       expect(dispose).toHaveBeenCalledWith(value)
@@ -180,7 +182,7 @@ describe('Cache creation', () => {
     })
 
     test('Should dispose with lru', () => {
-      const dispose = jest.fn()
+      const dispose = vi.fn()
       const cache = createCache({dispose, lru: 1})
 
       const key = 'key'
@@ -200,7 +202,7 @@ describe('Cache creation', () => {
     })
 
     test('Should dispose with async lru', async () => {
-      const dispose = jest.fn()
+      const dispose = vi.fn()
       const cache = createCache({dispose, lru: 1, async: true})
 
       const key = 'key'

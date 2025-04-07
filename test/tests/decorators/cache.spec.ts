@@ -1,3 +1,5 @@
+import {describe, test, expect, vi, beforeEach, afterEach} from 'vitest'
+
 import type {CacheManager} from '../../../src/types/cacheManager.t'
 
 import Cache from '../../../src/decorators/cache'
@@ -6,15 +8,15 @@ import createCacheManager from '../../../src/createCacheManager'
 
 describe('Cache decorator', () => {
   beforeEach(() => {
-    jest.useFakeTimers()
+    vi.useFakeTimers()
   })
 
   afterEach(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   test('Should cache a method', () => {
-    const method = jest.fn((number: number) => ({value: number * 2}))
+    const method = vi.fn((number: number) => ({value: number * 2}))
 
     class StaticClass {
       @Cache({cacheBy: (x) => String(x), async: false, lru: 2, ttl: 100})
@@ -54,7 +56,7 @@ describe('Cache decorator', () => {
     expect(method).toHaveBeenCalledTimes(4)
 
     // Wait for TTL to expire
-    jest.advanceTimersByTime(101)
+    vi.advanceTimersByTime(101)
 
     // Call after TTL expiration should compute again
     const result7 = StaticClass.expensiveMethod(15)
@@ -65,7 +67,7 @@ describe('Cache decorator', () => {
   })
 
   test('Should cache an async method', async () => {
-    const method = jest.fn((number: number) => Promise.resolve({value: number * 2}))
+    const method = vi.fn((number: number) => Promise.resolve({value: number * 2}))
 
     class StaticClass {
       @Cache({cacheBy: (x) => String(x), async: true, lru: 2, ttl: 100})
@@ -110,7 +112,7 @@ describe('Cache decorator', () => {
     expect(method).toHaveBeenCalledTimes(4)
 
     // Wait for TTL to expire
-    jest.advanceTimersByTime(101)
+    vi.advanceTimersByTime(101)
 
     // Call after TTL expiration should compute again
     const result7 = await StaticClass.expensiveMethod(15)
@@ -129,7 +131,7 @@ describe('Cache decorator', () => {
       cache: createCache<string, {value: number}>()
     }
 
-    const method = jest.fn((number: number) => ({value: number * 2}))
+    const method = vi.fn((number: number) => ({value: number * 2}))
 
     class StaticClass {
       @Cache({
@@ -173,7 +175,7 @@ describe('Cache decorator', () => {
 
     const baseMethod = (number: number) => ({value: number * 2})
 
-    const method = jest.fn(baseMethod)
+    const method = vi.fn(baseMethod)
 
     class StaticClass {
       @Cache({
@@ -220,7 +222,7 @@ describe('Cache decorator', () => {
   })
 
   test('Should receive an error if the cache applies to any non-method', () => {
-    const method = jest.fn((x: number) => ({value: x * 2}))
+    const method = vi.fn((x: number) => ({value: x * 2}))
 
     expect(() => {
       class SomeClass {

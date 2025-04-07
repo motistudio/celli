@@ -1,3 +1,5 @@
+import {describe, test, expect, vi} from 'vitest'
+
 import Cache from '../../../src/cache/implementations/Cache'
 
 describe('Synchronous cache', () => {
@@ -60,10 +62,10 @@ describe('Synchronous cache', () => {
   })
 
   test('Should listen to cache events', () => {
-    const getHandler = jest.fn()
-    const setHandler = jest.fn()
-    const deleteHandler = jest.fn()
-    const cleanHandler = jest.fn()
+    const getHandler = vi.fn()
+    const setHandler = vi.fn()
+    const deleteHandler = vi.fn()
+    const cleanHandler = vi.fn()
 
     const cache = new Cache<string, string>()
 

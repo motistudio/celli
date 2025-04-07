@@ -1,3 +1,5 @@
+import {describe, test, expect, vi, beforeAll, afterEach, afterAll} from 'vitest'
+
 import type {Cache as ICache} from '../../../src/types/cache.t'
 import type {Effect} from '../../../src/types/effects.t'
 
@@ -85,11 +87,11 @@ describe('LifeCycle Cache', () => {
 
       const key = 'key'
       const value = 'value'
-      const cleanup = jest.fn()
-      const effect = jest.fn(() => {
+      const cleanup = vi.fn()
+      const effect = vi.fn(() => {
         return cleanup
       })
-      const readHandler = jest.fn()
+      const readHandler = vi.fn()
 
       cache.set(key, value, [effect])
       expect(effect).toHaveBeenCalled()
@@ -111,11 +113,11 @@ describe('LifeCycle Cache', () => {
 
       const key = 'key'
       const value = {}
-      const cleanup = jest.fn()
-      const effect = jest.fn(() => {
+      const cleanup = vi.fn()
+      const effect = vi.fn(() => {
         return cleanup
       })
-      const readHandler = jest.fn()
+      const readHandler = vi.fn()
 
       cache.set(key, value, [effect])
       expect(effect).toHaveBeenCalled()
@@ -137,11 +139,11 @@ describe('LifeCycle Cache', () => {
 
       const key = 'key'
       const value = 'value'
-      const cleanup = jest.fn()
-      const effect = jest.fn(() => {
+      const cleanup = vi.fn()
+      const effect = vi.fn(() => {
         return cleanup
       })
-      const readHandler = jest.fn()
+      const readHandler = vi.fn()
 
       await cache.set(key, value, [effect])
       expect(effect).toHaveBeenCalled()
@@ -164,8 +166,8 @@ describe('LifeCycle Cache', () => {
       const key = 'key'
       const value = 'value'
 
-      const cleanup = jest.fn(() => Promise.resolve())
-      const effect = jest.fn(() => {
+      const cleanup = vi.fn(() => Promise.resolve())
+      const effect = vi.fn(() => {
         return cleanup
       })
 
@@ -195,8 +197,8 @@ describe('LifeCycle Cache', () => {
       const key = 'key'
       const value = 'value'
 
-      const cleanup = jest.fn(() => Promise.resolve())
-      const effect = jest.fn(() => {
+      const cleanup = vi.fn(() => Promise.resolve())
+      const effect = vi.fn(() => {
         return cleanup
       })
 
@@ -218,8 +220,8 @@ describe('LifeCycle Cache', () => {
       const key = 'key'
       const value = 'value'
 
-      const cleanup = jest.fn(() => Promise.resolve())
-      const effect = jest.fn(() => {
+      const cleanup = vi.fn(() => Promise.resolve())
+      const effect = vi.fn(() => {
         return cleanup
       })
 
@@ -236,16 +238,16 @@ describe('LifeCycle Cache', () => {
     test('Should wait for long cleanups when cleaning a cache', async () => {
       const cache = new LifeCycleCache(new AsyncCache<string, string>())
 
-      // const spy = jest.spyOn(cache, 'delete')
-      const spy = jest.spyOn(cache[CACHE_KEY], 'clean')
+      // const spy = vi.spyOn(cache, 'delete')
+      const spy = vi.spyOn(cache[CACHE_KEY], 'clean')
 
       const key = 'key'
       const value = 'value'
 
       const futureCleanupDeferredPromise = defer<void>()
       const futureCleanupDeferredPromiseState = getPromiseState(futureCleanupDeferredPromise.promise)
-      const cleanup = jest.fn(() => futureCleanupDeferredPromise.promise)
-      const effect = jest.fn(() => {
+      const cleanup = vi.fn(() => futureCleanupDeferredPromise.promise)
+      const effect = vi.fn(() => {
         return cleanup
       })
 
@@ -276,15 +278,15 @@ describe('LifeCycle Cache', () => {
 
   describe('Effect Implementations', () => {
     beforeAll(() => {
-      jest.useFakeTimers()
+      vi.useFakeTimers()
     })
 
     afterEach(() => {
-      jest.clearAllTimers()
+      vi.clearAllTimers()
     })
 
     afterAll(() => {
-      jest.useRealTimers()
+      vi.useRealTimers()
     })
 
     test('Should create items with ttl', () => {
@@ -296,21 +298,21 @@ describe('LifeCycle Cache', () => {
       cache.set(key, value, [ttl({timeout: 1000})])
       expect(cache.has(key)).toBe(true)
 
-      jest.advanceTimersByTime(1001)
+      vi.advanceTimersByTime(1001)
 
       expect(cache.has(key)).toBe(false)
 
       cache.set(key, value, [ttl({timeout: 1000})])
       expect(cache.has(key)).toBe(true)
 
-      jest.advanceTimersByTime(600) // half way to deletion
+      vi.advanceTimersByTime(600) // half way to deletion
       expect(cache.has(key)).toBe(true)
 
       expect(cache.get(key)).toBe(value) // but a read action should reset the item
-      jest.advanceTimersByTime(500) // (600 + 500) more than the timeout
+      vi.advanceTimersByTime(500) // (600 + 500) more than the timeout
       expect(cache.has(key)).toBe(true) // and it still exists
 
-      jest.advanceTimersByTime(1001)
+      vi.advanceTimersByTime(1001)
       expect(cache.has(key)).toBe(false) // resets after waiting again
 
       cache.set(key, value, [ttl({timeout: 1000})])
@@ -323,20 +325,20 @@ describe('LifeCycle Cache', () => {
 
   describe('Events', () => {
     beforeAll(() => {
-      jest.useFakeTimers()
+      vi.useFakeTimers()
     })
     afterEach(() => {
-      jest.clearAllTimers()
+      vi.clearAllTimers()
     })
     afterAll(() => {
-      jest.useRealTimers()
+      vi.useRealTimers()
     })
 
     test('Should subscribe to events', () => {
-      const getHandler = jest.fn()
-      const setHandler = jest.fn()
-      const deleteHandler = jest.fn()
-      const cleanHandler = jest.fn()
+      const getHandler = vi.fn()
+      const setHandler = vi.fn()
+      const deleteHandler = vi.fn()
+      const cleanHandler = vi.fn()
 
       const cache = new LifeCycleCache<ICache<string, string>>()
 
@@ -383,8 +385,8 @@ describe('LifeCycle Cache', () => {
     test('Should notify about deletion', () => {
       const cleanupTime = 1000
 
-      const cleanup = jest.fn()
-      const ttlEffect: Effect<string> = jest.fn((api) => {
+      const cleanup = vi.fn()
+      const ttlEffect: Effect<string> = vi.fn((api) => {
         const timeoutHandler = setTimeout(() => api.deleteSelf(), cleanupTime)
         return () => {
           clearTimeout(timeoutHandler)
@@ -392,8 +394,8 @@ describe('LifeCycle Cache', () => {
         }
       })
 
-      const deleteHandler = jest.fn()
-      const cleanHandler = jest.fn()
+      const deleteHandler = vi.fn()
+      const cleanHandler = vi.fn()
 
       const baseCache = new Cache<string, string>()
       const cache = new LifeCycleCache(baseCache)
@@ -416,7 +418,7 @@ describe('LifeCycle Cache', () => {
       cache.set(key, value, [ttlEffect])
       expect(cache.has(key)).toBe(true)
       expect(ttlEffect).toHaveBeenCalledTimes(2)
-      jest.advanceTimersByTime(cleanupTime + 1)
+      vi.advanceTimersByTime(cleanupTime + 1)
       expect(cache.has(key)).toBe(false)
       expect(cleanup).toHaveBeenCalledTimes(2)
       expect(deleteHandler).toHaveBeenCalledTimes(2)

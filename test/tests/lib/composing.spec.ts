@@ -1,3 +1,5 @@
+import {describe, test, expect, vi, beforeAll, afterEach, afterAll} from 'vitest'
+
 import {CACHE_KEY} from '../../../src/cache/constants'
 import RemoteCache from '../../../src/cache/implementations/RemoteCache'
 import ttl from '../../../src/cache/implementations/LifeCycleCache/effects/ttl'
@@ -18,13 +20,13 @@ import {
 
 describe('Creating and composing cache', () => {
   beforeAll(() => {
-    jest.useFakeTimers()
+    vi.useFakeTimers()
   })
   afterEach(() => {
-    jest.clearAllTimers()
+    vi.clearAllTimers()
   })
   afterAll(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   test('Should create a basic cache', () => {
@@ -89,8 +91,8 @@ describe('Creating and composing cache', () => {
     const lifeCycleCache = lifeCycle<ICache<string, string>>()(sync<string, string>())
     const lruCache = lru<typeof lifeCycleCache>({maxSize: 2})(lifeCycleCache)
 
-    const cleanup = jest.fn(() => undefined)
-    const effect = jest.fn(() => {
+    const cleanup = vi.fn(() => undefined)
+    const effect = vi.fn(() => {
       return cleanup
     })
 
@@ -127,7 +129,7 @@ describe('Creating and composing cache', () => {
     effectsCache.set(pairs[0][0], pairs[0][1])
     expect(effectsCache.has(pairs[0][0])).toBe(true)
 
-    jest.advanceTimersByTime(1001)
+    vi.advanceTimersByTime(1001)
     expect(effectsCache.has(pairs[0][0])).toBe(false)
 
     effectsCache.set(pairs[0][0], pairs[0][1])
@@ -138,7 +140,7 @@ describe('Creating and composing cache', () => {
     expect(effectsCache.has(pairs[0][0])).toBe(false) // was removed because of lru
 
     effectsCache.clean()
-    jest.clearAllTimers()
+    vi.clearAllTimers()
   })
 
   test('Should compose a remote cache', async () => {
@@ -166,18 +168,18 @@ describe('Creating and composing cache', () => {
     await cache.set(pairs[1][0], pairs[1][1])
     await expect(cache.has(pairs[1][0])).resolves.toBe(true)
 
-    jest.advanceTimersByTime(600)
+    vi.advanceTimersByTime(600)
 
     await cache.set(pairs[2][0], pairs[2][1])
     await expect(cache.has(pairs[2][0])).resolves.toBe(true)
     await expect(frontCache.has(pairs[0][0])).resolves.toBe(false) // no longer exist because of lru
 
-    jest.advanceTimersByTime(500)
+    vi.advanceTimersByTime(500)
     await expect(frontCache.has(pairs[1][0])).resolves.toBe(false) // no longer exist because of ttl
 
     await cache.clean()
     await expect(cache.has(pairs[2][0])).resolves.toBe(false)
 
-    jest.runAllTimers()
+    vi.runAllTimers()
   })
 })

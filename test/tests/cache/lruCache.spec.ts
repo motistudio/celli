@@ -1,3 +1,5 @@
+import {describe, test, expect, vi} from 'vitest'
+
 import type {Cache as ICache, AsyncCache as IAsyncCache} from '../../../src/types/cache.t'
 
 import Cache from '../../../src/cache/implementations/Cache'
@@ -211,10 +213,10 @@ describe('LRU Cache', () => {
     })
 
     test('Should listen to cache events', () => {
-      const getHandler = jest.fn()
-      const setHandler = jest.fn()
-      const deleteHandler = jest.fn()
-      const cleanHandler = jest.fn()
+      const getHandler = vi.fn()
+      const setHandler = vi.fn()
+      const deleteHandler = vi.fn()
+      const cleanHandler = vi.fn()
 
       const baseCache = new Cache<string, string>()
       const cache = new LruCache(baseCache, {maxSize: 1})
@@ -260,8 +262,8 @@ describe('LRU Cache', () => {
     })
 
     test('Should notify when a key is cleaned', () => {
-      const deleteHandler = jest.fn()
-      const cleanHandler = jest.fn()
+      const deleteHandler = vi.fn()
+      const cleanHandler = vi.fn()
 
       const baseCache = new Cache<string, string>()
       const cache = new LruCache(baseCache, {maxSize: 1})

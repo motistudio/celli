@@ -1,3 +1,5 @@
+import {describe, test, expect} from 'vitest'
+
 import getAsyncIterator from '../../../src/commons/iterators/getAsyncIterator'
 import isThentable from '../../../src/commons/promise/isThentable'
 import reduce from '../../../src/commons/iterators/reduce'

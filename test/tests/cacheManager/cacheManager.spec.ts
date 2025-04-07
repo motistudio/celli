@@ -1,3 +1,5 @@
+import {describe, test, expect, vi} from 'vitest'
+
 import type {Cleanable} from '../../../src/types/cacheManager.t'
 
 import AsyncCache from '../../../src/cache/implementations/AsyncCache'
@@ -11,8 +13,8 @@ describe('Cache Manager', () => {
     const cache1 = new Cache()
     const cache2 = new AsyncCache()
 
-    const cleanSpy1 = jest.spyOn(cache1, 'clean')
-    const cleanSpy2 = jest.spyOn(cache2, 'clean')
+    const cleanSpy1 = vi.spyOn(cache1, 'clean')
+    const cleanSpy2 = vi.spyOn(cache2, 'clean')
 
     register(cache1)
     register(cache2)
@@ -85,7 +87,7 @@ describe('Cache Manager', () => {
     const sharedCache = new Cache()
     const notSharedCache = new Cache()
 
-    const cleanHandler = jest.fn()
+    const cleanHandler = vi.fn()
     sharedCache.on('clean', cleanHandler)
 
     const baseCacheManager = createCacheManager()
@@ -169,7 +171,7 @@ describe('Cache Manager', () => {
     test('Should subscribe to clear events', async () => {
       const {onClear, clear} = createCacheManager()
 
-      const fn = jest.fn()
+      const fn = vi.fn()
       const unsubscribe = onClear(fn)
 
       await clear()

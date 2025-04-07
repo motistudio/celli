@@ -1,3 +1,5 @@
+import {describe, test, expect} from 'vitest'
+
 import evaluate from '../../../src/commons/evaluate'
 import isThentable from '../../../src/commons/promise/isThentable'
 

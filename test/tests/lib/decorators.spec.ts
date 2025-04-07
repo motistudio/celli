@@ -1,9 +1,11 @@
+import {describe, test, expect, vi} from 'vitest'
+
 import getGlobalCacheManager from '../../../src/lib/getGlobalCacheManager'
 import {clean, Cache, cache, createCacheManager, type Cleanable} from '../../../src/index'
 
 describe('Decorators', () => {
   test('Should cache a function', async () => {
-    const method = jest.fn((number: number) => ({value: number * 2}))
+    const method = vi.fn((number: number) => ({value: number * 2}))
 
     class StaticClass {
       @Cache({cacheBy: (x) => String(x), async: false, lru: 2, ttl: 100})
@@ -24,7 +26,7 @@ describe('Decorators', () => {
   })
 
   test('Should cache a function without registering it to the global CacheManager', async () => {
-    const method = jest.fn((number: number) => ({value: number * 2}))
+    const method = vi.fn((number: number) => ({value: number * 2}))
 
     const globalCacheManager = getGlobalCacheManager()
     const cm = createCacheManager()
@@ -59,7 +61,7 @@ describe('Decorators', () => {
   })
 
   test('Should cache a method without registering it to the global CacheManager', async () => {
-    const method = jest.fn((number: number) => ({value: number * 2}))
+    const method = vi.fn((number: number) => ({value: number * 2}))
 
     const globalCacheManager = getGlobalCacheManager()
     const cm = createCacheManager()

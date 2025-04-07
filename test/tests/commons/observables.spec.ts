@@ -1,3 +1,5 @@
+import {describe, test, expect, vi} from 'vitest'
+
 import Observable from '../../../src/commons/observables/Observable'
 
 describe('Observables', () => {
@@ -6,9 +8,9 @@ describe('Observables', () => {
       const observable = new Observable<number>()
       const err = new Error('Oops')
 
-      const next = jest.fn()
-      const error = jest.fn()
-      const complete = jest.fn()
+      const next = vi.fn()
+      const error = vi.fn()
+      const complete = vi.fn()
 
       const subscription = observable.subscribe({next, error, complete})
 
@@ -33,7 +35,7 @@ describe('Observables', () => {
     test('Should subscribe for a simple callback', () => {
       const observable = new Observable<number>()
 
-      const callback = jest.fn()
+      const callback = vi.fn()
       const subscription = observable.subscribe(callback)
 
       observable.next(1)

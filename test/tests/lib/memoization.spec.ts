@@ -1,3 +1,5 @@
+import {describe, test, expect, vi} from 'vitest'
+
 import {
   memo,
   cacheWith,
@@ -8,7 +10,7 @@ import {
 
 describe('Memoization', () => {
   test('Should memoize a function', async () => {
-    const fn = jest.fn(() => 'v')
+    const fn = vi.fn(() => 'v')
     const memoized = memo(fn)
 
     expect(memoized()).toBe('v')
@@ -35,7 +37,7 @@ describe('Memoization', () => {
       })
     }
 
-    const fn = jest.fn((context: {cache: AnyCacheType<any, any>}, a: number) => a)
+    const fn = vi.fn((context: {cache: AnyCacheType<any, any>}, a: number) => a)
     const memoized = cacheWith(fn, {by: (context, a) => String(a), from: (context) => context.cache})
 
     expect(memoized(context, 1)).toBe(1)
@@ -50,7 +52,7 @@ describe('Memoization', () => {
   })
 
   test('Should memoize a function to run once', () => {
-    const fn = jest.fn(() => 'v')
+    const fn = vi.fn(() => 'v')
     const memoized = once(fn)
 
     expect(memoized()).toBe('v')

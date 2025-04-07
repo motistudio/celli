@@ -1,3 +1,5 @@
+import {describe, test, expect, vi} from 'vitest'
+
 import isThentable from '../../../src/commons/promise/isThentable'
 import {
   GET_PROMISES_KEY,
@@ -94,10 +96,10 @@ describe('Async Cache', () => {
   })
 
   test('Should subscribe to events', async () => {
-    const getHandler = jest.fn()
-    const setHandler = jest.fn()
-    const deleteHandler = jest.fn()
-    const cleanHandler = jest.fn()
+    const getHandler = vi.fn()
+    const setHandler = vi.fn()
+    const deleteHandler = vi.fn()
+    const cleanHandler = vi.fn()
 
     const cache = new AsyncCache<string, string>()
 
@@ -164,7 +166,7 @@ describe('Async Cache', () => {
 
     test('Should wait for existing set operation to finish', async () => {
       const baseCache = new AsyncCache()
-      const setter = jest.spyOn(baseCache, 'set')
+      const setter = vi.spyOn(baseCache, 'set')
 
       const cache = new AsyncCache(baseCache)
 
@@ -198,7 +200,7 @@ describe('Async Cache', () => {
 
     test.skip('Should wait for existing set() even if it fails', () => {
       const baseCache = new AsyncCache()
-      // const setterCall = jest.fn()
+      // const setterCall = vi.fn()
       // // let setterPromise: Promise<void> | undefined = undefined
       // const setter = () => {
       //   setterCall()
@@ -246,7 +248,7 @@ describe('Async Cache', () => {
     test.skip('Should wait for existing set operation to finish even when it fails', async () => {
       await expect(Promise.reject(new Error('Rejects!'))).rejects.toThrow()
       const baseCache = new AsyncCache()
-      const setterCall = jest.fn()
+      const setterCall = vi.fn()
       let setterPromise: Promise<void> | undefined = undefined
       const setter = () => {
         setterCall()
@@ -288,7 +290,7 @@ describe('Async Cache', () => {
   describe('Set() behaviour', () => {
     test('Should wait for existing set() operation', async () => {
       const baseCache = new AsyncCache()
-      const setter = jest.spyOn(baseCache, 'set')
+      const setter = vi.spyOn(baseCache, 'set')
 
       const cache = new AsyncCache(baseCache)
 
@@ -318,7 +320,7 @@ describe('Async Cache', () => {
 
     test('Should fail (intentionally) when waiting for an existing set()', async () => {
       const baseCache = new AsyncCache()
-      const setter = jest.spyOn(baseCache, 'set')
+      const setter = vi.spyOn(baseCache, 'set')
       baseCache.has = () => Promise.reject(new Error('Expected has() reject'))
 
       const cache = new AsyncCache(baseCache)
@@ -382,7 +384,7 @@ describe('Async Cache', () => {
 
     test('Should wait for an existing set() opration to finish', async () => {
       const baseCache = new AsyncCache()
-      const setter = jest.spyOn(baseCache, 'set')
+      const setter = vi.spyOn(baseCache, 'set')
 
       const cache = new AsyncCache(baseCache)
 
@@ -408,7 +410,7 @@ describe('Async Cache', () => {
 
     test('Should fail (intentionally) when waiting for an existing set()', async () => {
       const baseCache = new AsyncCache()
-      const setter = jest.spyOn(baseCache, 'set')
+      const setter = vi.spyOn(baseCache, 'set')
       baseCache.has = () => Promise.reject(new Error('Expected has() reject'))
 
       const cache = new AsyncCache(baseCache)

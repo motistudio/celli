@@ -1,3 +1,5 @@
+import {describe, test, expect, vi} from 'vitest'
+
 import isThentable from '../../../src/commons/promise/isThentable'
 
 import RemoteCache from '../../../src/cache/implementations/RemoteCache'
@@ -106,10 +108,10 @@ describe('Remote cache', () => {
   })
 
   test('Should subscribe to events', async () => {
-    const getHandler = jest.fn()
-    const setHandler = jest.fn()
-    const deleteHandler = jest.fn()
-    const cleanHandler = jest.fn()
+    const getHandler = vi.fn()
+    const setHandler = vi.fn()
+    const deleteHandler = vi.fn()
+    const cleanHandler = vi.fn()
 
     const cache = new RemoteCache<string, string>(new AsyncCache(), new AsyncCache())
 

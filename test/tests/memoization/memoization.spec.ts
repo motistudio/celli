@@ -1,3 +1,5 @@
+import {describe, test, expect} from 'vitest'
+
 import getSignatureKey from '../../../src/memoization/getSignatureKey'
 
 describe('Memoization', () => {

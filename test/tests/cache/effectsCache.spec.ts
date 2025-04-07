@@ -1,11 +1,13 @@
+import {describe, test, expect, vi} from 'vitest'
+
 import Cache from '../../../src/cache/implementations/Cache'
 import AsyncCache from '../../../src/cache/implementations/AsyncCache'
 import EffectsCache from '../../../src/cache/implementations/EffectsCache'
 
 describe('EffectsCache', () => {
   test('Should create a basic effects cache', () => {
-    const cleanup = jest.fn(() => undefined)
-    const effect = jest.fn(() => cleanup)
+    const cleanup = vi.fn(() => undefined)
+    const effect = vi.fn(() => cleanup)
     const effectsCache = new EffectsCache(new Cache<string, string>(), [effect])
 
     const key = 'k1'
@@ -60,8 +62,8 @@ describe('EffectsCache', () => {
   })
 
   test('Should create an async EffectsCache', async () => {
-    const cleanup = jest.fn(() => undefined)
-    const effect = jest.fn(() => cleanup)
+    const cleanup = vi.fn(() => undefined)
+    const effect = vi.fn(() => cleanup)
     const effectsCache = new EffectsCache(new AsyncCache<string, string>(), [effect])
 
     const key = 'k1'
@@ -102,10 +104,10 @@ describe('EffectsCache', () => {
   })
 
   test('Should listen to effects cache events', () => {
-    const getHandler = jest.fn()
-    const setHandler = jest.fn()
-    const deleteHandler = jest.fn()
-    const cleanHandler = jest.fn()
+    const getHandler = vi.fn()
+    const setHandler = vi.fn()
+    const deleteHandler = vi.fn()
+    const cleanHandler = vi.fn()
 
     const cache = new EffectsCache(new Cache<string, string>(), [])
 

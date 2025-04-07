@@ -1,6 +1,6 @@
 const reduceInner = <U, T>(it: Iterator<T, T, T> | IterableIterator<T>, callback: (accumulator: U, item: T, index: number) => U, index: number, initialValue: U): U => {
   const item = it.next()
-  if (item.done) {
+  if (!item || item.done) {
     return initialValue
   }
   return reduceInner(it, callback, index + 1, callback(initialValue, item.value, index))

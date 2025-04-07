@@ -1,9 +1,11 @@
+import {describe, test, expect, vi} from 'vitest'
+
 import once from '../../../src/commons/once'
 
 describe('Once', () => {
   test('Should cache a sync function', () => {
     const value = 'test'
-    const fn = jest.fn(() => value)
+    const fn = vi.fn(() => value)
 
     const onceFn = once(fn)
     expect(onceFn()).toBe(value) // first call
@@ -20,7 +22,7 @@ describe('Once', () => {
 
   test('Should cache an async function', async () => {
     const value = 'test'
-    const fn = jest.fn(() => Promise.resolve(value))
+    const fn = vi.fn(() => Promise.resolve(value))
     const onceFn = once(fn)
 
     const promise = onceFn()
@@ -35,7 +37,7 @@ describe('Once', () => {
   })
 
   test('Should not cache an async call if it failed', async () => {
-    const fn = jest.fn(() => Promise.reject(new Error('Simulated error')))
+    const fn = vi.fn(() => Promise.reject(new Error('Simulated error')))
     const onceFn = once(fn)
 
     await expect(() => onceFn()).rejects.toThrow()

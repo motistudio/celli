@@ -1,3 +1,5 @@
+import {describe, test, expect} from 'vitest'
+
 import Cache from '../../../src/cache/implementations/Cache'
 import AsyncCache from '../../../src/cache/implementations/AsyncCache'
 import cacheWith from '../../../src/memoization/cacheWith'

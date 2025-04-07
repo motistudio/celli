@@ -1,3 +1,5 @@
+import {describe, test, expect} from 'vitest'
+
 import type {CacheManager} from '../../../src/types/cacheManager.t'
 
 import createCacheManager from '../../../src/createCacheManager'

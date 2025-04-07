@@ -1,3 +1,5 @@
+import {describe, test, expect, vi, beforeAll, afterAll} from 'vitest'
+
 import isThentable from '../../../src/commons/promise/isThentable'
 import delay from '../../../src/commons/promise/delay'
 import defer from '../../../src/commons/promise/defer'
@@ -23,23 +25,23 @@ describe('Promise utils', () => {
 
   describe('delay', () => {
     beforeAll(() => {
-      jest.useFakeTimers()
+      vi.useFakeTimers()
     })
 
     afterAll(() => {
-      jest.useRealTimers()
+      vi.useRealTimers()
     })
 
     test('Should delay a call', async () => {
-      const next = jest.fn()
+      const next = vi.fn()
       const promise = delay(1000).then(next)
       expect(isThentable(promise)).toBe(true)
       expect(next).not.toHaveBeenCalled()
 
-      jest.advanceTimersByTime(500)
+      vi.advanceTimersByTime(500)
       expect(next).not.toHaveBeenCalled()
 
-      jest.runAllTimers()
+      vi.runAllTimers()
 
       await promise
 
@@ -49,23 +51,23 @@ describe('Promise utils', () => {
 
   describe('tick', () => {
     beforeAll(() => {
-      jest.useFakeTimers()
+      vi.useFakeTimers()
     })
 
     afterAll(() => {
-      jest.useRealTimers()
+      vi.useRealTimers()
     })
 
     test('Should wait a tick', async () => {
-      const next = jest.fn()
+      const next = vi.fn()
       const promise = tick().then(next)
       expect(isThentable(promise)).toBe(true)
       expect(next).not.toHaveBeenCalled()
 
-      jest.advanceTimersByTime(500)
+      vi.advanceTimersByTime(500)
       expect(next).not.toHaveBeenCalled()
 
-      jest.runAllTimers()
+      vi.runAllTimers()
 
       await promise
 
@@ -74,22 +76,24 @@ describe('Promise utils', () => {
   })
 
   describe('defer', () => {
-    test('Should create a deferred object and resolve it', (done) => {
+    test('Should create a deferred object and resolve it', () => {
       const deferred = defer()
       expect(isThentable(deferred.promise)).toBe(true)
 
-      deferred.promise.then(done)
-
-      deferred.resolve(undefined)
+      return new Promise((done) => {
+        deferred.promise.then(done)
+        deferred.resolve(undefined)
+      })
     })
 
-    test('Should create a deferred object and reject it', (done) => {
+    test('Should create a deferred object and reject it', () => {
       const deferred = defer()
       expect(isThentable(deferred.promise)).toBe(true)
 
-      deferred.promise.catch(done)
-
-      deferred.reject(undefined)
+      return new Promise((done) => {
+        deferred.promise.catch(done)
+        deferred.reject(undefined)
+      })
     })
   })
 
@@ -157,7 +161,7 @@ describe('Promise utils', () => {
   describe('Singlify', () => {
     test('Should have a single promise out of function', async () => {
       const value = 'value'
-      const fn = jest.fn(() => Promise.resolve(value))
+      const fn = vi.fn(() => Promise.resolve(value))
 
       const getValue = singlify(fn)
 
@@ -173,7 +177,7 @@ describe('Promise utils', () => {
     })
 
     test('Should have a single promise in cases of failures too', async () => {
-      const fn = jest.fn(() => Promise.reject(new Error('Simulated test error')))
+      const fn = vi.fn(() => Promise.reject(new Error('Simulated test error')))
 
       const getValue = singlify(fn)
 
