@@ -15,9 +15,9 @@ export type LruCacheOptions<K extends Key, T> = {
 }
 
 export type CacheCreationOptions<K extends Key, T> = {
-  async: boolean,
-  ttl: number,
-  lru: number | Merge<Partial<LruCacheOptions<K, T>>, Pick<LruCacheOptions<K, T>, 'maxSize'>>,
+  async?: boolean,
+  ttl?: number,
+  lru?: number | Merge<Partial<LruCacheOptions<K, T>>, Pick<LruCacheOptions<K, T>, 'maxSize'>>,
   source?: AsyncCache<K, T>,
   dispose?: (value: T) => void | Promise<void>,
   effects?: Effect<T>[]

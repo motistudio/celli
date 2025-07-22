@@ -8,7 +8,7 @@ describe('Decorators', () => {
     const method = vi.fn((number: number) => ({value: number * 2}))
 
     class StaticClass {
-      @Cache({cacheBy: (x) => String(x), async: false, lru: 2, ttl: 100})
+      @Cache({cacheBy: (x) => String(x), async: false})
       static expensiveMethod(x: number) {
         return method(x)
       }
