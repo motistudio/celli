@@ -47,17 +47,18 @@ function createCache <K extends Key, T>(options?: Partial<CacheCreationOptions<K
     effects: effectsInput
   } = {...defaultCacheOptions, ...options}
 
-  const lruOptions = getLruOptions(lruInput)
-
   const computedEffects: Effect<T>[] = [
     ...(dispose ? [createDisposeEffect(dispose)] : []),
     ...(effectsInput || []),
-    ...(timeout !== Infinity ? [ttl({timeout})] : [])
+    ...(timeout !== undefined && timeout !== Infinity ? [ttl({timeout})] : [])
   ]
 
   // Manual compose
   let cache: AnyCacheType<K, T> = createBaseCache<K, T>()
-  cache = lruOptions.maxSize !== Infinity ? lru(lruOptions)(cache) : cache
+  if (lruInput) {
+    const lruOptions = getLruOptions(lruInput)
+    cache = lruOptions.maxSize !== Infinity ? lru(lruOptions)(cache) : cache
+  }
   cache = computedEffects.length ? effects(computedEffects)(cache) : cache
   cache = source ? remote(source)(cache) : cache
   cache = (isAsync || source) ? async()(cache) as AnyCacheType<K, T> : cache // async should always be the last since it's synchronizing the cache's methods and normalizes a specific behavior
