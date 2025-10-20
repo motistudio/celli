@@ -10,5 +10,6 @@ export type CacheManagerFrom<F extends Fn> = (this: ThisType<F> | void, ...args:
 
 export type MemoizedFn<F extends Fn> = {
   (this: ThisType<F> | void, ...args: Parameters<F>): ReturnType<F>
+  /** Clear all cached results */
   clean: () => void | Promise<void>
 }

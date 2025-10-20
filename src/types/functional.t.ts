@@ -10,16 +10,24 @@ import type {CacheBy, CacheFrom, CacheManagerFrom} from './memoization.t'
 export type LruItemSizeGetter<K extends Key, T> = (key: K, value: T) => number
 
 export type LruCacheOptions<K extends Key, T> = {
+  /** Maximum total size of cache items */
   maxSize: number,
+  /** Function to calculate the size of each item */
   getItemSize: LruItemSizeGetter<K, T>
 }
 
 export type CacheCreationOptions<K extends Key, T> = {
+  /** Enable async cache operations */
   async?: boolean,
+  /** Time-to-live in milliseconds for cache entries */
   ttl?: number,
+  /** LRU eviction policy (number = maxSize, or full options) */
   lru?: number | Merge<Partial<LruCacheOptions<K, T>>, Pick<LruCacheOptions<K, T>, 'maxSize'>>,
+  /** Remote/persistent cache source */
   source?: AsyncCache<K, T>,
+  /** Cleanup function called when entries are evicted */
   dispose?: (value: T) => void | Promise<void>,
+  /** Lifecycle effects for cache entries */
   effects?: Effect<T>[]
 }
 
@@ -29,6 +37,7 @@ export type CacheCreationOptions<K extends Key, T> = {
  * Common options for all cache types
  */
 export type UniversalCommonOptions<F extends Fn> = {
+  /** Custom function to generate cache keys from arguments */
   cacheBy?: CacheBy<F>
 }
 
@@ -41,10 +50,12 @@ export type UniversalMemoOptions<F extends Fn> = CacheCreationOptions<string, Aw
  * Cache from options
  */
 export type UniversalCacheFromOptions<F extends Fn> = {
+  /** Function that returns a cache instance to use */
   from: CacheFrom<F>
 }
 
 export type UniversalCacheViaOptions<F extends Fn> = {
+  /** Function that returns a cache manager to register with */
   via: CacheManagerFrom<F>
 }
 

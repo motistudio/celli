@@ -13,26 +13,43 @@ export type CacheEventMap<K extends Key, T> = {
 export type CacheEventMapKey = 'get' | 'set' | 'delete' | 'clean'
 
 export type BaseCache<K extends Key, T> = {
+  /** Retrieve a value by key */
   get (key: K): T | undefined
+  /** Store a value by key */
   set (key: K, value: T): void
+  /** Check if a key exists */
   has (key: K): boolean
+  /** Remove a value by key */
   delete (key: K): void
+  /** Iterator over all keys */
   keys (): IterableIterator<K>
+  /** Iterator over all values */
   values (): IterableIterator<T>
+  /** Iterator over all key-value pairs */
   entries (): IterableIterator<[K, T]>
+  /** Remove all entries */
   clean? (): void,
   [Symbol.iterator] (): IterableIterator<[K, T]>
 }
 
 export interface Cache<K extends Key, T> {
+  /** Retrieve a value by key */
   get (key: K): T | undefined
+  /** Store a value by key */
   set (key: K, value: T): void
+  /** Check if a key exists */
   has (key: K): boolean
+  /** Remove a value by key */
   delete (key: K): void
+  /** Iterator over all keys */
   keys (): IterableIterator<K>
+  /** Iterator over all values */
   values (): IterableIterator<T>
+  /** Iterator over all key-value pairs */
   entries (): IterableIterator<[K, T]>
+  /** Remove all entries */
   clean (): void,
+  /** Subscribe to cache events */
   on <
     M extends CacheEventMap<K, T>,
     EK extends CacheEventMapKey = CacheEventMapKey
@@ -42,14 +59,23 @@ export interface Cache<K extends Key, T> {
 }
 
 export interface AsyncCache<K extends Key, T> {
+  /** Retrieve a value by key */
   get (key: K): Promise<T | undefined>
+  /** Store a value by key */
   set (key: K, value: T): Promise<void>
+  /** Check if a key exists */
   has (key: K): Promise<boolean>
+  /** Remove a value by key */
   delete (key: K): Promise<void>
+  /** Async iterator over all keys */
   keys (): AsyncIterableIterator<K>
+  /** Async iterator over all values */
   values (): AsyncIterableIterator<T>
+  /** Async iterator over all key-value pairs */
   entries (): AsyncIterableIterator<[K, T]>
+  /** Remove all entries */
   clean (): Promise<void>
+  /** Subscribe to cache events */
   on <
     M extends CacheEventMap<K, T>,
     EK extends CacheEventMapKey = CacheEventMapKey
@@ -82,14 +108,23 @@ export interface WrappedCache<C extends AnyCacheType<any, any>> {
 }
 
 export interface LifeCycleCache<C extends AbstractCache<any, any>> {
+  /** Retrieve a value by key */
   get (...args: Parameters<C['get']>): ReturnType<C['get']>
+  /** Store a value by key with lifecycle effects */
   set (key: CacheKey<C>, value: CacheValue<C>, effects: Effect<CacheValue<C>>[]): ReturnType<C['set']>
+  /** Check if a key exists */
   has (...args: Parameters<C['has']>): ReturnType<C['has']>
+  /** Remove a value by key */
   delete (...args: Parameters<C['delete']>): ReturnType<C['delete']>
+  /** Iterator over all keys */
   keys (): ReturnType<C['keys']>
+  /** Iterator over all values */
   values (): ReturnType<C['values']>
+  /** Iterator over all key-value pairs */
   entries (): ReturnType<C['entries']>
+  /** Remove all entries */
   clean (): ReturnType<C['clean']>
+  /** Subscribe to cache events */
   on <
     M extends CacheEventMap<CacheKey<C>, CacheValue<C>>,
     EK extends CacheEventMapKey = CacheEventMapKey
@@ -97,14 +132,23 @@ export interface LifeCycleCache<C extends AbstractCache<any, any>> {
 }
 
 export interface LruCache<C extends AbstractCache<any, any>> {
+  /** Retrieve a value by key */
   get (...args: Parameters<C['get']>): ReturnType<C['get']>
+  /** Store a value by key (may evict least recently used) */
   set (...args: Parameters<C['set']>): ReturnType<C['set']>
+  /** Check if a key exists */
   has (...args: Parameters<C['has']>): ReturnType<C['has']>
+  /** Remove a value by key */
   delete (...args: Parameters<C['delete']>): ReturnType<C['delete']>
+  /** Iterator over all keys */
   keys (): ReturnType<C['keys']>
+  /** Iterator over all values */
   values (): ReturnType<C['values']>
+  /** Iterator over all key-value pairs */
   entries (): ReturnType<C['entries']>
+  /** Remove all entries */
   clean (): ReturnType<C['clean']>
+  /** Subscribe to cache events */
   on <
     M extends CacheEventMap<CacheKey<C>, CacheValue<C>>,
     EK extends CacheEventMapKey = CacheEventMapKey
