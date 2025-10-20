@@ -19,6 +19,7 @@
   "scripts": {
     "build": "npx tsup src/index.ts --out-dir=dist --tsconfig=tsconfig.json --minify --dts --format=\"esm,cjs\" --clean",
     "typecheck": "npx tsc --noEmit --project tsconfig.lib.json",
+    "typecheck:test": "npx tsc --noEmit --project tsconfig.test.json",
     "prepack": "npm run build",
     "lint": "npx eslint .",
     "test": "npx vitest run"
