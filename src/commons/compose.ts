@@ -22,6 +22,16 @@ function compose <
   V extends (arg: ReturnType<U>) => any
 >(f: U, g: T, h: V): (x: Parameters<T>[0]) => ReturnType<V>
 function compose <T extends AnySingleParamFunction, U extends (arg: ReturnType<T>) => any>(f: U, g: T): (x: Parameters<T>[0]) => ReturnType<U>
+/**
+ * Composes multiple single-parameter functions into a single function.
+ *
+ * Executes functions from right to left (last to first). Useful for combining
+ * cache transformers and other functional operations.
+ *
+ * @param callback - First function to compose
+ * @param callbacks - Additional functions to compose
+ * @returns Composed function
+ */
 function compose <T extends AnySingleParamFunction>(callback: T, ...callbacks: T[]): T {
   return callbacks.reduce<T>((fn, nextFn) => {
     return ((value) => fn(nextFn(value))) as T

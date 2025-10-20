@@ -34,6 +34,16 @@ const createDisposeEffect = <T>(dispose: (value: T) => void | Promise<void>): Ef
   }
 }
 
+/**
+ * Creates a cache instance with configurable behavior.
+ *
+ * Supports synchronous and asynchronous caches with optional LRU eviction, TTL expiration,
+ * lifecycle effects, disposal handlers, and remote source integration. Options can be
+ * combined to create custom caching strategies.
+ *
+ * @param options - Cache configuration options
+ * @returns Cache instance (sync or async depending on options)
+ */
 function createCache <K extends Key, T>(options?: Merge<Omit<Partial<CacheCreationOptions<K, T>>, 'source'>, {
   /** Enable async cache operations */
   async?: false

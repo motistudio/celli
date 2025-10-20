@@ -9,6 +9,16 @@ export type ClearListener = () => void
 
 export type CacheManagerRef = any
 
+/**
+ * Manages multiple cache instances and their lifecycles.
+ *
+ * Provides methods to register/unregister caches, share resources between managers,
+ * and clean up resources when they're no longer needed. Especially useful for managing
+ * caches across different sessions or contexts within an application.
+ *
+ * Can manage any object that implements a `clean()` method (Cleanable), including
+ * cache instances and memoized functions.
+ */
 export type CacheManager<T extends Cleanable = Cleanable> = {
   /** Get all registered cache entries with their refs */
   getAllResourceEntries: () => [CacheManagerRef | undefined, T][],

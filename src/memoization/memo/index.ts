@@ -26,11 +26,15 @@ const registerPromise = <T>(promisesCache: Cache<string, Promise<T>>, key: strin
 }
 
 /**
- * Memoizes a function
- * @param {Fn} fn - Any function
- * @param {CacheBy<Fn>?} cacheBy - An optional cache-by function
- * @param {AnyCacheType<string, Awaited<ReturnType<Fn>>>?} cache - An optional key to work with
- * @returns {Fn} A memoized instance of the original function
+ * Memoizes a function with optional custom cache key generation and cache instance.
+ *
+ * Works for both sync and async functions, automatically caching promises for async functions.
+ * If no cache is provided, creates a new one. If no cacheBy is provided, stringifies arguments.
+ *
+ * @param fn - The function to memoize
+ * @param cacheBy - Optional function to generate cache keys from arguments
+ * @param cache - Optional cache instance to use
+ * @returns Memoized function with cache property and clean() method
  */
 function memo <F extends Fn>(fn: F, cacheBy?: CacheBy<F>, cache?: FnCache<F>): MemoizedFn<F> {
   const getKey = cacheBy || (getSignatureKey as CacheBy<F>)

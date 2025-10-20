@@ -16,6 +16,17 @@ const isCacheViaOptions = <F extends Fn>(options: UniversalCacheOptions<F>): opt
   return ('via' in options) && !!options.via
 }
 
+/**
+ * Caches a function while dynamically creating a cache instance (if needed).
+ *
+ * Supports various caching strategies including TTL, LRU, async handling, lifecycle effects,
+ * and integration with CacheManager. Can use an existing cache via `from` option or
+ * register with a CacheManager via `via` option.
+ *
+ * @param fn - The function to cache
+ * @param options - Cache configuration options
+ * @returns Memoized function with clean() method
+ */
 function cache <F extends Fn>(fn: F, options: UniversalCommonOptions<F> & UniversalCacheViaOptions<F> & UniversalMemoOptions<F>): MemoizedFn<F>
 function cache <F extends Fn>(fn: F, options: UniversalCommonOptions<F> & UniversalMemoOptions<F>): MemoizedFn<F>
 function cache <F extends Fn>(fn: F, options: UniversalCommonOptions<F> & UniversalCacheFromOptions<F>): MemoizedFn<F>

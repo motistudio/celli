@@ -32,6 +32,12 @@ export type BaseCache<K extends Key, T> = {
   [Symbol.iterator] (): IterableIterator<[K, T]>
 }
 
+/**
+ * Synchronous cache interface with event subscription support.
+ *
+ * Implements a Map-like API with get, set, delete, has methods and iteration support.
+ * Includes a clean() method for clearing all entries and running cleanup operations.
+ */
 export interface Cache<K extends Key, T> {
   /** Retrieve a value by key */
   get (key: K): T | undefined
@@ -58,6 +64,12 @@ export interface Cache<K extends Key, T> {
   [Symbol.iterator] (): IterableIterator<[K, T]>
 }
 
+/**
+ * Asynchronous cache interface with event subscription support.
+ *
+ * All operations return promises. Implements async iteration and supports
+ * async cleanup operations. Useful for caches backed by remote storage or I/O.
+ */
 export interface AsyncCache<K extends Key, T> {
   /** Retrieve a value by key */
   get (key: K): Promise<T | undefined>
@@ -107,6 +119,12 @@ export interface WrappedCache<C extends AnyCacheType<any, any>> {
   [Symbol.asyncIterator] (): AsyncIterableIterator<[CacheKey<C>, CacheValue<C>]>
 }
 
+/**
+ * Cache with lifecycle management for individual items.
+ *
+ * Extends the cache API to allow setting effects when adding items. Effects can respond
+ * to item lifecycle events like reads and deletions.
+ */
 export interface LifeCycleCache<C extends AbstractCache<any, any>> {
   /** Retrieve a value by key */
   get (...args: Parameters<C['get']>): ReturnType<C['get']>
@@ -131,6 +149,12 @@ export interface LifeCycleCache<C extends AbstractCache<any, any>> {
   >(eventName: EK, fn: EventListener<M[EK]>): () => void
 }
 
+/**
+ * Cache with Least Recently Used (LRU) eviction strategy.
+ *
+ * Automatically evicts least recently used items when size limit is reached.
+ * Supports dynamic item sizing for fine-grained memory control.
+ */
 export interface LruCache<C extends AbstractCache<any, any>> {
   /** Retrieve a value by key */
   get (...args: Parameters<C['get']>): ReturnType<C['get']>
