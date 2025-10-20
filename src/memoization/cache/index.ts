@@ -1,3 +1,5 @@
+import type {Simplify} from 'type-fest'
+
 import type {Fn} from '../../types/commons.t'
 import type {MemoizedFn} from '../../types/memoization.t'
 import type {UniversalCacheOptions, UniversalCommonOptions, UniversalMemoOptions, UniversalCacheFromOptions, UniversalCacheViaOptions} from '../../types/functional.t'
@@ -27,9 +29,9 @@ const isCacheViaOptions = <F extends Fn>(options: UniversalCacheOptions<F>): opt
  * @param options - Cache configuration options
  * @returns Memoized function with clean() method
  */
-function cache <F extends Fn>(fn: F, options: UniversalCommonOptions<F> & UniversalCacheViaOptions<F> & UniversalMemoOptions<F> & {from?: undefined}): MemoizedFn<F>
-function cache <F extends Fn>(fn: F, options: UniversalCommonOptions<F> & UniversalMemoOptions<F> & {from?: undefined, via?: undefined}): MemoizedFn<F>
-function cache <F extends Fn>(fn: F, options: UniversalCommonOptions<F> & UniversalCacheFromOptions<F> & {via?: undefined}): MemoizedFn<F>
+function cache <F extends Fn>(fn: F, options: Simplify<UniversalCommonOptions<F> & UniversalCacheViaOptions<F> & UniversalMemoOptions<F> & {from?: undefined}>): MemoizedFn<F>
+function cache <F extends Fn>(fn: F, options: Simplify<UniversalCommonOptions<F> & UniversalMemoOptions<F> & {from?: undefined, via?: undefined}>): MemoizedFn<F>
+function cache <F extends Fn>(fn: F, options: Simplify<UniversalCommonOptions<F> & UniversalCacheFromOptions<F> & {via?: undefined}>): MemoizedFn<F>
 function cache <F extends Fn>(fn: F, options: UniversalCacheOptions<F>): MemoizedFn<F> {
   if (isCacheFromOptions(options)) {
     return cacheWith(fn, {

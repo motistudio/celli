@@ -1,3 +1,5 @@
+import type {Simplify} from 'type-fest'
+
 import type {Fn} from '../../types/commons.t'
 import type {UniversalCacheOptions, UniversalCommonOptions, UniversalMemoOptions, UniversalCacheFromOptions, UniversalCacheViaOptions} from '../../types/functional.t'
 
@@ -30,9 +32,9 @@ type CacheDecorator<F extends Fn> = (target: any, propertyKey: string | symbol, 
  *   }
  * }
  */
-function Cache <F extends Fn>(options: UniversalCommonOptions<F> & UniversalCacheViaOptions<F> & UniversalMemoOptions<F> & {from?: undefined}): CacheDecorator<F>
-function Cache <F extends Fn>(options: UniversalCommonOptions<F> & UniversalMemoOptions<F> & {from?: undefined, via?: undefined}): CacheDecorator<F>
-function Cache <F extends Fn>(options: UniversalCommonOptions<F> & UniversalCacheFromOptions<F> & {via?: undefined}): CacheDecorator<F>
+function Cache <F extends Fn>(options: Simplify<UniversalCommonOptions<F> & UniversalCacheViaOptions<F> & UniversalMemoOptions<F> & {from?: undefined}>): CacheDecorator<F>
+function Cache <F extends Fn>(options: Simplify<UniversalCommonOptions<F> & UniversalMemoOptions<F> & {from?: undefined, via?: undefined}>): CacheDecorator<F>
+function Cache <F extends Fn>(options: Simplify<UniversalCommonOptions<F> & UniversalCacheFromOptions<F> & {via?: undefined}>): CacheDecorator<F>
 function Cache <F extends Fn>(options: UniversalCacheOptions<F>): CacheDecorator<F> {
   return function (target: any, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<F>) {
     if (descriptor?.value) {

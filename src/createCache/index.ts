@@ -1,3 +1,5 @@
+import type {Simplify} from 'type-fest'
+
 import type {Merge} from '../types/commons.t'
 import type {
   Key,
@@ -44,18 +46,18 @@ const createDisposeEffect = <T>(dispose: (value: T) => void | Promise<void>): Ef
  * @param options - Cache configuration options
  * @returns Cache instance (sync or async depending on options)
  */
-function createCache <K extends Key, T>(options?: Merge<Omit<Partial<CacheCreationOptions<K, T>>, 'source'>, {
+function createCache <K extends Key, T>(options?: Simplify<Merge<Omit<Partial<CacheCreationOptions<K, T>>, 'source'>, {
   /** Enable async cache operations */
   async?: false
-}>): ICache<K, T>
-function createCache <K extends Key, T>(options?: Merge<Partial<CacheCreationOptions<K, T>>, {
+}>>): ICache<K, T>
+function createCache <K extends Key, T>(options?: Simplify<Merge<Partial<CacheCreationOptions<K, T>>, {
   /** Enable async cache operations */
   async: true
-}>): IAsyncCache<K, T>
-function createCache <K extends Key, T>(options?: Merge<Partial<CacheCreationOptions<K, T>>, {
+}>>): IAsyncCache<K, T>
+function createCache <K extends Key, T>(options?: Simplify<Merge<Partial<CacheCreationOptions<K, T>>, {
   /** Remote/persistent cache source */
   source: IAsyncCache<K, T>
-}>): IAsyncCache<K, T>
+}>>): IAsyncCache<K, T>
 function createCache <K extends Key, T>(options?: Partial<CacheCreationOptions<K, T>>): AnyCacheType<K, T> {
   const {
     async: isAsync,

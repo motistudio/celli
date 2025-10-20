@@ -1,3 +1,5 @@
+import type {Simplify} from 'type-fest'
+
 import type {Fn, Merge} from './commons.t'
 import type {
   Key,
@@ -59,4 +61,4 @@ export type UniversalCacheViaOptions<F extends Fn> = {
   via: CacheManagerFrom<F>
 }
 
-export type UniversalCacheOptions<F extends Fn> = UniversalCommonOptions<F> & ((UniversalMemoOptions<F> | UniversalCacheFromOptions<F>) | (UniversalMemoOptions<F> & UniversalCacheViaOptions<F>))
+export type UniversalCacheOptions<F extends Fn> = Simplify<UniversalCommonOptions<F> & ((UniversalMemoOptions<F> | UniversalCacheFromOptions<F>) | (UniversalMemoOptions<F> & UniversalCacheViaOptions<F>))>
