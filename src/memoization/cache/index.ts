@@ -1,6 +1,4 @@
-import type {Simplify} from 'type-fest'
-
-import type {Fn} from '../../types/commons.t'
+import type {Fn, Simplify} from '../../types/commons.t'
 import type {MemoizedFn} from '../../types/memoization.t'
 import type {UniversalCacheOptions, UniversalCommonOptions, UniversalMemoOptions, UniversalCacheFromOptions, UniversalCacheViaOptions} from '../../types/functional.t'
 

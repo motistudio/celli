@@ -1,6 +1,4 @@
-import type {Simplify} from 'type-fest'
-
-import type {Fn, Merge} from './commons.t'
+import type {Fn, Merge, Simplify} from './commons.t'
 import type {
   Key,
   AsyncCache
