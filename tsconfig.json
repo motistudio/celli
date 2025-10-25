@@ -1,8 +1,4 @@
 {
-  "references": [
-    {"path": "./tsconfig.lib.json"},
-    {"path": "./tsconfig.spec.json"}
-  ],
   "compilerOptions": {
     "target": "ESNext",
     "module": "CommonJS",

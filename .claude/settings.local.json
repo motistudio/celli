@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npx create-docusaurus@latest:*)",
       "Bash(npm install)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npm test:*)"
     ],
     "deny": [],
     "ask": []

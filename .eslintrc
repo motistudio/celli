@@ -16,5 +16,5 @@
     "@typescript-eslint/no-unused-vars": 2,
     "@typescript-eslint/no-explicit-any": 0
   },
-  "ignorePatterns": ["dist"]
+  "ignorePatterns": ["dist", "library/dist", "website/build", "website/.docusaurus"]
 }

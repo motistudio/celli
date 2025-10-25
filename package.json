@@ -1,7 +1,12 @@
 {
-  "name": "celli",
+  "name": "celli-monorepo",
   "version": "1.2.3",
-  "description": "A library for caching and memoization. This library provides advanced memoization utils, cache-creating and the ability to freely composing a custom cache.",
+  "private": true,
+  "description": "Monorepo for Celli library and documentation",
+  "workspaces": [
+    "library",
+    "website"
+  ],
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -16,49 +21,19 @@
       "import": "./dist/index.js"
     }
   },
-  "workspaces": [
-    "website"
-  ],
   "scripts": {
-    "build": "npx tsup src/index.ts --out-dir=dist --tsconfig=tsconfig.json --minify --dts --external '' --format=\"esm,cjs\" --clean",
-    "typecheck": "npx tsc --noEmit --project tsconfig.lib.json",
-    "typecheck:test": "npx tsc --noEmit --project tsconfig.test.json",
-    "prepack": "npm run build",
+    "build": "npm run build --workspace=library",
+    "typecheck": "npm run typecheck --workspace=library",
+    "typecheck:test": "npm run typecheck:test --workspace=library",
+    "prepack": "npm run build --workspace=library",
     "lint": "npx eslint .",
     "test": "npx vitest run",
-    "docs:start": "cd website && npm start",
-    "docs:build": "cd website && npm run build",
-    "docs:serve": "cd website && npm run serve",
-    "docs:deploy": "cd website && npm run deploy"
+    "test:library": "npm run test --workspace=library",
+    "docs:start": "npm start --workspace=website",
+    "docs:build": "npm run build --workspace=website",
+    "docs:serve": "npm run serve --workspace=website",
+    "docs:deploy": "npm run deploy --workspace=website"
   },
-  "keywords": [
-    "cache",
-    "save",
-    "keep",
-    "lru",
-    "effects",
-    "backup",
-    "remote",
-    "source",
-    "cleanup",
-    "lifecycle",
-    "item",
-    "custom",
-    "compose",
-    "composable",
-    "memo",
-    "memoize",
-    "memoization",
-    "context",
-    "runtime",
-    "server",
-    "clean",
-    "clear",
-    "cacheManager",
-    "dispose",
-    "once",
-    "decorator"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/motistudio/celli.git"
