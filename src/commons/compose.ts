@@ -1,8 +1,14 @@
 type AnySingleParamFunction = (arg: any) => any
 
-// function compose <T, U, V, Y, X>(f: (x: T) => U, g: (y: Y) => T, h: (z: V) => Y, i: (a: Y) => X): (x: X) => U
-// function compose <T, U, V, Y>(f: (x: T) => U, g: (y: Y) => T, h: (z: V) => Y): (x: V) => U
-// function compose <T, U, V>(f: (x: T) => U, g: (y: V) => T): (x: V) => U
+/**
+ * Composes multiple single-parameter functions into a single function.
+ *
+ * Executes functions from right to left (last to first). Useful for combining
+ * cache transformers and other functional operations.
+ *
+ * @param {...AnySingleParamFunction} callbacks - Functions to compose
+ * @returns {AnySingleParamFunction} Composed function
+ */
 function compose <
   T extends AnySingleParamFunction,
   U extends (arg: ReturnType<T>) => any,

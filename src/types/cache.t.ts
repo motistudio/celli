@@ -13,26 +13,49 @@ export type CacheEventMap<K extends Key, T> = {
 export type CacheEventMapKey = 'get' | 'set' | 'delete' | 'clean'
 
 export type BaseCache<K extends Key, T> = {
+  /** Retrieve a value by key */
   get (key: K): T | undefined
+  /** Store a value by key */
   set (key: K, value: T): void
+  /** Check if a key exists */
   has (key: K): boolean
+  /** Remove a value by key */
   delete (key: K): void
+  /** Iterator over all keys */
   keys (): IterableIterator<K>
+  /** Iterator over all values */
   values (): IterableIterator<T>
+  /** Iterator over all key-value pairs */
   entries (): IterableIterator<[K, T]>
+  /** Remove all entries */
   clean? (): void,
   [Symbol.iterator] (): IterableIterator<[K, T]>
 }
 
+/**
+ * Synchronous cache interface with event subscription support.
+ *
+ * Implements a Map-like API with get, set, delete, has methods and iteration support.
+ * Includes a clean() method for clearing all entries and running cleanup operations.
+ */
 export interface Cache<K extends Key, T> {
+  /** Retrieve a value by key */
   get (key: K): T | undefined
+  /** Store a value by key */
   set (key: K, value: T): void
+  /** Check if a key exists */
   has (key: K): boolean
+  /** Remove a value by key */
   delete (key: K): void
+  /** Iterator over all keys */
   keys (): IterableIterator<K>
+  /** Iterator over all values */
   values (): IterableIterator<T>
+  /** Iterator over all key-value pairs */
   entries (): IterableIterator<[K, T]>
+  /** Remove all entries */
   clean (): void,
+  /** Subscribe to cache events */
   on <
     M extends CacheEventMap<K, T>,
     EK extends CacheEventMapKey = CacheEventMapKey
@@ -41,15 +64,30 @@ export interface Cache<K extends Key, T> {
   [Symbol.iterator] (): IterableIterator<[K, T]>
 }
 
+/**
+ * Asynchronous cache interface with event subscription support.
+ *
+ * All operations return promises. Implements async iteration and supports
+ * async cleanup operations. Useful for caches backed by remote storage or I/O.
+ */
 export interface AsyncCache<K extends Key, T> {
+  /** Retrieve a value by key */
   get (key: K): Promise<T | undefined>
+  /** Store a value by key */
   set (key: K, value: T): Promise<void>
+  /** Check if a key exists */
   has (key: K): Promise<boolean>
+  /** Remove a value by key */
   delete (key: K): Promise<void>
+  /** Async iterator over all keys */
   keys (): AsyncIterableIterator<K>
+  /** Async iterator over all values */
   values (): AsyncIterableIterator<T>
+  /** Async iterator over all key-value pairs */
   entries (): AsyncIterableIterator<[K, T]>
+  /** Remove all entries */
   clean (): Promise<void>
+  /** Subscribe to cache events */
   on <
     M extends CacheEventMap<K, T>,
     EK extends CacheEventMapKey = CacheEventMapKey
@@ -81,30 +119,60 @@ export interface WrappedCache<C extends AnyCacheType<any, any>> {
   [Symbol.asyncIterator] (): AsyncIterableIterator<[CacheKey<C>, CacheValue<C>]>
 }
 
+/**
+ * Cache with lifecycle management for individual items.
+ *
+ * Extends the cache API to allow setting effects when adding items. Effects can respond
+ * to item lifecycle events like reads and deletions.
+ */
 export interface LifeCycleCache<C extends AbstractCache<any, any>> {
+  /** Retrieve a value by key */
   get (...args: Parameters<C['get']>): ReturnType<C['get']>
+  /** Store a value by key with lifecycle effects */
   set (key: CacheKey<C>, value: CacheValue<C>, effects: Effect<CacheValue<C>>[]): ReturnType<C['set']>
+  /** Check if a key exists */
   has (...args: Parameters<C['has']>): ReturnType<C['has']>
+  /** Remove a value by key */
   delete (...args: Parameters<C['delete']>): ReturnType<C['delete']>
+  /** Iterator over all keys */
   keys (): ReturnType<C['keys']>
+  /** Iterator over all values */
   values (): ReturnType<C['values']>
+  /** Iterator over all key-value pairs */
   entries (): ReturnType<C['entries']>
+  /** Remove all entries */
   clean (): ReturnType<C['clean']>
+  /** Subscribe to cache events */
   on <
     M extends CacheEventMap<CacheKey<C>, CacheValue<C>>,
     EK extends CacheEventMapKey = CacheEventMapKey
   >(eventName: EK, fn: EventListener<M[EK]>): () => void
 }
 
+/**
+ * Cache with Least Recently Used (LRU) eviction strategy.
+ *
+ * Automatically evicts least recently used items when size limit is reached.
+ * Supports dynamic item sizing for fine-grained memory control.
+ */
 export interface LruCache<C extends AbstractCache<any, any>> {
+  /** Retrieve a value by key */
   get (...args: Parameters<C['get']>): ReturnType<C['get']>
+  /** Store a value by key (may evict least recently used) */
   set (...args: Parameters<C['set']>): ReturnType<C['set']>
+  /** Check if a key exists */
   has (...args: Parameters<C['has']>): ReturnType<C['has']>
+  /** Remove a value by key */
   delete (...args: Parameters<C['delete']>): ReturnType<C['delete']>
+  /** Iterator over all keys */
   keys (): ReturnType<C['keys']>
+  /** Iterator over all values */
   values (): ReturnType<C['values']>
+  /** Iterator over all key-value pairs */
   entries (): ReturnType<C['entries']>
+  /** Remove all entries */
   clean (): ReturnType<C['clean']>
+  /** Subscribe to cache events */
   on <
     M extends CacheEventMap<CacheKey<C>, CacheValue<C>>,
     EK extends CacheEventMapKey = CacheEventMapKey

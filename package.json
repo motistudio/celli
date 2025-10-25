@@ -17,8 +17,9 @@
     }
   },
   "scripts": {
-    "build": "npx tsup src/index.ts --out-dir=dist --tsconfig=tsconfig.json --minify --dts --format=\"esm,cjs\" --clean",
+    "build": "npx tsup src/index.ts --out-dir=dist --tsconfig=tsconfig.json --minify --dts --external '' --format=\"esm,cjs\" --clean",
     "typecheck": "npx tsc --noEmit --project tsconfig.lib.json",
+    "typecheck:test": "npx tsc --noEmit --project tsconfig.test.json",
     "prepack": "npm run build",
     "lint": "npx eslint .",
     "test": "npx vitest run"
@@ -64,6 +65,7 @@
     "@vitest/coverage-v8": "^3.1.1",
     "eslint": "8.48.0",
     "tsup": "^8.3.5",
+    "type-fest": "^5.1.0",
     "typescript": "^5.8.3",
     "vitest": "^3.1.1"
   }

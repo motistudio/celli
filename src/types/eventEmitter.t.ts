@@ -4,8 +4,11 @@ export type EventMapKey<M extends EventMap> = string & keyof M
 export type EventListener<T extends any[]> = (...params: T) => void
 
 export interface EventEmitter<M extends EventMap = EventMap> {
+  /** Subscribe to an event */
   on<K extends EventMapKey<M>>(eventName: K, listener: EventListener<M[K]>): void
+  /** Unsubscribe from an event */
   off<K extends EventMapKey<M>>(eventName: K, listener: EventListener<M[K]>): void
+  /** Emit an event with parameters */
   emit<K extends EventMapKey<M>>(eventName: K, ...params: M[K]): void
 }
 

@@ -3,12 +3,16 @@ import type {Merge, Fn} from './commons.t'
 export type Cleanup = () => void | Promise<void>
 
 export type EffectApi<T> = {
+  /** Get the current value */
   getSelf: () => T
+  /** Delete this cache entry */
   deleteSelf: () => Promise<void> | void
+  /** Register callback to run when value is accessed */
   onRead: (callback: (() => void)) => void
 }
 
 export type AsyncEffectApi<T> = Merge<EffectApi<T>, {
+  /** Update the value in cache */
   setSelf: (value: T) => Promise<void>
 }>
 
