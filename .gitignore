@@ -107,6 +107,8 @@ dist
 
 # Docusaurus cache and generated files
 .docusaurus
+website/build
+website/.docusaurus
 
 # Serverless directories
 .serverless/
@@ -122,6 +124,9 @@ dist
 
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
+
+# IDEs
+.claude
 
 # yarn v2
 .yarn/cache
