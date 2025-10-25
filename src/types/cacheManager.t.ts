@@ -28,7 +28,7 @@ export type CacheManager<T extends Cleanable = Cleanable> = {
   register: (cache: T, ref?: CacheManagerRef) => void,
   /** Unregister a cache */
   unregister: (cache: T) => void,
-  /** Clear all registered caches (force to skip cleanup) */
+  /** Clean and remove all registered caches that it doesn't share with other cache managers (force to skip cleanup and just remove the caches) */
   clear: (force?: boolean) => Promise<void>,
   /** Clean all registered caches */
   clean: () => Promise<void>,
