@@ -15,24 +15,9 @@
   --ifm-color-primary-lighter: #ffde80;
   --ifm-color-primary-lightest: #ffe7a3;
 
-  /* Background and surface colors */
-  /* --ifm-background-color: #f7f7f7;
-  --ifm-background-surface-color: #ffffff; */
-
-  /* Text colors */
-  /* --ifm-font-color-base: #272932;
-  --ifm-heading-color: #272932; */
-
-  /* Secondary/muted colors */
-  /* --ifm-color-secondary: #565D67;
-  --ifm-menu-color: #565D67;
-
-  --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(86, 93, 103, 0.1); */
-
-  /* Link colors - using dark color for contrast */
-  /* --ifm-link-color: #565D67;
-  --ifm-link-hover-color: #272932; */
+  /* Darker link colors for better readability */
+  --ifm-link-color: #c09500;
+  --ifm-link-hover-color: #a07d00;
 }
 
 /* Dark mode theme */
@@ -74,4 +59,30 @@
 [data-theme="dark"] .navbar__logo img {
   /* Filter to achieve bright yellow (#FFD557) */
   filter: brightness(0) saturate(100%) invert(88%) sepia(34%) saturate(1008%) hue-rotate(330deg) brightness(95%) contrast(101%);
+}
+
+/* Transparent navbar with blur effect */
+.navbar {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: none;
+}
+
+[data-theme="dark"] .navbar {
+  background-color: rgba(39, 41, 50, 0.8) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 213, 87, 0.15);
+}
+
+/* Apply darker link color to navigation menus */
+.navbar__link:hover,
+.navbar__link--active,
+.menu__link:hover,
+.menu__link--active,
+.table-of-contents__link:hover,
+.table-of-contents__link--active {
+  color: var(--ifm-link-hover-color);
 }

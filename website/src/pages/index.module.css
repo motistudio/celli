@@ -25,6 +25,22 @@
   gap: 2rem;
 }
 
+.heroLogo {
+  width: 120px;
+  height: auto;
+  margin: 0 auto 1rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
 .heroTitle {
   font-size: 4rem;
   font-weight: 800;

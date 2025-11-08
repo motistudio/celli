@@ -13,6 +13,7 @@ function HomepageHeader() {
     <header className={clsx('hero', styles.heroBanner)}>
       <div className={styles.heroContent}>
         <div className={styles.heroText}>
+          <img src='/celli/img/logo-colored.svg' alt='Celli Logo' className={styles.heroLogo} />
           <Heading as='h1' className={styles.heroTitle}>
             Make caching
             <br />
