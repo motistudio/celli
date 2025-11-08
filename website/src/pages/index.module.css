@@ -1,0 +1,250 @@
+/**
+ * Modern homepage styles inspired by HeroUI
+ */
+
+/* Hero Section */
+.heroBanner {
+  padding: 8rem 2rem 6rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heroContent {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.heroText {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.heroLogo {
+  width: 120px;
+  height: auto;
+  margin: 0 auto 1rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.heroTitle {
+  font-size: 4rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.heroGradient {
+  background: linear-gradient(135deg, #FFD557 0%, #FFC311 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme='dark'] .heroGradient {
+  background: linear-gradient(135deg, #FFD557 0%, #FFE7A3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.heroSubtitle {
+  font-size: 1.25rem;
+  line-height: 1.6;
+  color: #565D67;
+  margin: 0;
+  font-weight: 400;
+}
+
+[data-theme='dark'] .heroSubtitle {
+  color: #E1DDDB;
+  opacity: 0.9;
+}
+
+.heroButtons {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.primaryButton {
+  font-weight: 600;
+  padding: 0.875rem 2rem;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 0 rgba(255, 195, 17, 0.3);
+}
+
+.primaryButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 195, 17, 0.4);
+}
+
+.secondaryButton {
+  background: transparent;
+  font-weight: 600;
+  padding: 0.875rem 2rem;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  border: 2px solid var(--ifm-button-background-color);
+}
+
+.secondaryButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.installSection {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+/* Features Section */
+.features {
+  padding: 6rem 2rem;
+  background: transparent;
+}
+
+.featuresHeader {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.featuresTitle {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.featuresSubtitle {
+  font-size: 1.25rem;
+  color: #565D67;
+  margin: 0;
+}
+
+[data-theme='dark'] .featuresSubtitle {
+  color: #E1DDDB;
+  opacity: 0.8;
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.featureCard {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  padding: 2rem;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 213, 87, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.featureCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
+  border-color: rgba(255, 213, 87, 0.4);
+}
+
+[data-theme='dark'] .featureCard {
+  background: rgba(51, 53, 63, 0.5);
+  border: 1px solid rgba(255, 213, 87, 0.15);
+}
+
+[data-theme='dark'] .featureCard:hover {
+  background: rgba(51, 53, 63, 0.7);
+  border-color: rgba(255, 213, 87, 0.3);
+}
+
+.featureEmoji {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.featureTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: #272932;
+}
+
+[data-theme='dark'] .featureTitle {
+  color: #E1DDDB;
+}
+
+.featureDescription {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #565D67;
+  margin: 0;
+}
+
+[data-theme='dark'] .featureDescription {
+  color: #E1DDDB;
+  opacity: 0.8;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 996px) {
+  .heroBanner {
+    padding: 4rem 1.5rem 3rem;
+    min-height: 60vh;
+  }
+
+  .heroTitle {
+    font-size: 2.5rem;
+  }
+
+  .heroSubtitle {
+    font-size: 1.1rem;
+  }
+
+  .featuresTitle {
+    font-size: 2rem;
+  }
+
+  .featureGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .heroTitle {
+    font-size: 2rem;
+  }
+
+  .heroButtons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
+    max-width: 300px;
+  }
+}

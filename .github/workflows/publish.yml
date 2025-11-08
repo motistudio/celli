@@ -1,0 +1,46 @@
+name: Publish Library to npm
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test --workspace=library
+
+      - name: Type check
+        run: npm run typecheck --workspace=library
+
+      - name: Build library
+        run: npm run build --workspace=library
+
+      - name: Publish to npm
+        run: npm publish --workspace=library --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Get version and create Git tag
+        run: |
+          VERSION=$(node -p "require('./library/package.json').version")
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "v$VERSION"
+          git push origin "v$VERSION"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

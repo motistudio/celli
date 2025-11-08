@@ -1,7 +1,12 @@
 {
-  "name": "celli",
+  "name": "celli-monorepo",
   "version": "1.2.3",
-  "description": "A library for caching and memoization. This library provides advanced memoization utils, cache-creating and the ability to freely composing a custom cache.",
+  "private": true,
+  "description": "Monorepo for Celli library and documentation",
+  "workspaces": [
+    "library",
+    "website"
+  ],
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -17,41 +22,19 @@
     }
   },
   "scripts": {
-    "build": "npx tsup src/index.ts --out-dir=dist --tsconfig=tsconfig.json --minify --dts --external '' --format=\"esm,cjs\" --clean",
-    "typecheck": "npx tsc --noEmit --project tsconfig.lib.json",
-    "typecheck:test": "npx tsc --noEmit --project tsconfig.test.json",
-    "prepack": "npm run build",
-    "lint": "npx eslint .",
-    "test": "npx vitest run"
+    "build": "npm run build -w library",
+    "typecheck": "npm run typecheck -w library",
+    "typecheck:test": "npm run typecheck:test -w library",
+    "prepack": "npm run build -w library",
+    "lint": "npx oxlint . -c oxlint.json",
+    "format": "npx @biomejs/biome format --write",
+    "test": "npx vitest run",
+    "test:library": "npm run test -w library",
+    "docs:start": "npm start -w website",
+    "docs:build": "npm run build -w website",
+    "docs:serve": "npm run serve -w website",
+    "docs:deploy": "npm run deploy -w website"
   },
-  "keywords": [
-    "cache",
-    "save",
-    "keep",
-    "lru",
-    "effects",
-    "backup",
-    "remote",
-    "source",
-    "cleanup",
-    "lifecycle",
-    "item",
-    "custom",
-    "compose",
-    "composable",
-    "memo",
-    "memoize",
-    "memoization",
-    "context",
-    "runtime",
-    "server",
-    "clean",
-    "clear",
-    "cacheManager",
-    "dispose",
-    "once",
-    "decorator"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/motistudio/celli.git"
@@ -59,14 +42,13 @@
   "author": "Moti Shriki",
   "license": "ISC",
   "devDependencies": {
+    "@biomejs/biome": "^2.3.4",
     "@swc/core": "^1.8.0",
-    "@typescript-eslint/eslint-plugin": "^6.5.0",
-    "@typescript-eslint/parser": "^6.5.0",
-    "@vitest/coverage-v8": "^3.1.1",
-    "eslint": "8.48.0",
+    "@vitest/coverage-v8": "^4.0.8",
+    "oxlint": "^1.26.0",
     "tsup": "^8.3.5",
     "type-fest": "^5.1.0",
     "typescript": "^5.8.3",
-    "vitest": "^3.1.1"
+    "vitest": "^4.0.3"
   }
 }

@@ -1,27 +1,9 @@
 /// <reference types="vitest" />
+import {defineConfig} from 'vitest/config'
 
-/** @type {import('vitest').UserConfig} */
-export default {
+export default defineConfig({
   test: {
-    root: '.',
-    coverage: {
-      enabled: true,
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      reportsDirectory: './coverage'
-    },
-    poolOptions: {
-      threads: {
-        singleThread: false,
-        maxThreads: undefined,
-        minThreads: undefined,
-        useAtomics: true,
-        isolate: true
-      }
-    },
-    name: 'Celli',
-    testMatch: ['test/**/*.spec.ts'],
-    environment: 'node',
-    exclude: ['node_modules', 'dist', '**/*.t.ts']
+    include: ['library/test/**/*.spec.ts'],
+    exclude: ['**/node_modules/**', '**/dist/**', 'website/**', '**/*.t.ts']
   }
-}
+})

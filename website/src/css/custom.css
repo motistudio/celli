@@ -1,0 +1,89 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* Custom color palette theme */
+:root {
+  /* Primary colors - Golden Yellow (#FFD557) */
+  --ifm-color-primary: #FFD557;
+  --ifm-color-primary-dark: #ffd03e;
+  --ifm-color-primary-darker: #ffcc2e;
+  --ifm-color-primary-darkest: #ffc105;
+  --ifm-color-primary-light: #ffda70;
+  --ifm-color-primary-lighter: #ffde80;
+  --ifm-color-primary-lightest: #ffe7a3;
+  
+  /* Darker link colors for better readability */
+  --ifm-link-color: #c09500;
+  --ifm-link-hover-color: #a07d00;
+  --ifm-breadcrumb-color-active: var(--ifm-link-hover-color);
+}
+
+/* Dark mode theme */
+[data-theme="dark"] {
+  /* Primary colors - Brighter Yellow (#FFC311) for better contrast */
+  --ifm-color-primary: #FFC311;
+  --ifm-color-primary-dark: #f5b700;
+  --ifm-color-primary-darker: #e8ad00;
+  --ifm-color-primary-darkest: #c08f00;
+  --ifm-color-primary-light: #ffcb2a;
+  --ifm-color-primary-lighter: #ffd043;
+  --ifm-color-primary-lightest: #ffd557;
+
+  /* Background and surface colors */
+  --ifm-background-color: #272932;
+  --ifm-background-surface-color: #33353f;
+
+  /* Text colors */
+  --ifm-font-color-base: #E1DDDB;
+  --ifm-heading-color: #E1DDDB;
+
+  /* Secondary/muted colors */
+  --ifm-color-secondary: #565D67;
+  --ifm-menu-color: #E1DDDB;
+
+  --docusaurus-highlighted-code-line-bg: rgba(255, 213, 87, 0.15);
+
+  /* Link colors */
+  --ifm-link-color: #FFD557;
+  --ifm-link-hover-color: #FFC311;
+}
+
+/* Logo color customization using CSS filters */
+.navbar__logo img {
+  /* Filter to achieve golden yellow (#FFC311) */
+  filter: brightness(0) saturate(100%) invert(77%) sepia(82%) saturate(1234%) hue-rotate(359deg) brightness(95%) contrast(101%);
+}
+
+[data-theme="dark"] .navbar__logo img {
+  /* Filter to achieve bright yellow (#FFD557) */
+  filter: brightness(0) saturate(100%) invert(88%) sepia(34%) saturate(1008%) hue-rotate(330deg) brightness(95%) contrast(101%);
+}
+
+/* Transparent navbar with blur effect */
+.navbar {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: none;
+}
+
+[data-theme="dark"] .navbar {
+  background-color: rgba(39, 41, 50, 0.8) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 213, 87, 0.15);
+}
+
+/* Apply darker link color to navigation menus */
+.navbar__link:hover,
+.navbar__link--active,
+.menu__link:hover,
+.menu__link--active,
+.table-of-contents__link:hover,
+.table-of-contents__link--active {
+  color: var(--ifm-link-hover-color);
+}

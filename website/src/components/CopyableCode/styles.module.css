@@ -1,0 +1,74 @@
+.copyContainer {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  background: rgba(86, 93, 103, 0.1);
+  border: 1px solid rgba(255, 213, 87, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.copyContainer:hover {
+  border-color: rgba(255, 213, 87, 0.4);
+  background: rgba(86, 93, 103, 0.15);
+}
+
+.code {
+  font-size: 0.95rem;
+  color: #272932;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  margin-right: 0.75rem;
+}
+
+.copyButton {
+  background: transparent;
+  border: none;
+  color: #565D67;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.copyButton:hover {
+  background: rgba(255, 213, 87, 0.3);
+  color: #FFC311;
+}
+
+.copyButton:active {
+  transform: scale(0.95);
+}
+
+/* Dark theme */
+[data-theme='dark'] .copyContainer {
+  background: rgba(255, 213, 87, 0.1);
+  border: 1px solid rgba(255, 213, 87, 0.3);
+}
+
+[data-theme='dark'] .copyContainer:hover {
+  border-color: rgba(255, 213, 87, 0.5);
+  background: rgba(255, 213, 87, 0.15);
+}
+
+[data-theme='dark'] .code {
+  color: #E1DDDB;
+}
+
+[data-theme='dark'] .copyButton {
+  color: #E1DDDB;
+}
+
+[data-theme='dark'] .copyButton:hover {
+  background: rgba(255, 213, 87, 0.3);
+  color: #FFD557;
+}

@@ -1,0 +1,11 @@
+{
+  "rules": {
+    "no-multi-spaces": "error",
+    "no-multiple-empty-lines": "error",
+    "no-trailing-spaces": "error",
+    "unicorn/no-thenable": "off",
+    "oxc/only-used-in-recursion": "off",
+    "typescript/no-unused-vars": "error"
+  },
+  "ignorePatterns": ["dist", "library/dist", "website/build", "website/.docusaurus"]
+}
