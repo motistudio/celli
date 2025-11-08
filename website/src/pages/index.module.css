@@ -98,16 +98,17 @@
 }
 
 .secondaryButton {
+  background: transparent;
   font-weight: 600;
   padding: 0.875rem 2rem;
   border-radius: 12px;
   transition: all 0.2s ease;
-  border: 2px solid #FFD557;
+  border: 2px solid var(--ifm-button-background-color);
 }
 
 .secondaryButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(255, 195, 17, 0.2);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
 }
 
 .installSection {
