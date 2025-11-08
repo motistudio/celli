@@ -5,7 +5,7 @@ import type * as Preset from '@docusaurus/preset-classic'
 const config: Config = {
   title: 'Celli',
   tagline: 'Helping out with memory-management',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/logo-colored.svg',
 
   future: {
     v4: true

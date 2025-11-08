@@ -22,18 +22,18 @@
     }
   },
   "scripts": {
-    "build": "npm run build --workspace=library",
-    "typecheck": "npm run typecheck --workspace=library",
-    "typecheck:test": "npm run typecheck:test --workspace=library",
-    "prepack": "npm run build --workspace=library",
+    "build": "npm run build -w library",
+    "typecheck": "npm run typecheck -w library",
+    "typecheck:test": "npm run typecheck:test -w library",
+    "prepack": "npm run build -w library",
     "lint": "npx oxlint . -c oxlint.json",
     "format": "npx @biomejs/biome format --write",
     "test": "npx vitest run",
-    "test:library": "npm run test --workspace=library",
-    "docs:start": "npm start --workspace=website",
-    "docs:build": "npm run build --workspace=website",
-    "docs:serve": "npm run serve --workspace=website",
-    "docs:deploy": "npm run deploy --workspace=website"
+    "test:library": "npm run test -w library",
+    "docs:start": "npm start -w website",
+    "docs:build": "npm run build -w website",
+    "docs:serve": "npm run serve -w website",
+    "docs:deploy": "npm run deploy -w website"
   },
   "repository": {
     "type": "git",
