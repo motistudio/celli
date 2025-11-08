@@ -14,10 +14,11 @@
   --ifm-color-primary-light: #ffda70;
   --ifm-color-primary-lighter: #ffde80;
   --ifm-color-primary-lightest: #ffe7a3;
-
+  
   /* Darker link colors for better readability */
   --ifm-link-color: #c09500;
   --ifm-link-hover-color: #a07d00;
+  --ifm-breadcrumb-color-active: var(--ifm-link-hover-color);
 }
 
 /* Dark mode theme */
