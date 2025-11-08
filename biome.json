@@ -29,9 +29,11 @@
       "jsxEverywhere": false
     },
     "formatter": {
+      "bracketSpacing": false,
       "indentStyle": "space",
       "indentWidth": 2,
       "quoteStyle": "single",
+      "trailingCommas": "none",
       "jsxQuoteStyle": "single",
       "semicolons": "asNeeded"
     }

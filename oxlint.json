@@ -7,10 +7,5 @@
     "oxc/only-used-in-recursion": "off",
     "typescript/no-unused-vars": "error"
   },
-  "ignorePatterns": [
-    "dist",
-    "library/dist",
-    "website/build",
-    "website/.docusaurus"
-  ]
+  "ignorePatterns": ["dist", "library/dist", "website/build", "website/.docusaurus"]
 }

@@ -1,6 +1,6 @@
-import {themes as prismThemes} from 'prism-react-renderer';
-import type {Config} from '@docusaurus/types';
-import type * as Preset from '@docusaurus/preset-classic';
+import {themes as prismThemes} from 'prism-react-renderer'
+import type {Config} from '@docusaurus/types'
+import type * as Preset from '@docusaurus/preset-classic'
 
 const config: Config = {
   title: 'Celli',
@@ -8,7 +8,7 @@ const config: Config = {
   favicon: 'img/favicon.ico',
 
   future: {
-    v4: true,
+    v4: true
   },
 
   // Set the production url of your site here
@@ -26,7 +26,7 @@ const config: Config = {
 
   i18n: {
     defaultLocale: 'en',
-    locales: ['en'],
+    locales: ['en']
   },
 
   presets: [
@@ -35,46 +35,45 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          editUrl:
-            'https://github.com/motistudio/celli/tree/master/website/',
+          editUrl: 'https://github.com/motistudio/celli/tree/master/website/'
         },
         blog: false,
         theme: {
-          customCss: './src/css/custom.css',
-        },
-      } satisfies Preset.Options,
-    ],
+          customCss: './src/css/custom.css'
+        }
+      } satisfies Preset.Options
+    ]
   ],
 
   themeConfig: {
     image: 'img/celli-social-card.jpg',
     colorMode: {
-      respectPrefersColorScheme: true,
+      respectPrefersColorScheme: true
     },
     navbar: {
       title: 'Celli',
       logo: {
         alt: 'Celli Logo',
-        src: 'img/logo.svg',
+        src: 'img/logo.svg'
       },
       items: [
         {
           type: 'docSidebar',
           sidebarId: 'tutorialSidebar',
           position: 'left',
-          label: 'Documentation',
+          label: 'Documentation'
         },
         {
           href: 'https://github.com/motistudio/celli',
           label: 'GitHub',
-          position: 'right',
+          position: 'right'
         },
         {
           href: 'https://www.npmjs.com/package/celli',
           label: 'npm',
-          position: 'right',
-        },
-      ],
+          position: 'right'
+        }
+      ]
     },
     footer: {
       style: 'dark',
@@ -84,35 +83,35 @@ const config: Config = {
           items: [
             {
               label: 'Getting Started',
-              to: '/docs/intro',
+              to: '/docs/intro'
             },
             {
               label: 'API Reference',
-              to: '/docs/api/overview',
-            },
-          ],
+              to: '/docs/api/overview'
+            }
+          ]
         },
         {
           title: 'More',
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/motistudio/celli',
+              href: 'https://github.com/motistudio/celli'
             },
             {
               label: 'npm',
-              href: 'https://www.npmjs.com/package/celli',
-            },
-          ],
-        },
+              href: 'https://www.npmjs.com/package/celli'
+            }
+          ]
+        }
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} Moti Shriki. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Moti Shriki. Built with Docusaurus.`
     },
     prism: {
       theme: prismThemes.github,
-      darkTheme: prismThemes.dracula,
-    },
-  } satisfies Preset.ThemeConfig,
-};
+      darkTheme: prismThemes.dracula
+    }
+  } satisfies Preset.ThemeConfig
+}
 
-export default config;
+export default config
