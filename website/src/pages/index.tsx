@@ -3,30 +3,101 @@ import clsx from 'clsx'
 import Link from '@docusaurus/Link'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
-import HomepageFeatures from '@site/src/components/HomepageFeatures'
 import Heading from '@theme/Heading'
+import CopyableCode from '@site/src/components/CopyableCode'
 
 import styles from './index.module.css'
 
 function HomepageHeader() {
-  const {siteConfig} = useDocusaurusContext()
   return (
-    <header className={clsx('hero hero--primary', styles.heroBanner)}>
-      <div className='container'>
-        <Heading as='h1' className='hero__title'>
-          {siteConfig.title}
-        </Heading>
-        <p className='hero__subtitle'>{siteConfig.tagline}</p>
-        <div className={styles.buttons}>
-          <Link className='button button--secondary button--lg' to='/docs/intro'>
-            Get Started
-          </Link>
-          <Link className='button button--secondary button--lg' to='/docs/api/overview' style={{marginLeft: '10px'}}>
-            API Reference
-          </Link>
+    <header className={clsx('hero', styles.heroBanner)}>
+      <div className={styles.heroContent}>
+        <div className={styles.heroText}>
+          <Heading as='h1' className={styles.heroTitle}>
+            Make caching
+            <br />
+            <span className={styles.heroGradient}>beautiful & powerful</span>
+          </Heading>
+          <p className={styles.heroSubtitle}>
+            A versatile, lightweight library for caching and memoization.
+            <br />
+            Build fast, memory-efficient applications with zero dependencies.
+          </p>
+          <div className={styles.heroButtons}>
+            <Link className={clsx('button', 'button--primary', 'button--lg', styles.primaryButton)} to='/docs/intro'>
+              Get Started
+            </Link>
+            <Link className={clsx('button', 'button--secondary', 'button--lg', styles.secondaryButton)} to='/docs/api/overview'>
+              API Reference
+            </Link>
+          </div>
+          <div className={styles.installSection}>
+            <CopyableCode text='npm install celli'>npm install celli</CopyableCode>
+          </div>
         </div>
       </div>
     </header>
+  )
+}
+
+function HomepageFeatures() {
+  const features = [
+    {
+      title: 'Zero Dependencies',
+      emoji: '🪶',
+      description: 'Lightweight at only 19kb minified with no external dependencies. Perfectly typed with 100% test coverage.'
+    },
+    {
+      title: 'Flexible & Composable',
+      emoji: '🧩',
+      description: 'Build your cache exactly how you need it. Compose LRU, TTL, async, lifecycle, and remote strategies together.'
+    },
+    {
+      title: 'Production Ready',
+      emoji: '🚀',
+      description: 'Built-in support for graceful shutdowns, resource cleanup, and cache lifecycle management.'
+    },
+    {
+      title: 'Memory Efficient',
+      emoji: '💾',
+      description: 'Smart memory management with LRU eviction, size limits, and automatic cleanup of expired entries.'
+    },
+    {
+      title: 'TypeScript First',
+      emoji: '📘',
+      description: 'Written in TypeScript with full type safety and excellent IntelliSense support out of the box.'
+    },
+    {
+      title: 'Framework Agnostic',
+      emoji: '🌐',
+      description: 'Works everywhere - Node.js, browsers, Deno, Bun. Use with React, Vue, or any framework.'
+    }
+  ]
+
+  return (
+    <section className={styles.features}>
+      <div className='container'>
+        <div className={styles.featuresHeader}>
+          <Heading as='h2' className={styles.featuresTitle}>
+            Why Celli?
+          </Heading>
+          <p className={styles.featuresSubtitle}>
+            Everything you need for modern caching and memoization
+          </p>
+        </div>
+        <div className={styles.featureGrid}>
+          {features.map((feature, idx) => (
+            <div key={idx} className={styles.featureCard}>
+              <div className={styles.featureEmoji}>{feature.emoji}</div>
+              <Heading as='h3' className={styles.featureTitle}>
+                {feature.title}
+              </Heading>
+              <p className={styles.featureDescription}>{feature.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   )
 }
 
