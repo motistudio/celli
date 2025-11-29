@@ -13,6 +13,9 @@ on:
           - major
         default: patch
 
+permissions:
+  contents: write
+
 jobs:
   bump:
     runs-on: ubuntu-latest
@@ -49,4 +52,4 @@ jobs:
         run: |
           git add package.json library/package.json
           git commit -m "chore: bump version to v$NEW_VERSION"
-          git push origin master
+          git push origin ${{ github.ref_name }}
