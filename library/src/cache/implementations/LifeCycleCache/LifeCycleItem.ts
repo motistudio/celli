@@ -1,6 +1,8 @@
 import type {Effect, Cleanup} from '../../../types/effects.t'
 import type {AnyCacheType} from '../../../types/cache.t'
+
 import isThentable from '../../../commons/promise/isThentable'
+import reduce from '../../../commons/iterators/reduce'
 
 import {
   INTERNAL_REMOTE_READ,
@@ -14,22 +16,20 @@ import RemoteApi from './RemoteApi'
  * @template T - The type of the value
  */
 class LifeCycleItem<T> {
-  public isCleaned: boolean
   public remoteApi: RemoteApi<LifeCycleCache<AnyCacheType<any, any>>>
-  public cleanupCalls: Cleanup[]
+  public cleanupCalls: Set<Cleanup>
 
   constructor (effects: Effect<T>[], remoteApi: RemoteApi<LifeCycleCache<AnyCacheType<any, T>>>) {
-    this.isCleaned = false
     this.remoteApi = remoteApi
-    this.cleanupCalls = []
+    this.cleanupCalls = new Set<Cleanup>()
 
-    this.cleanupCalls = effects.reduce<Cleanup[]>((cleanups, effect) => {
+    this.cleanupCalls = new Set(effects.reduce<Cleanup[]>((cleanups, effect) => {
       const cleanup = effect(this.remoteApi)
       if (typeof cleanup === 'function') {
         cleanups.push(cleanup)
       }
       return cleanups
-    }, [])
+    }, []))
   }
 
   read (value: T) {
@@ -37,24 +37,22 @@ class LifeCycleItem<T> {
   }
 
   clean () {
-    if (!this.isCleaned) {
-      const cleanupPromises = this.cleanupCalls.reduce<Promise<void>[]>((promises, cleanup) => {
-        const promise = cleanup()
-        if (isThentable(promise)) {
-          promises.push(promise)
-        }
-        return promises
-      }, [])
-
-      if (cleanupPromises.length) {
-        return Promise.all(cleanupPromises).then(() => undefined).then(() => {
-          this.remoteApi[INTERNAL_REMOTE_CLEAN]()
-          this.isCleaned = true
-        })
+    this.cleanupCalls.values()
+    const cleanupPromises = reduce<Promise<void>[], Cleanup>(this.cleanupCalls.values(), (promises, cleanup) => {
+      const promise = cleanup()
+      if (isThentable(promise)) {
+        promises.push(promise)
       }
-      this.remoteApi[INTERNAL_REMOTE_CLEAN]()
-      this.isCleaned = true
+      this.cleanupCalls.delete(cleanup)
+      return promises
+    }, [])
+
+    if (cleanupPromises.length) {
+      return Promise.all(cleanupPromises).then(() => undefined).then(() => {
+        this.remoteApi[INTERNAL_REMOTE_CLEAN]()
+      })
     }
+    this.remoteApi[INTERNAL_REMOTE_CLEAN]()
   }
 }
 

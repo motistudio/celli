@@ -185,4 +185,40 @@ describe('Cache Manager', () => {
       expect(fn).toHaveBeenCalledTimes(1)
     })
   })
+
+  describe('Symbol.dispose', () => {
+    test('Should clear all caches when disposed', async () => {
+      const cacheManager = createCacheManager()
+
+      const cache1 = new Cache()
+      const cache2 = new AsyncCache()
+
+      cache1.set('key', 'value')
+      await cache2.set('key', 'value')
+
+      cacheManager.register(cache1)
+      cacheManager.register(cache2)
+
+      await (cacheManager as unknown as { [Symbol.dispose]: () => Promise<void> })[Symbol.dispose]()
+
+      expect(cache1.get('key')).toBe(undefined)
+      await expect(cache2.get('key')).resolves.toBe(undefined)
+    })
+
+    test('Should force clear shared caches when disposed', async () => {
+      const cm1 = createCacheManager()
+      const cm2 = createCacheManager()
+
+      const sharedCache = new Cache()
+      cm1.register(sharedCache)
+      cm2.register(sharedCache)
+
+      sharedCache.set('key', 'value')
+
+      // Dispose uses force=true, so it should clear even shared caches
+      await (cm1 as unknown as { [Symbol.dispose]: () => Promise<void> })[Symbol.dispose]()
+
+      expect(sharedCache.has('key')).toBe(false)
+    })
+  })
 })

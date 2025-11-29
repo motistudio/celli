@@ -51,10 +51,12 @@
     "once",
     "decorator"
   ],
+  "homepage": "https://motistudio.github.io/celli",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/motistudio/celli.git"
   },
   "author": "Moti Shriki",
-  "license": "ISC"
+  "license": "ISC",
+  "sideEffects": false
 }

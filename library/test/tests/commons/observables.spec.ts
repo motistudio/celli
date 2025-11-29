@@ -44,5 +44,28 @@ describe('Observables', () => {
 
       subscription.unsubscribe()
     })
+
+    test('Should handle subscription with only error and complete callbacks', () => {
+      const observable = new Observable<number>()
+      const err = new Error('Test error')
+
+      const error = vi.fn()
+      const complete = vi.fn()
+
+      // Subscribe without a next callback (pass undefined explicitly)
+      const subscription = observable.subscribe({next: undefined as unknown as (value: number) => void, error, complete})
+
+      // next should not throw when there's no next listener
+      observable.next(1)
+
+      // error and complete should still work
+      observable.error(err)
+      expect(error).toHaveBeenCalledWith(err)
+
+      observable.complete()
+      expect(complete).toHaveBeenCalled()
+
+      subscription.unsubscribe()
+    })
   })
 })

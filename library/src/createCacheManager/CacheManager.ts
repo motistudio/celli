@@ -128,6 +128,10 @@ class CacheManager<T extends Cleanable> implements ICacheManager<T> {
       return promises
     }, [])).then(() => undefined)
   }
+
+  [Symbol.dispose] () {
+    return this.clear(true)
+  }
 }
 
 export default CacheManager

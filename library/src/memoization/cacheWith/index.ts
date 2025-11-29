@@ -46,7 +46,7 @@ function cacheWith <F extends Fn>(fn: F, options: CacheWithOptions<F>): Memoized
   const keySet2 = new Set<WeakRef<AnyCacheType<any, any>>>()
 
   const clean = () => {
-    return Promise.all(reduce<Promise<void>[]>(keySet2.values(), (promises, cacheRef) => {
+    const cleanupPromises = reduce<Promise<void>[]>(keySet2.values(), (promises, cacheRef) => {
       const cache = cacheRef.deref()
       if (cache) {
         const memoized = cacheToInstance.get(cache)
@@ -58,10 +58,17 @@ function cacheWith <F extends Fn>(fn: F, options: CacheWithOptions<F>): Memoized
         }
       }
       return promises
-    }, [])).then(() => {
-      cleanRefKeys(keySet2)
-      return undefined
-    })
+    }, [])
+
+    if (cleanupPromises.length) {
+      return Promise.all(cleanupPromises).then(() => {
+        cleanRefKeys(keySet2)
+        return undefined
+      })
+    }
+
+    cleanRefKeys(keySet2)
+    return undefined
   }
 
   const memoized = function (this: ThisType<F> | void, ...args: Parameters<F>): ReturnType<F> {

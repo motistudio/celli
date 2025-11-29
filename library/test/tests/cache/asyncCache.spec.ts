@@ -492,4 +492,33 @@ describe('Async Cache', () => {
       await expect(Promise.all(pairs.map(([key]) => cache.has(key))).then((indications) => indications.every((indication) => !indication))).resolves.toBe(true)
     })
   })
+
+  describe('Symbol.dispose', () => {
+    test('Should clean cache when disposed', async () => {
+      const cache = new AsyncCache<string, string>()
+
+      await cache.set('key1', 'value1')
+      await cache.set('key2', 'value2')
+
+      await expect(cache.has('key1')).resolves.toBe(true)
+      await expect(cache.has('key2')).resolves.toBe(true)
+
+      await cache[Symbol.dispose]()
+
+      await expect(cache.has('key1')).resolves.toBe(false)
+      await expect(cache.has('key2')).resolves.toBe(false)
+    })
+
+    test('Should emit clean event when disposed', async () => {
+      const cleanHandler = vi.fn()
+      const cache = new AsyncCache<string, string>()
+
+      cache.on('clean', cleanHandler)
+      await cache.set('key', 'value')
+
+      await cache[Symbol.dispose]()
+
+      expect(cleanHandler).toHaveBeenCalledTimes(1)
+    })
+  })
 })

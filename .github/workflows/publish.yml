@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
+      contents: write  # Required for pushing tags
       id-token: write  # Required for OIDC
 
     steps:

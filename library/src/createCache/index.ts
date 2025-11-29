@@ -7,6 +7,7 @@ import type {
 } from '../types/cache.t'
 import type {LruCacheOptions, CacheCreationOptions} from '../types/functional.t'
 import type {Effect} from '../types/effects.t'
+import type {TtlOptions} from '../types/commonEffects.t'
 
 import createBaseCache from '../cache/createCache'
 import async from '../cache/transformers/async'
@@ -26,6 +27,13 @@ const getLruOptions = <K extends Key, T>(lruOptions: number | Merge<Partial<LruC
     return {maxSize: lruOptions}
   }
   return lruOptions
+}
+
+const getTtlOptions = (ttlOptions: number | TtlOptions): TtlOptions => {
+  if (typeof ttlOptions === 'number') {
+    return {timeout: ttlOptions}
+  }
+  return ttlOptions
 }
 
 const createDisposeEffect = <T>(dispose: (value: T) => void | Promise<void>): Effect<T> => {
@@ -69,7 +77,7 @@ function createCache <K extends Key, T>(options?: Partial<CacheCreationOptions<K
   const computedEffects: Effect<T>[] = [
     ...(dispose ? [createDisposeEffect(dispose)] : []),
     ...(effectsInput || []),
-    ...(timeout !== undefined && timeout !== Infinity ? [ttl({timeout})] : [])
+    ...(timeout !== undefined && timeout !== Infinity ? [ttl(getTtlOptions(timeout))] : [])
   ]
 
   // Manual compose

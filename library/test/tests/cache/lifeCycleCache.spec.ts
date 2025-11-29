@@ -108,6 +108,31 @@ describe('LifeCycle Cache', () => {
       expect(cleanup).toHaveBeenCalled()
     })
 
+    test('Should add an effect without a cleanup', () => {
+      const cache = new LifeCycleCache<ICache<string, string>>()
+
+      const key = 'key'
+      const value = 'value'
+      const effect = vi.fn() // returns undefined (no cleanup)
+      const readHandler = vi.fn()
+
+      cache.set(key, value, [effect])
+      expect(effect).toHaveBeenCalled()
+
+      const [api] = (effect.mock.calls[0] as unknown as Parameters<Effect<string>>)
+      expect(api.getSelf()).toBe(value)
+      api.onRead(readHandler)
+      expect(cache.get(key)).toBe(value)
+      expect(readHandler).toHaveBeenCalled()
+
+      // Now delete the entry -- should not throw, and nothing to clean up
+      expect(() => {
+        api.deleteSelf()
+      }).not.toThrow()
+
+      expect(cache.has(key)).toBe(false)
+    })
+
     test('Should add an effect for a complex value', () => {
       const cache = new LifeCycleCache<ICache<string, object>>()
 
@@ -321,6 +346,47 @@ describe('LifeCycle Cache', () => {
       cache.clean()
       expect(cache.has(key)).toBe(false)
     })
+
+    test('Should prolong ttl on read when prolong is true (default)', () => {
+      const cache = new LifeCycleCache()
+
+      const key = 'key'
+      const value = 'value'
+
+      cache.set(key, value, [ttl({timeout: 1000, prolong: true})])
+      expect(cache.has(key)).toBe(true)
+
+      vi.advanceTimersByTime(800)
+      expect(cache.has(key)).toBe(true)
+
+      // Reading the value should reset the ttl
+      cache.get(key)
+
+      vi.advanceTimersByTime(800) // 800ms after read, still within new ttl window
+      expect(cache.has(key)).toBe(true)
+
+      vi.advanceTimersByTime(300) // now 1100ms after read, should be expired
+      expect(cache.has(key)).toBe(false)
+    })
+
+    test('Should not prolong ttl on read when prolong is false', () => {
+      const cache = new LifeCycleCache()
+
+      const key = 'key'
+      const value = 'value'
+
+      cache.set(key, value, [ttl({timeout: 1000, prolong: false})])
+      expect(cache.has(key)).toBe(true)
+
+      vi.advanceTimersByTime(800)
+      expect(cache.has(key)).toBe(true)
+
+      // Reading the value should NOT reset the ttl
+      cache.get(key)
+
+      vi.advanceTimersByTime(300) // 1100ms total since set, should be expired
+      expect(cache.has(key)).toBe(false)
+    })
   })
 
   describe('Events', () => {
@@ -431,6 +497,38 @@ describe('LifeCycle Cache', () => {
       expect(cleanup).toHaveBeenCalledTimes(3)
       expect(cleanHandler).toHaveBeenCalledTimes(1)
       expect(deleteHandler).toHaveBeenCalledTimes(2) // still 2
+    })
+  })
+
+  describe('Symbol.dispose', () => {
+    test('Should clean sync cache when disposed', () => {
+      const cache = new LifeCycleCache<ICache<string, string>>()
+
+      cache.set('key1', 'value1')
+      cache.set('key2', 'value2')
+
+      expect(cache.has('key1')).toBe(true)
+      expect(cache.has('key2')).toBe(true)
+
+      cache[Symbol.dispose]()
+
+      expect(cache.has('key1')).toBe(false)
+      expect(cache.has('key2')).toBe(false)
+    })
+
+    test('Should clean async cache when disposed', async () => {
+      const cache = new LifeCycleCache(new AsyncCache<string, string>())
+
+      await cache.set('key1', 'value1')
+      await cache.set('key2', 'value2')
+
+      await expect(cache.has('key1')).resolves.toBe(true)
+      await expect(cache.has('key2')).resolves.toBe(true)
+
+      await cache[Symbol.dispose]()
+
+      await expect(cache.has('key1')).resolves.toBe(false)
+      await expect(cache.has('key2')).resolves.toBe(false)
     })
   })
 })

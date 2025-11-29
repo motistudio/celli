@@ -294,4 +294,36 @@ describe('LRU Cache', () => {
       unsubscribeClean()
     })
   })
+
+  describe('Symbol.dispose', () => {
+    test('Should clean sync cache when disposed', () => {
+      const cache = new LruCache<ICache<string, string>>(undefined, {maxSize: 10})
+
+      cache.set('key1', 'value1')
+      cache.set('key2', 'value2')
+
+      expect(cache.has('key1')).toBe(true)
+      expect(cache.has('key2')).toBe(true)
+
+      cache[Symbol.dispose]()
+
+      expect(cache.has('key1')).toBe(false)
+      expect(cache.has('key2')).toBe(false)
+    })
+
+    test('Should clean async cache when disposed', async () => {
+      const cache = new LruCache(new AsyncCache<string, string>(), {maxSize: 10}) as unknown as IAsyncCache<string, string>
+
+      await cache.set('key1', 'value1')
+      await cache.set('key2', 'value2')
+
+      await expect(cache.has('key1')).resolves.toBe(true)
+      await expect(cache.has('key2')).resolves.toBe(true)
+
+      await (cache as unknown as { [Symbol.dispose]: () => Promise<void> })[Symbol.dispose]()
+
+      await expect(cache.has('key1')).resolves.toBe(false)
+      await expect(cache.has('key2')).resolves.toBe(false)
+    })
+  })
 })

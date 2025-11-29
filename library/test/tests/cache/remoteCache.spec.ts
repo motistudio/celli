@@ -205,4 +205,34 @@ describe('Remote cache', () => {
     await expect(Array.fromAsync(frontCache.keys())).resolves.toMatchObject([])
     await expect(Array.fromAsync(cache.keys())).resolves.toMatchObject([pairs[2][0]])
   })
+
+  test('Should clean sync cache when disposed', () => {
+    const cache = new RemoteCache<string, string>(new Map(), new Cache<string, string>())
+
+    cache.set('key1', 'value1')
+    cache.set('key2', 'value2')
+
+    expect(cache.has('key1')).toBe(true)
+    expect(cache.has('key2')).toBe(true)
+
+    cache[Symbol.dispose]()
+
+    expect(cache.has('key1')).toBe(false)
+    expect(cache.has('key2')).toBe(false)
+  })
+
+  test('Should clean async cache when disposed', async () => {
+    const cache = new RemoteCache<string, string>(new AsyncCache(), new AsyncCache())
+
+    await cache.set('key1', 'value1')
+    await cache.set('key2', 'value2')
+
+    await expect(cache.has('key1')).resolves.toBe(true)
+    await expect(cache.has('key2')).resolves.toBe(true)
+
+    await cache[Symbol.dispose]()
+
+    await expect(cache.has('key1')).resolves.toBe(false)
+    await expect(cache.has('key2')).resolves.toBe(false)
+  })
 })

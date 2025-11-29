@@ -79,6 +79,10 @@ class Cache<K extends Key, T> implements ICache<K, T> {
       this[EVENT_EMITTER_KEY].emit('clean')
     }
   }
+
+  [Symbol.dispose] () {
+    return this.clean()
+  }
 }
 
 export default Cache

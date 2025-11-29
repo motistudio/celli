@@ -1,10 +1,8 @@
+import createImmediate from '../scheduling/createImmediate'
+
 const tick = (): Promise<void> => {
   return new Promise((resolve) => {
-    const ref = setImmediate(resolve)
-
-    if (ref.unref) {
-      ref.unref()
-    }
+    createImmediate(resolve, true)
   })
 }
 
