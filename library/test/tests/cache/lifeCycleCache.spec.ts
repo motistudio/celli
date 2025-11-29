@@ -110,6 +110,31 @@ describe('LifeCycle Cache', () => {
       expect(cleanup).toHaveBeenCalled()
     })
 
+    test('Should add an effect without a cleanup', () => {
+      const cache = new LifeCycleCache<ICache<string, string>>()
+
+      const key = 'key'
+      const value = 'value'
+      const effect = vi.fn() // returns undefined (no cleanup)
+      const readHandler = vi.fn()
+
+      cache.set(key, value, [effect])
+      expect(effect).toHaveBeenCalled()
+
+      const [api] = (effect.mock.calls[0] as unknown as Parameters<Effect<string>>)
+      expect(api.getSelf()).toBe(value)
+      api.onRead(readHandler)
+      expect(cache.get(key)).toBe(value)
+      expect(readHandler).toHaveBeenCalled()
+
+      // Now delete the entry -- should not throw, and nothing to clean up
+      expect(() => {
+        api.deleteSelf()
+      }).not.toThrow()
+
+      expect(cache.has(key)).toBe(false)
+    })
+
     test('Should add an effect for a complex value', () => {
       const cache = new LifeCycleCache<ICache<string, object>>()
 
@@ -277,25 +302,6 @@ describe('LifeCycle Cache', () => {
       expect(futureCleanupDeferredPromiseState.resolved).toBe(true)
     })
   })
-
-  // describe('Common Effects', () => {
-  //   describe('TTL', () => {
-  //     test('Should create a timeout', () => {
-  //       const key = 'key'
-  //       const value = 'value'
-
-  //       const cache = new LifeCycleCache()
-
-  //       const ttlEffect = ttl({timeout: 1000})
-
-  //       const remoteApi = new RemoteApi(cache, key, value)
-
-  //       const cleanup = ttlEffect(remoteApi)
-  //       expect(cleanup).toBeDefined()
-  //       expect(typeof cleanup).toBe('function')
-  //     })
-  //   })
-  // })
 
   describe('Effect Implementations', () => {
     beforeAll(() => {
