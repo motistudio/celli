@@ -12,8 +12,6 @@ import AsyncCache from '../../../src/cache/implementations/AsyncCache'
 import LifeCycleCache from '../../../src/cache/implementations/LifeCycleCache'
 import ttl from '../../../src/cache/implementations/LifeCycleCache/effects/ttl'
 
-import LifeCycleItem from '../../../src/cache/implementations/LifeCycleCache/LifeCycleItem'
-import RemoteApi from '../../../src/cache/implementations/LifeCycleCache/RemoteApi'
 import {CLEANUP_QUEUE} from '../../../src/cache/implementations/LifeCycleCache/constants'
 import {CACHE_KEY} from '../../../src/cache/constants'
 

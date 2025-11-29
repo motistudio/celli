@@ -263,7 +263,7 @@ describe('CacheWith', () => {
       const originalWeakMapSet = WeakMap.prototype.set
       let interceptedWeakMap: WeakMap<object, unknown> | null = null
 
-      WeakMap.prototype.set = function(key, value) {
+      WeakMap.prototype.set = function(this: WeakMap<object, unknown>, key, value) {
         interceptedWeakMap = this
         return originalWeakMapSet.call(this, key, value)
       }
