@@ -181,6 +181,26 @@ describe('Cache creation', () => {
       expect(dispose).toHaveBeenCalledTimes(1)
     })
 
+    test('Should dispose with async ttl - without prolongation', async () => {
+      const dispose = vi.fn()
+      const cache = createCache({dispose, ttl: {timeout: 100, prolong: false}, async: true})
+
+      const key = 'key'
+      const value = 'value'
+
+      await cache.set(key, value)
+      await expect(cache.has(key)).resolves.toBe(true)
+
+      vi.advanceTimersByTime(50) // essentially delete
+      await expect(cache.get(key)).resolves.toBe(value)
+
+      vi.advanceTimersByTime(51) // essentially delete
+
+      await expect(cache.has(key)).resolves.toBe(false) // item was deleted despite the read action
+      expect(dispose).toHaveBeenCalledWith(value)
+      expect(dispose).toHaveBeenCalledTimes(1)
+    })
+
     test('Should dispose with lru', () => {
       const dispose = vi.fn()
       const cache = createCache({dispose, lru: 1})

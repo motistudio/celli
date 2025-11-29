@@ -6,6 +6,11 @@ import type {
 import type {Effect} from './effects.t'
 import type {CacheBy, CacheFrom, CacheManagerFrom} from './memoization.t'
 
+type TtlOptions = {
+  timeout: number,
+  prolong?: boolean
+}
+
 // LRU:
 export type LruItemSizeGetter<K extends Key, T> = (key: K, value: T) => number
 
@@ -20,7 +25,7 @@ export type CacheCreationOptions<K extends Key, T> = {
   /** Enable async cache operations */
   async?: boolean,
   /** Time-to-live in milliseconds for cache entries */
-  ttl?: number,
+  ttl?: number | TtlOptions,
   /** LRU eviction policy (number = maxSize, or full options) */
   lru?: number | Merge<Partial<LruCacheOptions<K, T>>, Pick<LruCacheOptions<K, T>, 'maxSize'>>,
   /** Remote/persistent cache source */

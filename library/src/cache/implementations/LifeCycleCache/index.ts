@@ -214,6 +214,10 @@ class LifeCycleCache<C extends AnyCacheType<any, any> = ICache<any, any>> implem
   on <M extends CacheEventMap<CacheKey<C>, CacheValue<C>> = CacheEventMap<CacheKey<C>, CacheValue<C>>, EK extends CacheEventMapKey = CacheEventMapKey>(eventName: EK, listener: EventListener<M[EK]>) {
     return this[CACHE_KEY].on(eventName, listener)
   }
+
+  [Symbol.dispose] () {
+    return this.clean()
+  }
 }
 
 export default LifeCycleCache

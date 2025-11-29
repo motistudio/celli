@@ -242,6 +242,10 @@ class AsyncCache<K extends Key, T> implements IAsyncCache<K, T> {
       })
     })
   }
+
+  [Symbol.dispose] () {
+    return this.clean()
+  }
 }
 
 export default AsyncCache

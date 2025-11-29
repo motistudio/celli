@@ -1,25 +1,22 @@
-import {Effect} from '../../../../types/effects.t'
+import type {Effect} from '../../../../types/effects.t'
+import type {TtlOptions} from '../../../../types/commonEffects.t'
 
-type TtlOptions = {
-  timeout: number
+import createTimeout from '../../../../commons/scheduling/createTimeout'
+
+const createTtlTimeout = (api: Parameters<Effect<any>>[0], timeout: number) => {
+  return createTimeout(() => api.deleteSelf(), timeout, true)
 }
 
-const ttl = <T>({timeout}: TtlOptions): Effect<T> => {
+const ttl = <T>({timeout, prolong = true}: TtlOptions): Effect<T> => {
   return (api) => {
-    let timeoutRef: NodeJS.Timeout | undefined = setTimeout(() => api.deleteSelf(), timeout)
+    let timeoutRef: NodeJS.Timeout | undefined = createTtlTimeout(api, timeout)
 
-    if (timeoutRef.unref) {
-      timeoutRef.unref()
+    if (prolong) {
+      api.onRead(() => {
+        clearTimeout(timeoutRef)
+        timeoutRef = createTtlTimeout(api, timeout)
+      })
     }
-
-    api.onRead(() => {
-      clearTimeout(timeoutRef)
-      timeoutRef = setTimeout(() => api.deleteSelf(), timeout)
-
-      if (timeoutRef.unref) {
-        timeoutRef.unref()
-      }
-    })
 
     return () => {
       clearTimeout(timeoutRef)

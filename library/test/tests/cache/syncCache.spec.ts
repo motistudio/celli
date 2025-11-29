@@ -108,4 +108,31 @@ describe('Synchronous cache', () => {
     cache.clean()
     expect(cleanHandler).toHaveBeenCalledTimes(1)
   })
+  
+  test('Should clean cache when disposed', () => {
+    const cache = new Cache<string, string>()
+
+    cache.set('key1', 'value1')
+    cache.set('key2', 'value2')
+
+    expect(cache.has('key1')).toBe(true)
+    expect(cache.has('key2')).toBe(true)
+
+    cache[Symbol.dispose]()
+
+    expect(cache.has('key1')).toBe(false)
+    expect(cache.has('key2')).toBe(false)
+  })
+
+  test('Should emit clean event when disposed', () => {
+    const cleanHandler = vi.fn()
+    const cache = new Cache<string, string>()
+
+    cache.on('clean', cleanHandler)
+    cache.set('key', 'value')
+
+    cache[Symbol.dispose]()
+
+    expect(cleanHandler).toHaveBeenCalledTimes(1)
+  })
 })

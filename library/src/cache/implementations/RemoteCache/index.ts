@@ -154,6 +154,10 @@ class RemoteCache<K extends Key, T> implements AbstractCache<K, T> {
     // return getFrontCache(this).on(eventName, listener)
     return subscribe<M, EK>(this[EVENT_EMITTER_KEY], eventName, listener)
   }
+
+  [Symbol.dispose] () {
+    return this.clean()
+  }
 }
 
 export default RemoteCache
