@@ -38,8 +38,7 @@ jobs:
         run: npm run build --workspace=library
 
       - name: Publish to npm
-        run: npm publish --access public
-        working-directory: library
+        run: npm publish --workspace=library --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
