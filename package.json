@@ -8,17 +8,17 @@
     "website"
   ],
   "type": "module",
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "library/dist/index.cjs",
+  "module": "library/dist/index.js",
+  "types": "library/dist/index.d.ts",
   "files": [
-    "/dist"
+    "library/dist"
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.js"
+      "types": "./library/dist/index.d.ts",
+      "require": "./library/dist/index.cjs",
+      "import": "./library/dist/index.js"
     }
   },
   "scripts": {
